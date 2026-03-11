@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUdoc – Student Health Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:      #1a5c96;
+      --primary-dark: #134a7a;
+      --accent:       #e3eef8;
+      --green:        #1d8348;
+      --green-light:  #d5f0e2;
+    }
+
+    body { font-family: 'Segoe UI', sans-serif; color: #333; }
+
+    /* ── Topbar ── */
+    .topbar {
+      background: var(--primary-dark);
+      color: #c8ddef;
+      font-size: .82rem;
+      padding: 6px 0;
+    }
+    .topbar a { color: #c8ddef; text-decoration: none; }
+    .topbar a:hover { color: #fff; }
+
+    /* ── Navbar ── */
+    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
+    .navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
+    .nav-link { color: #555 !important; font-weight: 500; }
+    .nav-link:hover,
+    .nav-link.active { color: var(--primary) !important; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #e3eef8 0%, #cde2f5 100%);
+      padding: 80px 0 72px;
+    }
+    .hero h1 { font-size: 2.6rem; font-weight: 700; line-height: 1.25; color: #0d2d4a; }
+    .hero p  { font-size: 1.1rem; color: #555; }
+    .campus-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green-light); color: var(--green);
+      font-size: .82rem; font-weight: 600;
+      padding: 6px 14px; border-radius: 50px; margin-bottom: 18px;
+    }
+
+    /* ── Quick Search Card ── */
+    .search-card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 16px 48px rgba(26,92,150,.18);
+      padding: 28px;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(0,0,0,.07);
+      border-radius: 16px;
+      margin-top: -40px;
+      position: relative;
+      z-index: 2;
+    }
+    .stat-item { text-align: center; padding: 28px 16px; }
+    .stat-item .num { font-size: 1.9rem; font-weight: 700; color: var(--primary); }
+    .stat-item .lbl { font-size: .85rem; color: #777; margin-top: 4px; }
+
+    /* ── Sections ── */
+    section { padding: 80px 0; }
+    .section-title { font-size: 1.9rem; font-weight: 700; color: #0d2d4a; }
+    .section-sub  { color: #777; font-size: 1rem; }
+
+    /* ── Notice banner ── */
+    .notice-banner {
+      background: #fff8e1;
+      border-left: 4px solid #f39c12;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: .9rem;
+    }
+
+    /* ── Department cards ── */
+    .dept-card {
+      border: none; border-radius: 16px; padding: 24px 16px;
+      text-align: center; transition: transform .2s, box-shadow .2s;
+      background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+    .dept-card:hover { transform: translateY(-6px); box-shadow: 0 8px 24px rgba(26,92,150,.15); }
+    .dept-card .icon { font-size: 2.2rem; margin-bottom: 10px; }
+    .dept-card h6 { font-weight: 600; margin: 0; color: #222; font-size: .9rem; }
+    .dept-card small { color: #888; font-size: .78rem; }
+
+    /* ── Service cards ── */
+    .service-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 28px 24px;
+      height: 100%;
+      box-shadow: 0 2px 16px rgba(26,92,150,.08);
+      transition: transform .2s, box-shadow .2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .service-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(26,92,150,.16); }
+    .service-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 16px; flex-shrink: 0;
+    }
+    .service-card h5 { font-size: 1rem; font-weight: 700; color: #0d2d4a; margin-bottom: 8px; }
+    .service-card p  { font-size: .88rem; color: #666; flex-grow: 1; margin-bottom: 16px; line-height: 1.6; }
+
+    /* ── How it works ── */
+    .step-circle {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--accent); color: var(--primary);
+      font-size: 1.4rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+    }
+
+    /* ── Doctor cards ── */
+    .doctor-card {
+      border: none; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07); transition: transform .2s;
+    }
+    .doctor-card:hover { transform: translateY(-4px); }
+    .doctor-card .card-body { padding: 18px; }
+    .badge-dept {
+      background: var(--accent);
+      color: var(--primary);
+      font-size: .75rem; font-weight: 600;
+      padding: 3px 10px; border-radius: 20px;
+      display: inline-block;
+    }
+    .avatar-placeholder {
+      width: 100%; height: 190px;
+      background: linear-gradient(135deg, #b8d4ed, #8ab8de);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem; color: #fff;
+    }
+
+    /* ── Info boxes ── */
+    .info-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      height: 100%;
+    }
+    .info-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--accent);
+      color: var(--primary);
+      font-size: 1.4rem;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; border-radius: 20px;
+    }
+
+    /* ── Footer ── */
+    footer { background: #0d2d4a; color: #9ab3c8; padding: 52px 0 24px; }
+    footer h6 { color: #fff; font-weight: 600; margin-bottom: 14px; }
+    footer a  { color: #9ab3c8; text-decoration: none; display: block; margin-bottom: 8px; font-size: .88rem; }
+    footer a:hover { color: #fff; }
+    footer .divider { border-color: #1e4a6e; margin: 24px 0 18px; }
+    .office-hours-row { display: flex; justify-content: space-between; font-size: .85rem; padding: 4px 0; border-bottom: 1px solid #1e4a6e; }
+    .office-hours-row:last-child { border-bottom: none; }
+    /* ── Navbar sliding pill indicator ── */
+    .navbar-nav { position: relative; }
+    .nav-pill-indicator {
+      position: absolute;
+      background: var(--accent);
+      border-radius: 8px;
+      transition: left   0.32s cubic-bezier(.4,0,.2,1),
+                  top    0.32s cubic-bezier(.4,0,.2,1),
+                  width  0.32s cubic-bezier(.4,0,.2,1),
+                  height 0.32s cubic-bezier(.4,0,.2,1),
+                  opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .navbar-nav .nav-link { position: relative; z-index: 1; }
+
+    /* ── Floating Action Button ── */
+    .fab {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #c41e3a 0%, #a01730 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4);
+      text-decoration: none;
+      transition: transform 0.3s, box-shadow 0.3s;
+      z-index: 999;
+    }
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 28px rgba(196, 30, 58, 0.5);
+      color: #fff;
+    }
+    .fab-label {
+      position: absolute;
+      bottom: 75px;
+      right: 0;
+      background: #fff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #c41e3a;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+      pointer-events: none;
+    }
+    .fab:hover .fab-label {
+      opacity: 1;
+      visibility: visible;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<div class="topbar d-none d-md-block">
+  <div class="container d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-4">
+      <span><i class="bi bi-geo-alt me-1"></i>AUS Health Center, Academic Block C, Room 101</span>
+      <span><i class="bi bi-clock me-1"></i>Mon – Sat: 9:00 AM – 5:00 PM</span>
+    </div>
+    <div class="d-flex gap-3">
+      <span><i class="bi bi-telephone me-1"></i>+880-XXX-XXXXXX</span>
+      <span><i class="bi bi-envelope me-1"></i>health@au.edu</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+      <div style="width:38px;height:38px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-hospital-fill text-white" style="font-size:1.1rem;"></i>
+      </div>
+      <div>
+        <div class="brand-name">AUdoc</div>
+        <span class="brand-sub">Campus Health Portal</span>
+      </div>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'appointment' %}">Appointments</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'blood_bank' %}">Blood Bank</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'donation' %}">Donation</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Help Desk</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+      </ul>
+      <div class="d-flex gap-2 align-items-center">
+        {% if user.is_authenticated %}
+          <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-person-circle me-1"></i>
+            <strong>{{ user.get_full_name|default:user.username }}</strong>
+          </span>
+          <form method="post" action="{% url 'logout' %}" class="d-inline m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm px-3 rounded-pill">
+              <i class="bi bi-box-arrow-right me-1"></i>Logout
+            </button>
+          </form>
+        {% else %}
+          <a href="/accounts/login/" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+          </a>
+          <a href="{% url 'register' %}" class="btn btn-primary btn-sm px-3 rounded-pill">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="campus-badge">
+          <i class="bi bi-shield-check"></i> Official AUS Campus Health Service
+        </div>
+        <h1>Your Campus Health,<br><span style="color:var(--primary)">All in One Place</span></h1>
+        <p class="mt-3 mb-4">
+          As an AUS student, you have access to on-campus doctors across multiple departments.
+          View available doctors, check their schedules, and book your appointment — all online.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{% url 'appointment' %}" class="btn btn-primary btn-lg rounded-pill px-4">
+            <i class="bi bi-calendar-check me-2"></i>Book Appointment
+          </a>
+          <a href="{% url 'blood_donors_list' %}" class="btn btn-outline-primary btn-lg rounded-pill px-4">
+            <i class="bi bi-people-fill me-2"></i>View Blood Donors
+          </a>
+        </div>
+        <div class="mt-4 notice-banner">
+          <i class="bi bi-info-circle text-warning me-2"></i>
+          <strong>Walk-in hours:</strong> Mon – Sat &nbsp;|&nbsp; 9:00 AM – 12:30 PM &nbsp;|&nbsp; No appointment needed.
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="search-card">
+
+          <!-- Header -->
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-trophy-fill text-white" style="font-size:1rem;"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0" style="color:#0d2d4a;">This Month's Heroes</h5>
+              <p class="text-muted mb-0" style="font-size:.78rem;"><i class="bi bi-calendar3 me-1"></i>{{ current_month }}</p>
+            </div>
+          </div>
+          <hr style="border-color:#e3eef8;margin:0 0 16px;">
+
+          <!-- Top Money Donor -->
+          <div class="d-flex align-items-center gap-3 p-3 mb-3 rounded-3" style="background:#fffbf0;border:1.5px solid #fde68a;">
+            <div style="width:46px;height:46px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-cash-coin" style="font-size:1.2rem;color:#fff;"></i>
+            </div>
+            <div class="flex-grow-1" style="min-width:0;">
+              <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#92400e;">Top Money Donor</div>
+              {% if top_money_donor %}
+                <div class="fw-bold text-truncate" style="color:#0d2d4a;">{{ top_money_donor.name|default:"Anonymous" }}</div>
+                <div class="fw-semibold" style="color:#059669;font-size:.85rem;">BDT {{ top_money_donor.total }}</div>
+              {% else %}
+                <div class="fw-semibold" style="color:#0d2d4a;">No donations yet</div>
+                <div style="font-size:.78rem;color:#92400e;">Be the first this month!</div>
+              {% endif %}
+            </div>
+            <i class="bi bi-award-fill flex-shrink-0" style="font-size:1.5rem;color:#f59e0b;"></i>
+          </div>
+
+          <!-- Top Blood Donor -->
+          <div class="d-flex align-items-center gap-3 p-3 mb-4 rounded-3" style="background:#fff5f7;border:1.5px solid #fecdd3;">
+            <div style="width:46px;height:46px;background:linear-gradient(135deg,#c41e3a,#a01730);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-droplet-fill" style="font-size:1.1rem;color:#fff;"></i>
+            </div>
+            <div class="flex-grow-1" style="min-width:0;">
+              <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#9f1239;">Featured Blood Donor</div>
+              {% if top_blood_donor %}
+                <div class="fw-bold text-truncate" style="color:#0d2d4a;">{{ top_blood_donor.donor_name }}</div>
+                <span class="badge rounded-pill mt-1" style="background:#ffe8eb;color:#c41e3a;font-size:.75rem;">{{ top_blood_donor.blood_group }}</span>
+              {% else %}
+                <div class="fw-semibold" style="color:#0d2d4a;">No donors approved yet</div>
+                <div style="font-size:.78rem;color:#9f1239;">Register to be featured!</div>
+              {% endif %}
+            </div>
+            <i class="bi bi-heart-fill flex-shrink-0" style="font-size:1.5rem;color:#c41e3a;"></i>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex gap-2">
+            <a href="{% url 'donation' %}" class="btn btn-sm rounded-pill flex-fill fw-semibold" style="background:#f59e0b;color:#fff;">
+              <i class="bi bi-gift me-1"></i>Donate Money
+            </a>
+            <a href="{% url 'blood_bank' %}" class="btn btn-sm rounded-pill flex-fill fw-semibold" style="background:#c41e3a;color:#fff;">
+              <i class="bi bi-droplet me-1"></i>Donate Blood
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ STATS BAR ══════════ -->
+<div class="container">
+  <div class="stats-bar row g-0 px-2">
+    <div class="col-6 col-md-3 stat-item border-end">
+      <div class="num">25+</div>
+      <div class="lbl"><i class="bi bi-person-badge me-1"></i>Campus Doctors</div>
+    </div>
+    <div class="col-6 col-md-3 stat-item border-end">
+      <div class="num">8</div>
+      <div class="lbl"><i class="bi bi-grid me-1"></i>Departments</div>
+    </div>
+    <div class="col-6 col-md-3 stat-item border-end">
+      <div class="num">10K+</div>
+      <div class="lbl"><i class="bi bi-mortarboard me-1"></i>Students Served</div>
+    </div>
+    <div class="col-6 col-md-3 stat-item">
+      <div class="num">6 Days</div>
+      <div class="lbl"><i class="bi bi-calendar-week me-1"></i>Mon – Sat Open</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CAMPUS HEALTH SERVICES ══════════ -->
+<section style="background:#f4f8fc;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Our Services</span>
+      <h2 class="section-title">Campus Health Services</h2>
+      <p class="section-sub">Everything you need to stay healthy on campus, all in one place</p>
+    </div>
+    <div class="row g-4">
+
+      <!-- Book Appointment -->
+      <div class="col-sm-6 col-lg-4">
+        <div class="service-card">
+          <div class="service-icon" style="background:#e3eef8;color:var(--primary);"><i class="bi bi-calendar-check-fill"></i></div>
+          <h5>Book an Appointment</h5>
+          <p>Schedule a visit with a campus doctor across 8 departments. Choose your preferred time slot and get confirmed instantly.</p>
+          <a href="{% url 'appointment' %}" class="btn btn-primary btn-sm rounded-pill px-3 align-self-start">
+            <i class="bi bi-arrow-right me-1"></i>Book Now
+          </a>
+        </div>
+      </div>
+
+      <!-- Blood Bank -->
+      <div class="col-sm-6 col-lg-4">
+        <div class="service-card">
+          <div class="service-icon" style="background:#ffe8eb;color:#c41e3a;"><i class="bi bi-droplet-fill"></i></div>
+          <h5>Blood Bank</h5>
+          <p>Register as a blood donor or submit an urgent blood request. Our campus blood bank connects donors with patients in need.</p>
+          <a href="{% url 'blood_bank' %}" class="btn btn-sm rounded-pill px-3 align-self-start" style="background:#c41e3a;color:#fff;">
+            <i class="bi bi-arrow-right me-1"></i>Visit Blood Bank
+          </a>
+        </div>
+      </div>
+
+      <!-- Find Blood Donors -->
+      <div class="col-sm-6 col-lg-4">
+        <div class="service-card">
+          <div class="service-icon" style="background:#d5f0e2;color:#1d8348;"><i class="bi bi-people-fill"></i></div>
+          <h5>Find Blood Donors</h5>
+          <p>Browse verified campus blood donors filtered by blood group. Reach out to available donors directly in case of an emergency.</p>
+          <a href="{% url 'blood_donors_list' %}" class="btn btn-sm rounded-pill px-3 align-self-start" style="background:#1d8348;color:#fff;">
+            <i class="bi bi-arrow-right me-1"></i>View Donors
+          </a>
+        </div>
+      </div>
+
+      <!-- Support the Health Center -->
+      <div class="col-sm-6 col-lg-4">
+        <div class="service-card">
+          <div class="service-icon" style="background:#fff3cd;color:#856404;"><i class="bi bi-gift-fill"></i></div>
+          <h5>Support the Health Center</h5>
+          <p>Help us improve campus health facilities with a voluntary contribution. Every donation goes directly towards better student healthcare.</p>
+          <a href="{% url 'donation' %}" class="btn btn-sm rounded-pill px-3 align-self-start" style="background:#856404;color:#fff;">
+            <i class="bi bi-arrow-right me-1"></i>Donate Now
+          </a>
+        </div>
+      </div>
+
+      <!-- Emergency Contact -->
+      <div class="col-sm-6 col-lg-4">
+        <div class="service-card">
+          <div class="service-icon" style="background:#ffe8eb;color:#c41e3a;"><i class="bi bi-telephone-fill"></i></div>
+          <h5>Emergency Contact</h5>
+          <p>For medical emergencies on campus, call our emergency line immediately. Do not delay in case of serious injury or illness.</p>
+          <div>
+            <span class="fw-bold d-block" style="color:#c41e3a;font-size:1.05rem;"><i class="bi bi-telephone-fill me-1"></i>Ext. 5555 (internal)</span>
+            <span class="text-muted small">+880-XXX-XXXXXX (external)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Registration -->
+      <div class="col-sm-6 col-lg-4">
+        <div class="service-card">
+          <div class="service-icon" style="background:#e3eef8;color:var(--primary);"><i class="bi bi-person-plus-fill"></i></div>
+          <h5>Student Registration</h5>
+          <p>New to AUdoc? Register your student profile to unlock appointments, donor services, and your personalized health dashboard.</p>
+          {% if user.is_authenticated %}
+            <span class="badge bg-success rounded-pill px-3 py-2 align-self-start"><i class="bi bi-check-circle-fill me-1"></i>Already Registered</span>
+          {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary btn-sm rounded-pill px-3 align-self-start">
+              <i class="bi bi-arrow-right me-1"></i>Register Now
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HOW IT WORKS ══════════ -->
+<section>
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Simple Steps</span>
+      <h2 class="section-title">How to Book an Appointment</h2>
+      <p class="section-sub">Book your campus doctor visit in just a few clicks</p>
+    </div>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="step-circle">1</div>
+        <h5 class="fw-bold">Log In as a Student</h5>
+        <p class="text-muted">Sign in using your AU student credentials to access the AUdoc health portal.</p>
+      </div>
+      <div class="col-md-4">
+        <div class="step-circle">2</div>
+        <h5 class="fw-bold">Choose a Doctor &amp; Slot</h5>
+        <p class="text-muted">Browse available doctors by department and select an open time slot.</p>
+      </div>
+      <div class="col-md-4">
+        <div class="step-circle">3</div>
+        <h5 class="fw-bold">Confirm &amp; Visit</h5>
+        <p class="text-muted">Receive a booking confirmation and visit the medical center at your scheduled time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ AVAILABLE DOCTORS ══════════ -->
+<section style="background:#f4f8fc;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Our Team</span>
+      <h2 class="section-title">Meet Our Campus Doctors</h2>
+      <p class="section-sub">Qualified doctors dedicated to student health and well-being</p>
+    </div>
+    <div class="row g-4">
+      {% for doctor in doctors %}
+      <div class="col-sm-6 col-lg-3">
+        <div class="card doctor-card h-100">
+          <div class="avatar-placeholder">
+            <i class="bi bi-person-circle"></i>
+          </div>
+          <div class="card-body">
+            <span class="badge-dept">{{ doctor.specialty }}</span>
+            <h6 class="fw-bold mt-2 mb-0">{{ doctor.name }}</h6>
+            <small class="text-muted d-block mb-2">{{ doctor.experience }} experience</small>
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <span class="badge bg-success-subtle text-success fw-semibold" style="font-size:.75rem;">
+                <i class="bi bi-circle-fill me-1" style="font-size:.45rem;vertical-align:middle;"></i>Available Today
+              </span>
+            </div>
+            <a href="{% url 'appointment' %}" class="btn btn-sm btn-primary w-100 rounded-pill">
+              <i class="bi bi-calendar-plus me-1"></i>Book Appointment
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+      <a href="#" class="btn btn-outline-primary rounded-pill px-4">
+        <i class="bi bi-people me-2"></i>View All Doctors
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ INFO SECTION ══════════ -->
+<section>
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="info-box">
+          <div class="info-icon"><i class="bi bi-clock"></i></div>
+          <h6 class="fw-bold">Clinic Hours</h6>
+          <p class="text-muted small mb-0">Monday – Saturday<br>9:00 AM – 5:00 PM<br><span class="text-warning">Lunch: 1:00 PM – 2:00 PM</span><br><span class="text-danger">Closed on Sundays &amp; holidays</span></p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="info-box">
+          <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
+          <h6 class="fw-bold">Location</h6>
+          <p class="text-muted small mb-0">Academic Block C, Room 101<br>AU Main Campus<br>Ground Floor, near Student Lounge</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="info-box">
+          <div class="info-icon"><i class="bi bi-telephone"></i></div>
+          <h6 class="fw-bold">Emergency Contact</h6>
+          <p class="text-muted small mb-0">Campus Emergency<br>Ext. 5555 (internal)<br>+880-XXX-XXXXXX (external)</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="info-box">
+          <div class="info-icon"><i class="bi bi-card-checklist"></i></div>
+          <h6 class="fw-bold">What to Bring</h6>
+          <p class="text-muted small mb-0">Valid AU student ID card<br>Booking confirmation (if any)<br>Previous prescriptions (if any)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ CTA ══════════ -->
+<section>
+  <div class="container">
+    <div class="cta-section text-center p-5">
+      <i class="bi bi-heart-pulse-fill fs-1 mb-3 d-block opacity-75"></i>
+      <h2 class="fw-bold mb-3">Need Blood? Find a Donor Today</h2>
+      <p class="mb-4 opacity-75 fs-5">
+        Browse our registered blood donors and request blood directly. Or book a same-day appointment with our campus doctors.
+      </p>
+      <a href="{% url 'blood_donors_list' %}" class="btn btn-light btn-lg rounded-pill fw-semibold px-5 me-2">
+        <i class="bi bi-people-fill me-2"></i>Find Blood Donor
+      </a>
+      <a href="{% url 'appointment' %}" class="btn btn-outline-light btn-lg rounded-pill px-5">
+        <i class="bi bi-calendar-plus me-2"></i>Book Appointment
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="container">
+    <div class="row g-4">
+      <!-- Brand -->
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div style="width:34px;height:34px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-hospital-fill text-white"></i>
+          </div>
+          <div>
+            <div class="text-white fw-bold" style="line-height:1.1;">AUdoc</div>
+            <div style="font-size:.72rem;color:#9ab3c8;">Campus Health Portal</div>
+          </div>
+        </div>
+        <p style="font-size:.88rem;line-height:1.7;">
+          The official health and medical service for Assam University silchar students.
+          We provide accessible, confidential, and quality healthcare on campus.
+        </p>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-6 col-lg-2">
+        <h6>Quick Links</h6>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="#">Available Doctors</a>
+        <a href="#">Departments</a>
+        <a href="{% url 'appointment' %}">Book Appointment</a>
+        <a href="{% url 'appointment' %}">My Appointments</a>
+      </div>
+
+      <!-- Services -->
+      <div class="col-6 col-lg-2">
+        <h6>Services</h6>
+        <a href="#">General Check-up</a>
+        <a href="#">Dental Care</a>
+        <a href="#">Eye Check-up</a>
+        <a href="#">Mental Health</a>
+        <a href="#">Physiotherapy</a>
+      </div>
+
+      <!-- Clinic Info -->
+      <div class="col-lg-4">
+        <h6>Clinic Hours</h6>
+        <div class="office-hours-row"><span>Monday – Friday</span><span class="text-white">9:00 AM – 5:00 PM</span></div>
+        <div class="office-hours-row"><span>Saturday</span><span class="text-white">9:00 AM – 1:00 PM</span></div>
+        <div class="office-hours-row"><span>Sunday</span><span class="text-danger">Closed</span></div>
+        <div class="office-hours-row"><span>Lunch Break</span><span class="text-warning">1:00 PM – 2:00 PM</span></div>
+        <div class="office-hours-row"><span>Public Holidays</span><span class="text-danger">Closed</span></div>
+        <div class="mt-3" style="font-size:.85rem;">
+          <i class="bi bi-geo-alt me-1"></i> Block C, Room 101, AU Main Campus<br>
+          <i class="bi bi-envelope me-1 mt-1"></i> health@au.edu
+        </div>
+      </div>
+    </div>
+    <hr class="divider" />
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <small>&copy; 2026 AUdoc – Assam University Silchar Campus Health. All rights reserved.</small>
+      <small>For emergencies, call campus security: <strong class="text-white">Ext. 5555</strong></small>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ── Sliding pill indicator on navbar ─────────────────────────
+  (function () {
+    const nav = document.querySelector('.navbar-nav');
+    if (!nav) return;
+
+    const pill = document.createElement('div');
+    pill.className = 'nav-pill-indicator';
+    pill.style.opacity = '0';
+    nav.appendChild(pill);
+
+    function moveTo(el) {
+      const nr = nav.getBoundingClientRect();
+      const er = el.getBoundingClientRect();
+      pill.style.left    = (er.left   - nr.left) + 'px';
+      pill.style.top     = (er.top    - nr.top)  + 'px';
+      pill.style.width   = er.width  + 'px';
+      pill.style.height  = er.height + 'px';
+      pill.style.opacity = '1';
+    }
+
+    const links = nav.querySelectorAll('.nav-link');
+    const active = nav.querySelector('.nav-link.active');
+    if (active) moveTo(active);
+
+    links.forEach(link => {
+      link.addEventListener('mouseenter', () => moveTo(link));
+    });
+
+    nav.addEventListener('mouseleave', () => {
+      const cur = nav.querySelector('.nav-link.active');
+      if (cur) moveTo(cur); else pill.style.opacity = '0';
+    });
+  })();
+</script>
+
+<!-- ══════════ FLOATING ACTION BUTTON ══════════ -->
+<a href="{% url 'blood_bank' %}" class="fab" title="Blood Bank">
+  <span class="fab-label">Blood Bank</span>
+  <i class="bi bi-droplet-fill"></i>
+</a>
+</body>
+</html>

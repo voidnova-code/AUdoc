@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Appointment – AUdoc Campus Health</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:      #1a5c96;
+      --primary-dark: #134a7a;
+      --accent:       #e3eef8;
+    }
+
+    body { font-family: 'Segoe UI', sans-serif; color: #333; background: #f4f8fc; }
+
+    /* Topbar */
+    .topbar { background: var(--primary-dark); color: #c8ddef; font-size: .82rem; padding: 6px 0; }
+    .topbar a { color: #c8ddef; text-decoration: none; }
+    .topbar a:hover { color: #fff; }
+
+    /* Navbar */
+    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
+    .navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
+    .nav-link { color: #555 !important; font-weight: 500; }
+    .nav-link:hover, .nav-link.active { color: var(--primary) !important; }
+
+    /* Page header */
+    .page-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      padding: 52px 0 48px;
+    }
+    .page-header h1 { font-size: 2rem; font-weight: 700; }
+    .page-header p  { opacity: .85; font-size: 1rem; }
+
+    /* Card */
+    .appt-card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(26,92,150,.12);
+      padding: 36px 40px;
+    }
+
+    /* My-appointments list cards */
+    .appt-list-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(26,92,150,.08);
+      padding: 16px 20px;
+      transition: box-shadow .2s;
+    }
+    .appt-list-card:hover { box-shadow: 0 6px 20px rgba(26,92,150,.14); }
+
+    .date-badge {
+      min-width: 54px; height: 60px;
+      background: var(--accent);
+      border-radius: 12px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .date-badge .day { font-size: 1.3rem; font-weight: 700; color: var(--primary); line-height: 1; }
+    .date-badge .mon { font-size: .72rem; color: var(--primary); }
+
+    .status-badge {
+      font-size: .72rem; font-weight: 700;
+      padding: 4px 12px; border-radius: 50px;
+      white-space: nowrap;
+    }
+    .status-PENDING   { background: #e3eef8; color: #1a5c96; }
+    .status-CONFIRMED { background: #d5f0e2; color: #1d8348; }
+    .status-COMPLETED { background: #e8f5e9; color: #2e7d32; }
+    .status-REJECTED  { background: #fde8e8; color: #c0392b; }
+    .status-CANCELLED { background: #f0f0f0; color: #777;    }
+
+    .empty-state { text-align: center; padding: 48px 24px; color: #bbb; }
+    .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; }
+
+    /* Section label */
+    .section-label {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--primary);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 6px;
+      margin-bottom: 20px;
+    }
+
+    /* Form controls */
+    .form-label { font-weight: 600; font-size: .88rem; color: #444; }
+    .form-control, .form-select {
+      border-radius: 10px;
+      border: 1.5px solid #d0dfee;
+      font-size: .93rem;
+      padding: 10px 14px;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,92,150,.1);
+    }
+    textarea.form-control { resize: vertical; min-height: 110px; }
+    /* input-group date + Today button */
+    .input-group .form-control { border-radius: 10px 0 0 10px !important; }
+    #btn-today {
+      border-radius: 0 10px 10px 0 !important;
+      border: 1.5px solid var(--primary);
+      font-size: .88rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Error */
+    .invalid-feedback { font-size: .82rem; }
+
+    /* Info aside */
+    .info-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(26,92,150,.08);
+      padding: 24px;
+    }
+    .info-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: var(--accent); color: var(--primary);
+      font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Footer */
+    footer { background: #0d2d4a; color: #9ab3c8; padding: 40px 0 20px; }
+    footer .divider { border-color: #1e4a6e; margin: 20px 0 14px; }
+
+    /* ── Navbar sliding pill indicator ── */
+    .navbar-nav { position: relative; }
+    .nav-pill-indicator {
+      position: absolute;
+      background: var(--accent);
+      border-radius: 8px;
+      transition: left   0.32s cubic-bezier(.4,0,.2,1),
+                  top    0.32s cubic-bezier(.4,0,.2,1),
+                  width  0.32s cubic-bezier(.4,0,.2,1),
+                  height 0.32s cubic-bezier(.4,0,.2,1),
+                  opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .navbar-nav .nav-link { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<div class="topbar d-none d-md-block">
+  <div class="container d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-4">
+      <span><i class="bi bi-geo-alt me-1"></i>AUS Health Center, Academic Block C, Room 101</span>
+      <span><i class="bi bi-clock me-1"></i>Mon – Sat: 9:00 AM – 5:00 PM</span>
+    </div>
+    <div class="d-flex gap-3">
+      <span><i class="bi bi-telephone me-1"></i>+880-XXX-XXXXXX</span>
+      <span><i class="bi bi-envelope me-1"></i>health@au.edu</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+      <div style="width:38px;height:38px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-hospital-fill text-white" style="font-size:1.1rem;"></i>
+      </div>
+      <div>
+        <div class="brand-name">AUdoc</div>
+        <span class="brand-sub">Campus Health Portal</span>
+      </div>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link active" href="{% url 'appointment' %}">Appointments</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'blood_bank' %}">Blood Bank</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'donation' %}">Donation</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Help Desk</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+      </ul>
+      <div class="d-flex gap-2 align-items-center">
+        {% if user.is_authenticated %}
+          <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-person-circle me-1"></i>
+            <strong>{{ user.get_full_name|default:user.username }}</strong>
+          </span>
+          <form method="post" action="{% url 'logout' %}" class="d-inline m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm px-3 rounded-pill">
+              <i class="bi bi-box-arrow-right me-1"></i>Logout
+            </button>
+          </form>
+        {% else %}
+          <a href="/accounts/login/" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+          </a>
+          <a href="{% url 'register' %}" class="btn btn-primary btn-sm px-3 rounded-pill">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ PAGE HEADER ══════════ -->
+<div class="page-header">
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color:#9ab8d4;font-size:.85rem;">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active text-white">My Appointments</li>
+      </ol>
+    </nav>
+    <div class="d-flex align-items-end justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="bi bi-calendar2-heart me-2"></i>My Appointments</h1>
+        <p class="mb-0">View your upcoming visits and book new ones below.</p>
+      </div>
+      <a href="#book" class="btn btn-light btn-lg rounded-pill px-4 fw-semibold text-primary">
+        <i class="bi bi-calendar-plus me-2"></i>Book New Appointment
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MY APPOINTMENTS ══════════ -->
+<div class="container py-5">
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs border-0 mb-4 gap-1" id="apptTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-semibold rounded-pill px-4" id="tab-upcoming-btn"
+        data-bs-toggle="tab" data-bs-target="#tab-upcoming" type="button" role="tab">
+        <i class="bi bi-clock me-1"></i>Upcoming
+        <span class="badge bg-primary ms-1">{{ upcoming_appointments.count }}</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold rounded-pill px-4" id="tab-history-btn"
+        data-bs-toggle="tab" data-bs-target="#tab-history" type="button" role="tab">
+        <i class="bi bi-clock-history me-1"></i>History
+        <span class="badge bg-secondary ms-1">{{ history_appointments.count }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- ── Upcoming tab ── -->
+    <div class="tab-pane fade show active" id="tab-upcoming" role="tabpanel">
+      {% if upcoming_appointments %}
+        <div class="d-flex flex-column gap-3">
+          {% for appt in upcoming_appointments %}
+          <div class="appt-list-card">
+            <div class="d-flex align-items-center gap-3">
+              <div class="date-badge">
+                <span class="day">{{ appt.appointment_date|date:"d" }}</span>
+                <span class="mon">{{ appt.appointment_date|date:"M" }}</span>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-bold" style="color:#0d2d4a;">
+                  {% if appt.doctor %}{{ appt.doctor.name }}{% else %}{{ appt.get_medical_department_display }}{% endif %}
+                </div>
+                <div class="text-muted small mt-1">
+                  <i class="bi bi-clock me-1"></i>{{ appt.appointment_time }}
+                  &nbsp;·&nbsp;
+                  <i class="bi bi-building-cross me-1"></i>{{ appt.get_medical_department_display }}
+                </div>
+              </div>
+              <span class="status-badge status-{{ appt.status }}">{{ appt.get_status_display }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="bi bi-calendar-x text-muted"></i>
+          <p class="fw-semibold mb-1">No upcoming appointments</p>
+          <p class="small">Use the button above to book your first visit.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- ── History tab ── -->
+    <div class="tab-pane fade" id="tab-history" role="tabpanel">
+      {% if history_appointments %}
+        <div class="d-flex flex-column gap-3">
+          {% for appt in history_appointments %}
+          <div class="appt-list-card" style="opacity:.85;">
+            <div class="d-flex align-items-center gap-3">
+              <div class="date-badge" style="background:#f0f0f0;">
+                <span class="day" style="color:#777;">{{ appt.appointment_date|date:"d" }}</span>
+                <span class="mon" style="color:#777;">{{ appt.appointment_date|date:"M" }}</span>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-bold" style="color:#0d2d4a;">
+                  {% if appt.doctor %}{{ appt.doctor.name }}{% else %}{{ appt.get_medical_department_display }}{% endif %}
+                </div>
+                <div class="text-muted small mt-1">
+                  <i class="bi bi-clock me-1"></i>{{ appt.appointment_time }}
+                  &nbsp;·&nbsp;
+                  <i class="bi bi-building-cross me-1"></i>{{ appt.get_medical_department_display }}
+                </div>
+              </div>
+              <span class="status-badge status-{{ appt.status }}">{{ appt.get_status_display }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="bi bi-archive text-muted"></i>
+          <p class="fw-semibold mb-1">No appointment history yet</p>
+          <p class="small">Your completed and cancelled visits will appear here.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<hr class="my-0" style="border-color:#e3eef8;">
+
+<!-- ══════════ BOOK NEW APPOINTMENT ══════════ -->
+<div id="book" class="container py-5">
+
+  <!-- Success / Error messages -->
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'success' }} alert-dismissible fade show rounded-3 mb-4" role="alert">
+      <i class="bi bi-{% if message.tags == 'error' %}exclamation-triangle{% else %}check-circle{% endif %} me-2"></i>
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+
+  <div class="row g-4 align-items-start">
+
+    <!-- ── Form column ── -->
+    <div class="col-lg-8">
+      <div class="appt-card">
+        <h5 class="fw-bold mb-1" style="color:#0d2d4a;">
+          <i class="bi bi-calendar-plus text-primary me-2"></i>Book a New Appointment
+        </h5>
+        <p class="text-muted small mb-4">Fields marked <span class="text-danger">*</span> are required.</p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <!-- ── Personal Information ── -->
+          <p class="section-label">Personal Information</p>
+          <div class="row g-3 mb-4">
+
+            <div class="col-sm-6">
+              <label class="form-label" for="id_student_id">
+                Student ID <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                name="student_id"
+                id="id_student_id"
+                class="form-control{% if form.student_id.errors %} is-invalid{% endif %}"
+                value="{{ form.student_id.value|default_if_none:'' }}"
+                placeholder="e.g. AU2021050123"
+                required
+              />
+              {% for err in form.student_id.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-sm-6">
+              <label class="form-label" for="id_student_name">
+                Full Name <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                name="student_name"
+                id="id_student_name"
+                class="form-control{% if form.student_name.errors %} is-invalid{% endif %}"
+                value="{{ form.student_name.value|default_if_none:'' }}"
+                placeholder="Enter your full name"
+                required
+              />
+              {% for err in form.student_name.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-sm-6">
+              <label class="form-label" for="id_email">
+                Email Address <span class="text-danger">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                id="id_email"
+                class="form-control{% if form.email.errors %} is-invalid{% endif %}"
+                value="{{ form.email.value|default_if_none:'' }}"
+                placeholder="Enter your email"
+                required
+              />
+              {% for err in form.email.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-sm-6">
+              <label class="form-label" for="id_phone">
+                Phone Number <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                name="phone"
+                id="id_phone"
+                class="form-control{% if form.phone.errors %} is-invalid{% endif %}"
+                value="{{ form.phone.value|default_if_none:'' }}"
+                placeholder="e.g. 01XXXXXXXXX"
+                required
+              />
+              {% for err in form.phone.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+
+          </div>
+
+          <!-- ── Department Selection ── -->
+          <p class="section-label">Department Selection</p>
+          <div class="row g-3 mb-4">
+
+            <div class="col-sm-6">
+              <label class="form-label" for="id_student_department">
+                Your Academic Department <span class="text-danger">*</span>
+              </label>
+              <select
+                name="student_department"
+                id="id_student_department"
+                class="form-select{% if form.student_department.errors %} is-invalid{% endif %}"
+                required
+              >
+                {% for val, label in form.fields.student_department.choices %}
+                  <option value="{{ val }}"
+                    {% if form.student_department.value == val %}selected{% endif %}>
+                    {{ label }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% for err in form.student_department.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-sm-6">
+              <label class="form-label" for="id_medical_department">
+                Medical Department <span class="text-danger">*</span>
+              </label>
+              <select
+                name="medical_department"
+                id="id_medical_department"
+                class="form-select{% if form.medical_department.errors %} is-invalid{% endif %}"
+                required
+              >
+                {% for val, label in form.fields.medical_department.choices %}
+                  <option value="{{ val }}"
+                    {% if form.medical_department.value == val %}selected{% endif %}>
+                    {{ label }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% for err in form.medical_department.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+
+          </div>
+
+          <!-- ── Appointment Scheduling ── -->
+          <p class="section-label">Appointment Scheduling</p>
+          <div class="row g-3 mb-4">
+
+            <div class="col-sm-6">
+              <label class="form-label" for="id_appointment_date">
+                Preferred Date <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <input
+                  type="date"
+                  name="appointment_date"
+                  id="id_appointment_date"
+                  class="form-control{% if form.appointment_date.errors %} is-invalid{% endif %}"
+                  value="{{ form.appointment_date.value|default_if_none:'' }}"
+                  min="{{ today_str }}"
+                  required
+                />
+                <button type="button" class="btn btn-outline-primary" id="btn-today"
+                  onclick="document.getElementById('id_appointment_date').value='{{ today_str }}';"
+                  title="Set to today">
+                  Today
+                </button>
+              </div>
+              {% for err in form.appointment_date.errors %}
+                <div class="text-danger" style="font-size:.82rem;">{{ err }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-sm-6">
+              <label class="form-label" for="id_appointment_time">
+                Preferred Time Slot <span class="text-danger">*</span>
+              </label>
+              <select
+                name="appointment_time"
+                id="id_appointment_time"
+                class="form-select{% if form.appointment_time.errors %} is-invalid{% endif %}"
+                required
+              >
+                {% for val, label in form.fields.appointment_time.choices %}
+                  <option value="{{ val }}"
+                    {% if form.appointment_time.value == val %}selected{% endif %}>
+                    {{ label }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% for err in form.appointment_time.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label" for="id_doctor">
+                Preferred Doctor <span class="text-muted fw-normal">(optional)</span>
+              </label>
+              <select
+                name="doctor"
+                id="id_doctor"
+                class="form-select{% if form.doctor.errors %} is-invalid{% endif %}"
+              >
+                <option value="">— Any available doctor —</option>
+                {% for doc in doctors %}
+                  <option
+                    value="{{ doc.pk }}"
+                    data-dept="{{ doc.specialized_in }}"
+                    {% if form.doctor.value|stringformat:"s" == doc.pk|stringformat:"s" %}selected{% endif %}
+                  >
+                    {{ doc.name }} ({{ doc.get_specialized_in_display }}) · {{ doc.available_time }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% for err in form.doctor.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Selecting a medical department above will filter this list automatically.
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ── Problem Description ── -->
+          <p class="section-label">Medical Details</p>
+          <div class="mb-4">
+            <label class="form-label" for="id_problem_description">
+              Description of Problem <span class="text-danger">*</span>
+            </label>
+            <textarea
+              name="problem_description"
+              id="id_problem_description"
+              class="form-control{% if form.problem_description.errors %} is-invalid{% endif %}"
+              rows="4"
+              placeholder="Briefly describe your symptoms or reason for the visit"
+              required
+            >{{ form.problem_description.value|default_if_none:'' }}</textarea>
+            {% for err in form.problem_description.errors %}
+              <div class="invalid-feedback">{{ err }}</div>
+            {% endfor %}
+            <div class="form-text mt-1">
+              <i class="bi bi-lock me-1 text-muted"></i>
+              Your information is kept confidential.
+            </div>
+          </div>
+
+          <!-- ── Submit ── -->
+          <div class="d-flex gap-3 align-items-center">
+            <button type="submit" class="btn btn-primary px-5 rounded-pill fw-semibold">
+              <i class="bi bi-send me-2"></i>Submit Appointment Request
+            </button>
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- ── Sidebar ── -->
+    <div class="col-lg-4 d-flex flex-column gap-3">
+
+      <!-- Clinic hours -->
+      <div class="info-card">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="info-icon"><i class="bi bi-clock"></i></div>
+          <h6 class="fw-bold mb-0">Clinic Hours</h6>
+        </div>
+        <table class="table table-sm table-borderless mb-0 small">
+          <tbody>
+            <tr><td class="text-muted">Mon – Fri</td><td class="fw-semibold text-end">9:00 AM – 5:00 PM</td></tr>
+            <tr><td class="text-muted">Saturday</td><td class="fw-semibold text-end">9:00 AM – 1:00 PM</td></tr>
+            <tr><td class="text-muted">Sunday</td><td class="text-danger fw-semibold text-end">Closed</td></tr>
+            <tr><td class="text-muted">Lunch Break</td><td class="text-muted text-end">1:00 PM – 2:00 PM</td></tr>
+          </tbody>
+        </table>
+        <div class="alert alert-warning d-flex gap-2 align-items-start p-2 mt-2 mb-0 rounded-3" style="font-size:.82rem;">
+          <i class="bi bi-info-circle-fill mt-1 flex-shrink-0"></i>
+          <span><strong>Walk-in hours:</strong> Mon – Sat, 9:00 AM – 12:30 PM. No appointment needed.</span>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="info-card">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
+          <h6 class="fw-bold mb-0">Location</h6>
+        </div>
+        <p class="small text-muted mb-0">
+          Academic Block C, Room 101<br>
+          AU Main Campus — Ground Floor,<br>
+          near the Student Lounge.
+        </p>
+      </div>
+
+      <!-- Need help -->
+      <div class="info-card" style="background:linear-gradient(135deg,#eef4ff,#dde9fa);">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="info-icon"><i class="bi bi-telephone-fill"></i></div>
+          <h6 class="fw-bold mb-0">Need Urgent Help?</h6>
+        </div>
+        <p class="small text-muted mb-2">For medical emergencies do not wait — contact campus security immediately.</p>
+        <a href="tel:+880XXXXXXXXXX" class="btn btn-sm btn-primary rounded-pill w-100">
+          <i class="bi bi-telephone me-1"></i>Call Campus Emergency
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <div style="width:30px;height:30px;background:var(--primary);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+          <i class="bi bi-hospital-fill text-white" style="font-size:.85rem;"></i>
+        </div>
+        <span class="text-white fw-bold">AUdoc</span>
+        <span class="text-muted small">Campus Health Portal</span>
+      </div>
+      <small>Block C, Room 101 &nbsp;|&nbsp; health@au.edu &nbsp;|&nbsp; Emergency Ext. 5555</small>
+    </div>
+    <hr class="divider" />
+    <small class="d-block text-center">&copy; 2026 AUdoc – Assam University Silchar Campus Health. All rights reserved.</small>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function () {
+    const deptSel   = document.getElementById('id_medical_department');
+    const doctorSel = document.getElementById('id_doctor');
+    if (!deptSel || !doctorSel) return;
+
+    // Snapshot all doctor options (skip the placeholder at index 0)
+    const allOptions = Array.from(doctorSel.options).slice(1).map(o => o.cloneNode(true));
+
+    function filterDoctors() {
+      const dept = deptSel.value;
+      // Keep only the placeholder, then re-add matching doctors
+      while (doctorSel.options.length > 1) doctorSel.remove(1);
+      allOptions
+        .filter(o => !dept || o.dataset.dept === dept)
+        .forEach(o => doctorSel.appendChild(o.cloneNode(true)));
+    }
+
+    deptSel.addEventListener('change', filterDoctors);
+    filterDoctors(); // run once on load (e.g. after form re-render with errors)
+  })();
+</script>
+<script>
+  // ── Sliding pill indicator on navbar ─────────────────────────
+  (function () {
+    const nav = document.querySelector('.navbar-nav');
+    if (!nav) return;
+
+    const pill = document.createElement('div');
+    pill.className = 'nav-pill-indicator';
+    pill.style.opacity = '0';
+    nav.appendChild(pill);
+
+    function moveTo(el) {
+      const nr = nav.getBoundingClientRect();
+      const er = el.getBoundingClientRect();
+      pill.style.left    = (er.left   - nr.left) + 'px';
+      pill.style.top     = (er.top    - nr.top)  + 'px';
+      pill.style.width   = er.width  + 'px';
+      pill.style.height  = er.height + 'px';
+      pill.style.opacity = '1';
+    }
+
+    const links = nav.querySelectorAll('.nav-link');
+    const active = nav.querySelector('.nav-link.active');
+    if (active) moveTo(active);
+
+    links.forEach(link => {
+      link.addEventListener('mouseenter', () => moveTo(link));
+    });
+
+    nav.addEventListener('mouseleave', () => {
+      const cur = nav.querySelector('.nav-link.active');
+      if (cur) moveTo(cur); else pill.style.opacity = '0';
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────
+#  AUdoc  ·  .gitignore
+#  "Secrets stay secret, binaries stay local."
+# ─────────────────────────────────────────────
+
+# ── Python / Django ──────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment (giant folder, no one needs it)
+myenv/
+venv/
+.venv/
+env/
+
+# Django secret stuff (NEVER commit these!)
+.env
+*.env
+
+# Django database – local only, not for sharing
+AUdoc_back/db.sqlite3
+db.sqlite3
+
+# Django collected static
+staticfiles/
+static_root/
+
+# Django migrations (optional – uncomment if you want clean migrations)
+# */migrations/
+
+# ── Flutter / Dart ───────────────────────────
+audoc/.dart_tool/
+audoc/.flutter-plugins
+audoc/.flutter-plugins-dependencies
+audoc/.packages
+audoc/build/
+audoc/.idea/
+audoc/*.iml
+
+# Flutter pub cache
+.pub-cache/
+.pub/
+
+# Android
+audoc/android/.gradle/
+audoc/android/local.properties
+audoc/android/captures/
+audoc/android/gradlew
+audoc/android/gradlew.bat
+audoc/android/gradle/
+
+# iOS / macOS Xcode
+audoc/ios/Pods/
+audoc/ios/.symlinks/
+audoc/macos/Pods/
+audoc/macos/.symlinks/
+
+# ── IDE & OS junk ────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs & temp ──────────────────────────────
+*.log
+*.tmp
+*.bak

@@ -1,0 +1,424 @@
+from django.db import models
+from django.conf import settings
+
+
+STUDENT_DEPT_CHOICES = [
+    ("CSE",  "Computer Science & Engineering"),
+    ("EEE",  "Electrical & Electronic Engineering"),
+    ("ME",   "Mechanical Engineering"),
+    ("CE",   "Civil Engineering"),
+    ("TE",   "Textile Engineering"),
+    ("IPE",  "Industrial & Production Engineering"),
+    ("BBA",  "Business Administration"),
+    ("ENG",  "English"),
+    ("OTHER", "Other"),
+]
+
+MEDICAL_DEPT_CHOICES = [
+    ("GENERAL",  "General Physician"),
+    ("DENTAL",   "Dental Care"),
+    ("EYE",      "Eye Care"),
+    ("MENTAL",   "Mental Health & Counseling"),
+    ("ORTHO",    "Orthopedics"),
+    ("DERM",     "Dermatology"),
+    ("GYNAE",    "Gynecology"),
+    ("PHYSIO",   "Physiotherapy"),
+]
+
+DAY_CHOICES = [
+    ("MON", "Monday"),
+    ("TUE", "Tuesday"),
+    ("WED", "Wednesday"),
+    ("THU", "Thursday"),
+    ("FRI", "Friday"),
+    ("SAT", "Saturday"),
+    ("SUN", "Sunday"),
+]
+
+BLOOD_GROUP_CHOICES = [
+    ("A+",  "A+"),
+    ("A-",  "A-"),
+    ("B+",  "B+"),
+    ("B-",  "B-"),
+    ("AB+", "AB+"),
+    ("AB-", "AB-"),
+    ("O+",  "O+"),
+    ("O-",  "O-"),
+]
+
+
+class StudentProfile(models.Model):
+    user              = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="student_profile",
+        verbose_name="User",
+    )
+    is_verified       = models.BooleanField(default=True, verbose_name="Verified")
+    student_id        = models.CharField(
+        max_length=50, blank=True, verbose_name="Student ID",
+        help_text="Leave blank if this user is not a student",
+    )
+    phone             = models.CharField(max_length=20, verbose_name="Phone No.")
+    emergency_contact = models.CharField(max_length=20, verbose_name="Emergency Contact No.")
+    home_address      = models.TextField(verbose_name="Home Address")
+    present_address   = models.TextField(verbose_name="Present Address")
+    department        = models.CharField(
+        max_length=10,
+        choices=STUDENT_DEPT_CHOICES,
+        verbose_name="Department",
+    )
+    blood_group       = models.CharField(
+        max_length=4,
+        choices=BLOOD_GROUP_CHOICES,
+        verbose_name="Blood Group",
+    )
+
+    class Meta:
+        ordering = ["user__username"]
+        verbose_name = "Registered Student"
+        verbose_name_plural = "Registered Students"
+
+    def __str__(self):
+        return f"{self.user.get_full_name() or self.user.username} ({self.student_id or 'Non-student'})"
+
+
+class StaffProfile(models.Model):
+    staff_id  = models.CharField(
+        max_length=50, unique=True, verbose_name="Staff ID",
+        help_text='e.g. "STAFF-001"',
+    )
+    name      = models.CharField(max_length=150, verbose_name="Name")
+    email     = models.EmailField(unique=True, verbose_name="Email")
+    phone     = models.CharField(max_length=20, verbose_name="Phone No.")
+    password  = models.CharField(max_length=128, verbose_name="Password")
+    is_doctor = models.BooleanField(default=False, verbose_name="Is Doctor")
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Registered Staff"
+        verbose_name_plural = "Registered Staff"
+
+    def __str__(self):
+        role = "Doctor" if self.is_doctor else "Staff"
+        return f"{self.name} ({self.staff_id}) — {role}"
+
+
+class Doctor(models.Model):
+    name            = models.CharField(max_length=150, verbose_name="Doctor Name")
+    email           = models.EmailField(unique=True)
+    phone           = models.CharField(max_length=20, verbose_name="Phone No.")
+    specialized_in  = models.CharField(
+        max_length=20,
+        choices=MEDICAL_DEPT_CHOICES,
+        verbose_name="Specialized In",
+    )
+    available_days  = models.CharField(
+        max_length=200,
+        verbose_name="Available Days",
+        help_text="Hold Ctrl / Cmd to select multiple days",
+    )
+    available_time  = models.CharField(
+        max_length=100,
+        verbose_name="Available Time",
+        help_text='e.g. "9:00 AM – 5:00 PM"',
+    )
+    is_available    = models.BooleanField(default=True, verbose_name="Available")
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Doctor"
+        verbose_name_plural = "Doctor List"
+
+    def __str__(self):
+        return f"{self.name} ({self.get_specialized_in_display()})"
+
+
+TIME_SLOT_CHOICES = [
+    # Morning OPD (9:00 AM – 1:00 PM)
+    ("09:00 AM", "09:00 AM"), ("09:30 AM", "09:30 AM"),
+    ("10:00 AM", "10:00 AM"), ("10:30 AM", "10:30 AM"),
+    ("11:00 AM", "11:00 AM"), ("11:30 AM", "11:30 AM"),
+    ("12:00 PM", "12:00 PM"), ("12:30 PM", "12:30 PM"),
+    # Lunch break: 1:00 PM – 2:00 PM
+    # Afternoon OPD (2:00 PM – 5:00 PM)
+    ("02:00 PM", "02:00 PM"), ("02:30 PM", "02:30 PM"),
+    ("03:00 PM", "03:00 PM"), ("03:30 PM", "03:30 PM"),
+    ("04:00 PM", "04:00 PM"), ("04:30 PM", "04:30 PM"),
+]
+
+
+class Appointment(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING",   "Pending"),
+        ("CONFIRMED", "Confirmed"),
+        ("COMPLETED", "Completed"),
+        ("REJECTED",  "Rejected"),
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    student_id          = models.CharField(max_length=50, verbose_name="Student ID")
+    student_name        = models.CharField(max_length=150, verbose_name="Student Name")
+    phone               = models.CharField(max_length=20, verbose_name="Phone No.")
+    email               = models.EmailField(verbose_name="Email")
+    student_department  = models.CharField(
+        max_length=10,
+        choices=STUDENT_DEPT_CHOICES,
+        verbose_name="Student Department",
+    )
+    medical_department  = models.CharField(
+        max_length=20,
+        choices=MEDICAL_DEPT_CHOICES,
+        verbose_name="Medical Department",
+    )
+    doctor              = models.ForeignKey(
+        "Doctor",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Preferred Doctor",
+        related_name="appointments",
+    )
+    appointment_date    = models.DateField(null=True, blank=True, verbose_name="Appointment Date")
+    appointment_time    = models.CharField(
+        max_length=20,
+        choices=TIME_SLOT_CHOICES,
+        null=True,
+        blank=True,
+        verbose_name="Preferred Time Slot",
+    )
+    problem_description = models.TextField(verbose_name="Description of Problem")
+    status              = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+        verbose_name="Status",
+    )
+    created_at          = models.DateTimeField(auto_now_add=True, verbose_name="Submitted At")
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Appointment"
+        verbose_name_plural = "Appointment List"
+
+    def __str__(self):
+        return (
+            f"{self.student_name} ({self.student_id}) — "
+            f"{self.get_medical_department_display()} on {self.appointment_date}"
+        )
+
+
+class StudentRegistration(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING",  "Pending"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
+    ]
+
+    first_name        = models.CharField(max_length=150, verbose_name="First Name")
+    last_name         = models.CharField(max_length=150, verbose_name="Last Name")
+    email             = models.EmailField(verbose_name="Email")
+    student_id        = models.CharField(max_length=50, unique=True, verbose_name="Student ID")
+    phone             = models.CharField(max_length=20, verbose_name="Phone No.")
+    emergency_contact = models.CharField(max_length=20, verbose_name="Emergency Contact No.")
+    department        = models.CharField(
+        max_length=10,
+        choices=STUDENT_DEPT_CHOICES,
+        verbose_name="Department",
+    )
+    blood_group       = models.CharField(
+        max_length=4,
+        choices=BLOOD_GROUP_CHOICES,
+        verbose_name="Blood Group",
+    )
+    home_address      = models.TextField(verbose_name="Home Address")
+    present_address   = models.TextField(verbose_name="Present Address")
+    registered_at     = models.DateTimeField(auto_now_add=True, verbose_name="Registered At")
+    status            = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+        verbose_name="Status",
+    )
+
+    class Meta:
+        ordering = ["-registered_at"]
+        verbose_name = "Student Registration"
+        verbose_name_plural = "Student Registrations"
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.student_id})"
+
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+class Donation(models.Model):
+    student_id = models.CharField(max_length=50, blank=True, verbose_name="Student ID")
+    name       = models.CharField(max_length=150, blank=True, verbose_name="Donor Name")
+    email      = models.EmailField(blank=True, verbose_name="Email")
+    amount     = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Amount (BDT)"
+    )
+    is_paid    = models.BooleanField(default=False, verbose_name="Paid")
+    donated_at = models.DateTimeField(auto_now_add=True, verbose_name="Submitted At")
+
+    class Meta:
+        ordering = ["-donated_at"]
+        verbose_name = "Donation"
+        verbose_name_plural = "Donation List"
+
+    def __str__(self):
+        status = "Paid" if self.is_paid else "Pending"
+        return f"{self.name} ({self.student_id}) — BDT {self.amount} [{status}]"
+
+
+class BloodRequest(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING",    "Pending"),
+        ("APPROVED",   "Approved"),
+        ("FULFILLED",  "Fulfilled"),
+        ("REJECTED",   "Rejected"),
+    ]
+
+    student_id        = models.CharField(max_length=50, blank=True, verbose_name="Student ID")
+    requester_name    = models.CharField(max_length=150, verbose_name="Requester Name")
+    email             = models.EmailField(verbose_name="Email")
+    phone             = models.CharField(max_length=20, verbose_name="Phone No.")
+    blood_group       = models.CharField(
+        max_length=4,
+        choices=BLOOD_GROUP_CHOICES,
+        verbose_name="Blood Group Needed",
+    )
+    units_required    = models.PositiveIntegerField(
+        default=1,
+        verbose_name="Units Required",
+        help_text="Number of blood units needed"
+    )
+    reason            = models.CharField(
+        max_length=200,
+        verbose_name="Reason for Request",
+        help_text="e.g., Surgery, Accident, Transfusion, etc."
+    )
+    urgency           = models.CharField(
+        max_length=10,
+        choices=[
+            ("LOW",    "Low"),
+            ("MEDIUM", "Medium"),
+            ("HIGH",   "High"),
+            ("URGENT", "Urgent"),
+        ],
+        default="MEDIUM",
+        verbose_name="Urgency Level",
+    )
+    required_date     = models.DateField(verbose_name="Date Needed By")
+    hospital_name     = models.CharField(
+        max_length=200,
+        verbose_name="Hospital/Clinic Name",
+        help_text="Where the blood is needed"
+    )
+    hospital_contact  = models.CharField(
+        max_length=200,
+        verbose_name="Hospital Contact/Address",
+    )
+    requested_donor   = models.ForeignKey(
+        'BloodDonation',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="requests_received",
+        verbose_name="Requested From Donor",
+        help_text="If requesting from a specific donor"
+    )
+    notes             = models.TextField(
+        blank=True,
+        verbose_name="Additional Notes",
+    )
+    status            = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+        verbose_name="Status",
+    )
+    created_at        = models.DateTimeField(auto_now_add=True, verbose_name="Requested At")
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Blood Request"
+        verbose_name_plural = "Blood Requests"
+
+    def __str__(self):
+        return f"{self.requester_name} needs {self.blood_group} ({self.required_date})"
+
+
+class BloodDonation(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING",   "Pending"),
+        ("APPROVED",  "Approved"),
+        ("COMPLETED", "Completed"),
+        ("REJECTED",  "Rejected"),
+    ]
+
+    student_id        = models.CharField(max_length=50, blank=True, verbose_name="Student ID")
+    donor_name        = models.CharField(max_length=150, verbose_name="Donor Name")
+    email             = models.EmailField(verbose_name="Email")
+    phone             = models.CharField(max_length=20, verbose_name="Phone No.")
+    blood_group       = models.CharField(
+        max_length=4,
+        choices=BLOOD_GROUP_CHOICES,
+        verbose_name="Blood Group",
+    )
+    date_of_birth     = models.DateField(verbose_name="Date of Birth")
+    weight            = models.PositiveIntegerField(verbose_name="Weight (kg)", help_text="Minimum 50 kg required")
+    previous_donation = models.BooleanField(
+        default=False,
+        verbose_name="Have you donated blood before?",
+    )
+    health_condition  = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="Any medical conditions?",
+        help_text="e.g., diabetes, heart disease, etc."
+    )
+    message           = models.TextField(
+        blank=True,
+        verbose_name="Additional Message",
+    )
+    status            = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+        verbose_name="Status",
+    )
+    created_at        = models.DateTimeField(auto_now_add=True, verbose_name="Submitted At")
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Blood Donation"
+        verbose_name_plural = "Blood Donations"
+
+    def __str__(self):
+        return f"{self.donor_name} ({self.blood_group}) — {self.created_at.strftime('%d %b %Y')}"
+
+
+class LoginLog(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="login_logs",
+    )
+    username = models.CharField(max_length=150)
+    date = models.DateField()
+    time = models.TimeField()
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    is_verified = models.BooleanField(default=False, verbose_name="Verified")
+
+    class Meta:
+        ordering = ["-date", "-time"]
+        verbose_name = "Login Log"
+        verbose_name_plural = "Login Logs"
+
+    def __str__(self):
+        return f"{self.username} — {self.date} {self.time}"

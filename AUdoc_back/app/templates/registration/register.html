@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUdoc – Student Registration</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:      #1a5c96;
+      --primary-dark: #134a7a;
+      --accent:       #e3eef8;
+      --green:        #1d8348;
+      --green-light:  #d5f0e2;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e3eef8 0%, #cde2f5 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      background: var(--primary-dark);
+      color: #c8ddef;
+      font-size: .82rem;
+      padding: 6px 0;
+    }
+
+    /* ── Navbar ── */
+    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
+    .navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
+    .nav-link { color: #555 !important; font-weight: 500; }
+    .nav-link:hover { color: var(--primary) !important; }
+
+    /* ── Page wrapper ── */
+    .register-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 48px 16px;
+    }
+
+    /* ── Card ── */
+    .register-card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(26,92,150,.18);
+      padding: 44px 40px;
+      width: 100%;
+      max-width: 640px;
+    }
+
+    /* ── Brand block ── */
+    .brand-block {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .brand-block .logo-icon {
+      width: 56px; height: 56px;
+      background: var(--primary);
+      border-radius: 16px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: #fff;
+      margin-bottom: 12px;
+    }
+    .brand-block h4 {
+      font-weight: 700; color: var(--primary); margin: 0; font-size: 1.6rem;
+    }
+    .brand-block span {
+      font-size: .8rem; color: #888; display: block; margin-top: 2px;
+    }
+
+    .campus-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-light); color: var(--green);
+      font-size: .78rem; font-weight: 600;
+      padding: 5px 12px; border-radius: 50px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Section divider ── */
+    .section-divider {
+      display: flex; align-items: center; gap: 10px;
+      margin: 24px 0 16px;
+      color: var(--primary); font-size: .8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .05em;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: ""; flex: 1; height: 1px; background: #dde6f0;
+    }
+
+    /* ── Form controls ── */
+    .form-label { font-weight: 600; font-size: .875rem; color: #444; }
+    .form-control,
+    .form-select {
+      border-radius: 10px;
+      padding: .65rem 1rem;
+      border: 1.5px solid #dde6f0;
+      font-size: .95rem;
+    }
+    .form-control:focus,
+    .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,92,150,.12);
+    }
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+      border-color: #dc3545;
+    }
+    textarea.form-control { resize: vertical; }
+
+    /* ── Submit button ── */
+    .btn-verify {
+      white-space: nowrap;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 0 10px 10px 0;
+      padding: 0 16px; font-size: .85rem; font-weight: 600;
+      transition: background .2s; cursor: pointer;
+    }
+    .btn-verify:hover   { background: var(--primary-dark); }
+    .btn-verify:disabled { background: #aaa; cursor: not-allowed; }
+    .email-verified-badge {
+      display: none; align-items: center; gap: 6px;
+      background: var(--green-light); color: var(--green);
+      font-size: .8rem; font-weight: 600;
+      padding: 5px 12px; border-radius: 50px; margin-top: 6px;
+    }
+    .otp-section {
+      display: none;
+      margin-top: 14px;
+      padding: 16px;
+      background: #f4f8fc;
+      border-radius: 12px;
+      border: 1.5px solid #dde6f0;
+    }
+    .otp-input {
+      letter-spacing: .35em;
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 10px;
+      padding: .5rem 1rem;
+      border: 1.5px solid #dde6f0;
+      width: 100%;
+    }
+    .otp-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,92,150,.12);
+      outline: none;
+    }
+    .btn-register {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: .75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      width: 100%;
+      transition: background .2s;
+    }
+    .btn-register:hover { background: var(--primary-dark); color: #fff; }
+
+    /* ── Error / success boxes ── */
+    .error-box {
+      background: #fff0f0;
+      border: 1px solid #f5c2c7;
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #842029;
+      font-size: .875rem;
+      margin-bottom: 18px;
+    }
+    .success-box {
+      background: var(--green-light);
+      border: 1px solid #a3d9b8;
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--green);
+      font-size: .875rem;
+      margin-bottom: 18px;
+    }
+
+    .divider-text {
+      text-align: center; color: #aaa; font-size: .85rem; margin: 20px 0;
+      position: relative;
+    }
+    .divider-text::before,
+    .divider-text::after {
+      content: ""; position: absolute; top: 50%; width: 40%; height: 1px; background: #e5e5e5;
+    }
+    .divider-text::before { left: 0; }
+    .divider-text::after  { right: 0; }
+
+    /* ── Footer ── */
+    footer {
+      background: #0d2d4a;
+      color: #9ab3c8;
+      text-align: center;
+      padding: 16px;
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<div class="topbar d-none d-md-block">
+  <div class="container d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-4">
+      <span><i class="bi bi-geo-alt me-1"></i>Academic Block C, Room 101, AU Main Campus</span>
+      <span><i class="bi bi-clock me-1"></i>Mon – Fri: 8:00 AM – 5:00 PM</span>
+    </div>
+    <div class="d-flex gap-3">
+      <span><i class="bi bi-telephone me-1"></i>+880-XXX-XXXXXX</span>
+      <span><i class="bi bi-envelope me-1"></i>health@au.edu</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <div style="width:38px;height:38px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-hospital-fill text-white" style="font-size:1.1rem;"></i>
+      </div>
+      <div>
+        <div class="brand-name">AUdoc</div>
+        <span class="brand-sub">Campus Health Portal</span>
+      </div>
+    </a>
+    <div class="ms-auto d-flex gap-2">
+      <a href="/" class="btn btn-outline-secondary btn-sm px-3 rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i>Back to Home
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ REGISTRATION FORM ══════════ -->
+<div class="register-wrapper">
+  <div class="register-card">
+
+    <!-- Brand block -->
+    <div class="brand-block">
+      <div class="logo-icon">
+        <i class="bi bi-hospital-fill"></i>
+      </div>
+      <h4>AUdoc</h4>
+      <span>Campus Health Portal</span>
+    </div>
+
+    <div class="text-center">
+      <div class="campus-badge">
+        <i class="bi bi-person-plus-fill"></i> Student Registration
+      </div>
+    </div>
+
+    <p class="text-center text-muted mb-4" style="font-size:.9rem;">
+      Create your AUdoc account to book campus doctor appointments online.
+    </p>
+
+    <!-- Django messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}success-box{% else %}error-box{% endif %}">
+          <i class="bi bi-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Non-field form errors -->
+    {% if form.non_field_errors %}
+    <div class="error-box">
+      <i class="bi bi-exclamation-circle me-2"></i>
+      {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'register' %}" novalidate>
+      {% csrf_token %}
+
+      <!-- ── Personal Information ── -->
+      <div class="section-divider">
+        <i class="bi bi-person me-1"></i> Personal Information
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <label for="id_first_name" class="form-label">
+            {{ form.first_name.label }}
+          </label>
+          <input
+            type="text"
+            name="first_name"
+            id="id_first_name"
+            class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+            placeholder="Enter your first name"
+            value="{{ form.first_name.value|default:'' }}"
+            autocomplete="given-name"
+          />
+          {% if form.first_name.errors %}
+          <div class="invalid-feedback">{{ form.first_name.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+        <div class="col-sm-6">
+          <label for="id_last_name" class="form-label">
+            {{ form.last_name.label }}
+          </label>
+          <input
+            type="text"
+            name="last_name"
+            id="id_last_name"
+            class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+            placeholder="Enter your last name"
+            value="{{ form.last_name.value|default:'' }}"
+            autocomplete="family-name"
+          />
+          {% if form.last_name.errors %}
+          <div class="invalid-feedback">{{ form.last_name.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="id_email" class="form-label">
+          <i class="bi bi-envelope me-1"></i>{{ form.email.label }}
+        </label>
+        <!-- Email input + Verify button -->
+        <div class="input-group" style="border-radius:10px;overflow:hidden;">
+          <input
+            type="email"
+            name="email"
+            id="id_email"
+            class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+            placeholder="Enter your university email"
+            value="{{ form.email.value|default:'' }}"
+            autocomplete="email"
+            oninput="onEmailChange()"
+          />
+          <button type="button" class="btn-verify" id="btnVerify" onclick="sendOtp()">
+            <i class="bi bi-send me-1"></i>Verify
+          </button>
+        </div>
+        {% if form.email.errors %}
+        <div class="text-danger mt-1" style="font-size:.82rem;">{{ form.email.errors|join:", " }}</div>
+        {% endif %}
+
+        <!-- Verified badge (shown after OTP confirmed) -->
+        <div class="email-verified-badge" id="verifiedBadge">
+          <i class="bi bi-patch-check-fill"></i> Email verified
+        </div>
+
+        <!-- OTP section (shown after clicking Verify) -->
+        <div class="otp-section" id="otpSection">
+          <p class="mb-2" style="font-size:.85rem; color:#555;">
+            <i class="bi bi-envelope-check me-1 text-primary"></i>
+            A 6-digit code was sent to <strong id="otpEmailLabel"></strong>.
+            Enter it below:
+          </p>
+          <input
+            type="text"
+            id="otpInput"
+            class="otp-input"
+            maxlength="6"
+            placeholder="_ _ _ _ _ _"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+          />
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span id="otpTimer" style="font-size:.8rem; color:#888;"></span>
+            <button type="button" class="btn btn-link btn-sm p-0 text-primary" id="btnResend"
+                    onclick="sendOtp()" style="font-size:.8rem; display:none;">
+              Resend OTP
+            </button>
+          </div>
+          {% if otp_error %}
+          <div class="text-danger mt-2" style="font-size:.82rem;">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ otp_error }}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Hidden OTP value submitted with the form -->
+        <input type="hidden" name="otp" id="otpHidden" />
+      </div>
+
+      <!-- ── Student Details ── -->
+      <div class="section-divider">
+        <i class="bi bi-mortarboard me-1"></i> Student Details
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <label for="id_student_id" class="form-label">
+            <i class="bi bi-badge-id me-1"></i>{{ form.student_id.label }}
+          </label>
+          <input
+            type="text"
+            name="student_id"
+            id="id_student_id"
+            class="form-control {% if form.student_id.errors %}is-invalid{% endif %}"
+            placeholder="e.g. AU2021050123"
+            value="{{ form.student_id.value|default:'' }}"
+          />
+          {% if form.student_id.errors %}
+          <div class="invalid-feedback">{{ form.student_id.errors|join:", " }}</div>
+          {% endif %}
+          <div class="form-text">Use your official university Student ID.</div>
+        </div>
+        <div class="col-sm-6">
+          <label for="id_department" class="form-label">
+            <i class="bi bi-building me-1"></i>{{ form.department.label }}
+          </label>
+          <select
+            name="department"
+            id="id_department"
+            class="form-select {% if form.department.errors %}is-invalid{% endif %}"
+          >
+            <option value="">— Select your department —</option>
+            {% for value, label in form.fields.department.choices %}
+              {% if value %}
+              <option value="{{ value }}" {% if form.department.value == value %}selected{% endif %}>{{ label }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          {% if form.department.errors %}
+          <div class="invalid-feedback">{{ form.department.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <label for="id_phone" class="form-label">
+            <i class="bi bi-telephone me-1"></i>{{ form.phone.label }}
+          </label>
+          <input
+            type="tel"
+            name="phone"
+            id="id_phone"
+            class="form-control {% if form.phone.errors %}is-invalid{% endif %}"
+            placeholder="e.g. 01XXXXXXXXX"
+            value="{{ form.phone.value|default:'' }}"
+          />
+          {% if form.phone.errors %}
+          <div class="invalid-feedback">{{ form.phone.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+        <div class="col-sm-6">
+          <label for="id_emergency_contact" class="form-label">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ form.emergency_contact.label }}
+          </label>
+          <input
+            type="tel"
+            name="emergency_contact"
+            id="id_emergency_contact"
+            class="form-control {% if form.emergency_contact.errors %}is-invalid{% endif %}"
+            placeholder="Guardian/emergency contact"
+            value="{{ form.emergency_contact.value|default:'' }}"
+          />
+          {% if form.emergency_contact.errors %}
+          <div class="invalid-feedback">{{ form.emergency_contact.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="id_blood_group" class="form-label">
+          <i class="bi bi-droplet-half me-1"></i>{{ form.blood_group.label }}
+        </label>
+        <select
+          name="blood_group"
+          id="id_blood_group"
+          class="form-select {% if form.blood_group.errors %}is-invalid{% endif %}"
+        >
+          <option value="">— Select blood group —</option>
+          {% for value, label in form.fields.blood_group.choices %}
+            {% if value %}
+            <option value="{{ value }}" {% if form.blood_group.value == value %}selected{% endif %}>{{ label }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        {% if form.blood_group.errors %}
+        <div class="invalid-feedback">{{ form.blood_group.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+
+      <!-- ── Address ── -->
+      <div class="section-divider">
+        <i class="bi bi-geo-alt me-1"></i> Address
+      </div>
+
+      <div class="mb-3">
+        <label for="id_home_address" class="form-label">{{ form.home_address.label }}</label>
+        <textarea
+          name="home_address"
+          id="id_home_address"
+          rows="2"
+          class="form-control {% if form.home_address.errors %}is-invalid{% endif %}"
+          placeholder="Permanent / home address"
+        >{{ form.home_address.value|default:'' }}</textarea>
+        {% if form.home_address.errors %}
+        <div class="invalid-feedback">{{ form.home_address.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label for="id_present_address" class="form-label">{{ form.present_address.label }}</label>
+        <textarea
+          name="present_address"
+          id="id_present_address"
+          rows="2"
+          class="form-control {% if form.present_address.errors %}is-invalid{% endif %}"
+          placeholder="Current / on-campus address"
+        >{{ form.present_address.value|default:'' }}</textarea>
+        {% if form.present_address.errors %}
+        <div class="invalid-feedback">{{ form.present_address.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn-register">
+        <i class="bi bi-person-check me-2"></i>Submit Registration
+      </button>
+    </form>
+
+    <!-- Info note -->
+    <div class="mt-4 p-3 rounded-3" style="background:#f4f8fc; font-size:.8rem; color:#666; text-align:center;">
+      <i class="bi bi-info-circle text-primary me-1"></i>
+      Your registration will be reviewed by the admin team.
+      For assistance, contact <strong>health@au.edu</strong>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  &copy; 2026 AUdoc – Ahsanullah University Campus Health. All rights reserved.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let emailVerified = false;
+  let timerInterval = null;
+
+  // ── Reset verification state when email is edited ────────────────
+  function onEmailChange() {
+    if (!emailVerified) return;
+    emailVerified = false;
+    document.getElementById('otpHidden').value = '';
+    document.getElementById('verifiedBadge').style.display = 'none';
+    document.getElementById('otpSection').style.display = 'none';
+    document.getElementById('btnVerify').textContent = '';
+    document.getElementById('btnVerify').innerHTML = '<i class="bi bi-send me-1"></i>Verify';
+    document.getElementById('btnVerify').disabled = false;
+    clearInterval(timerInterval);
+  }
+
+  // ── Send OTP via AJAX ─────────────────────────────────────────────
+  async function sendOtp() {
+    const email = document.getElementById('id_email').value.trim();
+    if (!email) {
+      alert('Please enter your email address first.');
+      return;
+    }
+
+    const btn = document.getElementById('btnVerify');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Sending...';
+
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('csrfmiddlewaretoken', getCsrf());
+
+    try {
+      const res  = await fetch('{% url "send_otp" %}', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.success) {
+        document.getElementById('otpSection').style.display = 'block';
+        document.getElementById('otpEmailLabel').textContent = email;
+        document.getElementById('otpInput').value = '';
+        document.getElementById('otpInput').focus();
+        btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend';
+        btn.disabled = false;
+        startTimer(600);
+      } else {
+        btn.innerHTML = '<i class="bi bi-send me-1"></i>Verify';
+        btn.disabled = false;
+        alert(data.error || 'Failed to send OTP. Please try again.');
+      }
+    } catch (e) {
+      btn.innerHTML = '<i class="bi bi-send me-1"></i>Verify';
+      btn.disabled = false;
+      alert('Network error. Please try again.');
+    }
+  }
+
+  // ── 10-minute countdown ───────────────────────────────────────────
+  function startTimer(seconds) {
+    clearInterval(timerInterval);
+    const el = document.getElementById('otpTimer');
+    const resendBtn = document.getElementById('btnResend');
+    resendBtn.style.display = 'none';
+    let remaining = seconds;
+
+    timerInterval = setInterval(() => {
+      remaining--;
+      const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const s = String(remaining % 60).padStart(2, '0');
+      el.textContent = 'Expires in ' + m + ':' + s;
+      if (remaining <= 0) {
+        clearInterval(timerInterval);
+        el.textContent = 'OTP expired. Please resend.';
+        resendBtn.style.display = 'inline';
+      }
+    }, 1000);
+  }
+
+  // ── Sync OTP input to hidden field ───────────────────────────────
+  document.getElementById('otpInput').addEventListener('input', function () {
+    const val = this.value.replace(/\D/g, '').slice(0, 6);
+    this.value = val;
+    document.getElementById('otpHidden').value = val;
+  });
+
+  // ── Block form submit if email not verified ───────────────────────
+  document.querySelector('form[method="post"]').addEventListener('submit', function (e) {
+    const otp = document.getElementById('otpHidden').value.trim();
+    if (!otp) {
+      e.preventDefault();
+      if (document.getElementById('otpSection').style.display === 'none') {
+        document.getElementById('otpSection').style.display = 'block';
+      }
+      document.getElementById('otpInput').focus();
+      document.getElementById('otpInput').style.borderColor = '#dc3545';
+      setTimeout(() => document.getElementById('otpInput').style.borderColor = '', 2000);
+      alert('Please verify your email first.');
+    }
+  });
+
+  // ── CSRF helper ───────────────────────────────────────────────────
+  function getCsrf() {
+    const el = document.querySelector('[name=csrfmiddlewaretoken]');
+    return el ? el.value : '';
+  }
+
+  // If OTP error returned from server, auto-show the OTP section
+  {% if otp_error %}
+  document.getElementById('otpSection').style.display = 'block';
+  document.getElementById('otpEmailLabel').textContent =
+    document.getElementById('id_email').value || 'your email';
+  {% endif %}
+</script>
+</body>
+</html>

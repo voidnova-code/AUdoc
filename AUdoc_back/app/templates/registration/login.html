@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUdoc – Sign In</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:      #1a5c96;
+      --primary-dark: #134a7a;
+      --green:        #1d8348;
+      --green-light:  #d5f0e2;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e3eef8 0%, #cde2f5 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Topbar ── */
+    .topbar { background: var(--primary-dark); color: #c8ddef; font-size: .82rem; padding: 6px 0; }
+
+    /* ── Navbar ── */
+    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
+    .navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
+
+    /* ── Wrapper ── */
+    .login-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 16px;
+    }
+
+    /* ── Card ── */
+    .login-card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(26,92,150,.18);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    /* ── Brand ── */
+    .brand-block { text-align: center; margin-bottom: 24px; }
+    .brand-block .logo-icon {
+      width: 56px; height: 56px;
+      background: var(--primary); border-radius: 16px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: #fff; margin-bottom: 10px;
+    }
+    .brand-block h4 { font-weight: 700; color: var(--primary); margin: 0; font-size: 1.5rem; }
+    .brand-block span { font-size: .8rem; color: #888; display: block; margin-top: 2px; }
+
+    /* ── Tabs ── */
+    .login-tabs {
+      display: flex;
+      border-radius: 12px;
+      background: #f0f4f9;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    .login-tab {
+      flex: 1;
+      text-align: center;
+      padding: 9px 0;
+      border-radius: 10px;
+      font-size: .875rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #888;
+      transition: all .2s;
+      border: none;
+      background: transparent;
+    }
+    .login-tab.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+
+    /* ── Form ── */
+    .form-label { font-weight: 600; font-size: .875rem; color: #444; }
+    .form-control {
+      border-radius: 10px;
+      padding: .65rem 1rem;
+      border: 1.5px solid #dde6f0;
+      font-size: .95rem;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,92,150,.12);
+    }
+    .form-control.is-invalid { border-color: #dc3545; }
+    .input-group .form-control { border-right: none; border-radius: 10px 0 0 10px; }
+    .input-group .btn-toggle {
+      background: #fff;
+      border: 1.5px solid #dde6f0;
+      border-left: none;
+      border-radius: 0 10px 10px 0;
+      color: #888;
+      padding: 0 14px;
+    }
+    .input-group .btn-toggle:hover { color: var(--primary); }
+    .input-group:focus-within .form-control,
+    .input-group:focus-within .btn-toggle { border-color: var(--primary); }
+
+    /* ── Buttons ── */
+    .btn-login {
+      background: var(--primary); color: #fff; border: none;
+      border-radius: 10px; padding: .75rem; font-size: 1rem;
+      font-weight: 600; width: 100%; transition: background .2s;
+    }
+    .btn-login:hover { background: var(--primary-dark); color: #fff; }
+
+    /* ── Alerts ── */
+    .error-box {
+      background: #fff0f0; border: 1px solid #f5c2c7;
+      border-radius: 10px; padding: 12px 16px;
+      color: #842029; font-size: .875rem; margin-bottom: 16px;
+    }
+    .success-box {
+      background: var(--green-light); border: 1px solid #a3d9b8;
+      border-radius: 10px; padding: 12px 16px;
+      color: var(--green); font-size: .875rem; margin-bottom: 16px;
+    }
+
+    /* ── OTP section ── */
+    .otp-section { display:none; }
+    .otp-sent-note {
+      background:#e8f5e9; border:1px solid #a3d9b8; border-radius:10px;
+      padding:10px 14px; font-size:.82rem; color:#1d8348; margin-bottom:12px;
+    }
+    .otp-digit-input {
+      font-size:1.6rem; font-weight:700; text-align:center;
+      letter-spacing:6px; font-family:'Courier New',monospace;
+      border-radius:12px; border:2px solid #dde6f0; padding:.6rem 1rem;
+      background:#f9fbfe; width:100%;
+    }
+    .otp-digit-input:focus {
+      border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,92,150,.12);
+      outline:none;
+    }
+    .countdown { font-size:.8rem; color:#888; }
+    .countdown.urgent { color:#dc3545; font-weight:600; }
+    .btn-resend {
+      background:none; border:none; color:var(--primary);
+      font-size:.82rem; font-weight:600; padding:0; cursor:pointer;
+      text-decoration:underline;
+    }
+    .btn-resend:disabled { color:#aaa; text-decoration:none; cursor:not-allowed; }
+    .btn-send-otp {
+      background:var(--primary); color:#fff; border:none;
+      border-radius:0 10px 10px 0; padding:0 16px;
+      font-size:.82rem; font-weight:600; white-space:nowrap;
+      transition:background .2s;
+    }
+    .btn-send-otp:hover { background:var(--primary-dark); }
+    .btn-send-otp:disabled { background:#aaa; cursor:not-allowed; }
+
+    /* ── Footer ── */
+    footer { background: #0d2d4a; color: #9ab3c8; text-align: center; padding: 16px; font-size: .82rem; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<div class="topbar d-none d-md-block">
+  <div class="container d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-4">
+      <span><i class="bi bi-geo-alt me-1"></i>Academic Block C, Room 101, AU Main Campus</span>
+      <span><i class="bi bi-clock me-1"></i>Mon – Fri: 8:00 AM – 5:00 PM</span>
+    </div>
+    <div class="d-flex gap-3">
+      <span><i class="bi bi-telephone me-1"></i>+880-XXX-XXXXXX</span>
+      <span><i class="bi bi-envelope me-1"></i>health@au.edu</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <div style="width:38px;height:38px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-hospital-fill text-white" style="font-size:1.1rem;"></i>
+      </div>
+      <div>
+        <div class="brand-name">AUdoc</div>
+        <span class="brand-sub">Campus Health Portal</span>
+      </div>
+    </a>
+    <div class="ms-auto">
+      <a href="/" class="btn btn-outline-secondary btn-sm px-3 rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i>Back to Home
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ LOGIN CARD ══════════ -->
+<div class="login-wrapper">
+  <div class="login-card">
+
+    <div class="brand-block">
+      <div class="logo-icon"><i class="bi bi-hospital-fill"></i></div>
+      <h4>AUdoc</h4>
+      <span>Campus Health Portal</span>
+    </div>
+
+    <!-- Django messages (e.g. error from student_login view) -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}success-box{% else %}error-box{% endif %}">
+          <i class="bi bi-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- ── Tabs ── -->
+    <div class="login-tabs">
+      <button class="login-tab active" id="tabStudent" onclick="switchTab('student')">
+        <i class="bi bi-mortarboard-fill me-1"></i> Student
+      </button>
+      <button class="login-tab" id="tabStaff" onclick="switchTab('staff')">
+        <i class="bi bi-person-badge-fill me-1"></i> Staff / Admin
+      </button>
+    </div>
+
+    <!-- ══ STUDENT LOGIN ══ -->
+    <div id="panelStudent">
+      <p class="text-muted mb-3" style="font-size:.88rem; text-align:center;">
+        Enter your Student ID — we'll send a verification code to your registered email.
+      </p>
+
+      <form method="post" action="{% url 'student_login' %}" id="studentLoginForm">
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
+        <input type="hidden" name="otp" id="hiddenLoginOtp" />
+
+        <!-- Student ID + Send OTP button -->
+        <div class="mb-3">
+          <label for="id_student_id" class="form-label">
+            <i class="bi bi-badge-id me-1"></i>Student ID
+          </label>
+          <div class="input-group">
+            <input
+              type="text"
+              name="student_id"
+              id="id_student_id"
+              class="form-control"
+              placeholder="e.g. AU2021050123"
+              autocomplete="username"
+              autofocus
+              oninput="resetLoginOtpState()"
+            />
+            <button type="button" class="btn-send-otp" id="btnSendLoginOtp" onclick="sendLoginOtp()">
+              Send OTP
+            </button>
+          </div>
+        </div>
+
+        <!-- OTP section (hidden until OTP is sent) -->
+        <div class="otp-section mb-4" id="loginOtpSection">
+          <div class="otp-sent-note" id="loginOtpSentNote">
+            <i class="bi bi-envelope-check me-1"></i>
+            OTP sent to <strong id="loginMaskedEmail"></strong>
+          </div>
+          <label class="form-label">
+            <i class="bi bi-shield-lock me-1"></i>Enter 6-digit OTP
+          </label>
+          <input
+            type="text"
+            id="loginOtpInput"
+            class="otp-digit-input mb-2"
+            maxlength="6"
+            inputmode="numeric"
+            placeholder="――――――"
+            oninput="this.value=this.value.replace(/\D/g,''); document.getElementById('hiddenLoginOtp').value=this.value;"
+          />
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="countdown" id="loginCountdown">Expires in <strong id="loginTimerDisplay">10:00</strong></span>
+            <button type="button" class="btn-resend" id="btnResendLoginOtp" onclick="sendLoginOtp()" disabled>
+              Resend OTP
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="btnStudentLogin" onclick="return validateLoginOtp()">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Login
+        </button>
+      </form>
+
+      <div class="text-center mt-4" style="font-size:.875rem; color:#666;">
+        Not registered yet?
+        <a href="{% url 'register' %}" class="text-primary fw-semibold">Register here</a>
+      </div>
+    </div>
+
+    <!-- ══ STAFF / ADMIN LOGIN ══ -->
+    <div id="panelStaff" style="display:none;">
+      <p class="text-muted mb-3" style="font-size:.88rem; text-align:center;">
+        Staff and admin sign in with username and password.
+      </p>
+
+      <!-- Show Django form errors for staff login -->
+      {% if form.errors %}
+      <div class="error-box">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        Invalid username or password. Please try again.
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
+
+        <div class="mb-3">
+          <label for="id_username" class="form-label">
+            <i class="bi bi-person me-1"></i>Username
+          </label>
+          <input
+            type="text"
+            name="username"
+            id="id_username"
+            class="form-control"
+            placeholder="Enter your username"
+            value="{{ form.username.value|default:'' }}"
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label for="id_password" class="form-label">
+            <i class="bi bi-lock me-1"></i>Password
+          </label>
+          <div class="input-group">
+            <input
+              type="password"
+              name="password"
+              id="id_password"
+              class="form-control"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            />
+            <button type="button" class="btn-toggle" id="togglePassword" tabindex="-1">
+              <i class="bi bi-eye" id="toggleIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Sign In as Staff
+        </button>
+      </form>
+    </div>
+
+    <!-- Info note -->
+    <div class="mt-4 p-3 rounded-3" style="background:#f4f8fc; font-size:.8rem; color:#666; text-align:center;">
+      <i class="bi bi-info-circle text-primary me-1"></i>
+      Students: use your official <strong>Student ID</strong> to sign in.
+      For access issues, contact <strong>health@au.edu</strong>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  &copy; 2026 AUdoc – Ahsanullah University Campus Health. All rights reserved.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // If Django returned form errors it means the staff form was submitted — auto-switch to staff tab
+  {% if form.errors %}switchTab('staff');{% endif %}
+
+  // ── Student OTP logic ───────────────────────────────────────────────
+  let loginOtpVerified = false;
+  let loginCountdownInterval = null;
+
+  function resetLoginOtpState() {
+    loginOtpVerified = false;
+    clearInterval(loginCountdownInterval);
+    document.getElementById('loginOtpSection').style.display = 'none';
+    document.getElementById('loginOtpInput').value = '';
+    document.getElementById('hiddenLoginOtp').value = '';
+    document.getElementById('btnSendLoginOtp').disabled = false;
+    document.getElementById('btnSendLoginOtp').textContent = 'Send OTP';
+  }
+
+  function sendLoginOtp() {
+    const sid = document.getElementById('id_student_id').value.trim();
+    if (!sid) { alert('Please enter your Student ID first.'); return; }
+
+    const btn = document.getElementById('btnSendLoginOtp');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    fetch("{% url 'send_login_otp' %}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+      body: 'student_id=' + encodeURIComponent(sid),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        btn.textContent = 'Resend OTP';
+        document.getElementById('loginMaskedEmail').textContent = data.email;
+        document.getElementById('loginOtpSection').style.display = 'block';
+        document.getElementById('loginOtpInput').value = '';
+        document.getElementById('hiddenLoginOtp').value = '';
+        loginOtpVerified = false;
+        startLoginCountdown();
+      } else {
+        alert(data.error || 'Failed to send OTP.');
+        btn.disabled = false;
+        btn.textContent = 'Send OTP';
+      }
+    })
+    .catch(() => {
+      alert('Network error. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Send OTP';
+    });
+  }
+
+  function startLoginCountdown() {
+    clearInterval(loginCountdownInterval);
+    let seconds = 600;
+    const display  = document.getElementById('loginTimerDisplay');
+    const counter  = document.getElementById('loginCountdown');
+    const resendBtn = document.getElementById('btnResendLoginOtp');
+    resendBtn.disabled = true;
+
+    loginCountdownInterval = setInterval(() => {
+      seconds--;
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      display.textContent = m + ':' + s;
+      counter.className = 'countdown' + (seconds <= 60 ? ' urgent' : '');
+      if (seconds <= 0) {
+        clearInterval(loginCountdownInterval);
+        display.textContent = '00:00';
+        resendBtn.disabled = false;
+        document.getElementById('btnSendLoginOtp').disabled = false;
+      }
+    }, 1000);
+  }
+
+  function validateLoginOtp() {
+    const otp = document.getElementById('loginOtpInput').value.trim();
+    if (!otp || otp.length < 6) {
+      alert('Please enter the 6-digit OTP sent to your email.');
+      return false;
+    }
+    return true;
+  }
+
+  // ── Staff password toggle ────────────────────────────────────────────
+
+  function switchTab(tab) {
+    const isStudent = tab === 'student';
+    document.getElementById('panelStudent').style.display = isStudent ? '' : 'none';
+    document.getElementById('panelStaff').style.display   = isStudent ? 'none' : '';
+    document.getElementById('tabStudent').classList.toggle('active', isStudent);
+    document.getElementById('tabStaff').classList.toggle('active', !isStudent);
+  }
+
+  // Password visibility toggle for staff form
+  document.getElementById('togglePassword').addEventListener('click', () => {
+    const inp = document.getElementById('id_password');
+    const ico = document.getElementById('toggleIcon');
+    const hidden = inp.type === 'password';
+    inp.type = hidden ? 'text' : 'password';
+    ico.className = hidden ? 'bi bi-eye-slash' : 'bi bi-eye';
+  });
+</script>
+</body>
+</html>
