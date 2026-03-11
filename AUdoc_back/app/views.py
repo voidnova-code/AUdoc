@@ -375,13 +375,8 @@ def home(request):
         {"icon": "🏃", "name": "Physiotherapy",              "count": 3},
     ]
 
-    # Campus doctors
-    doctors = [
-        {"name": "Dr. Anika Rahman",    "specialty": "General Physician",  "experience": "10 years"},
-        {"name": "Dr. Rafiul Islam",    "specialty": "Dental Care",        "experience": "8 years"},
-        {"name": "Dr. Sumaiya Hossain", "specialty": "Mental Health",      "experience": "6 years"},
-        {"name": "Dr. Tanvir Ahmed",    "specialty": "Orthopedics",        "experience": "12 years"},
-    ]
+    # Campus doctors — pulled live from the database
+    doctors = Doctor.objects.filter(is_available=True).order_by("specialized_in", "name")
 
     return render(request, "app/home.html", {
         "specialties":      specialties,
