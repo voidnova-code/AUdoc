@@ -15,7 +15,7 @@
 
 ### *Because "I Googled my symptoms" is NOT a treatment plan.*
 
-**The official campus health management system for Ahsanullah University**
+**The official campus health management system for Assam University Silchar**
 
 [![Django](https://img.shields.io/badge/Django-6.0.3-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
@@ -34,7 +34,7 @@
 Tired of wandering the hallways looking for the campus doctor while feeling like death warmed over?
 **AUdoc has got you covered** — literally.
 
-AUdoc is a full-stack **campus healthcare management system** built for **Ahsanullah University of Science & Technology**. From booking doctor appointments to donating blood (heroically), AUdoc is the one-stop-shop for all your campus health needs. No WebMD rabbit holes. No self-diagnosis spirals at 2am. Just real doctors, real appointments, and real OTPs delivered to your inbox.
+AUdoc is a full-stack **campus healthcare management system** built for **Assam University Silchar**. From booking doctor appointments to donating blood (heroically), AUdoc is the one-stop-shop for all your campus health needs. No WebMD rabbit holes. No self-diagnosis spirals at 2am. Just real doctors, real appointments, and real OTPs delivered to your inbox.
 
 > *"A student needed to book a doctor appointment. The existing system was... a phone call. In 2025.*
 > *No further questions."* — So we built this. You're welcome.
@@ -55,7 +55,7 @@ The system has two layers working together:
 | 📋 **Self Registration** | Sign up, verify email via OTP, get approved by admin | ✅ Live |
 | 📅 **Doctor Appointments** | Book 30-min slots across 8 specialties | ✅ Live |
 | 🩸 **Blood Bank** | Donate blood, request blood, or target a specific donor. Heroes only. | ✅ Live |
-| 💸 **Donations** | Support the health center financially. Even BDT 10 counts! | ✅ Live |
+| 💸 **Donations** | Support the health center financially. Even ₹10 counts! | ✅ Live |
 | 📊 **Appointment History** | Track all past, upcoming, and completed visits | ✅ Live |
 | 📱 **Mobile App** | Cross-platform app (Android, iOS, Web, Windows, macOS, Linux) | 🚧 In Progress |
 
@@ -163,7 +163,7 @@ AUdoc/
 | `Doctor` | Doctors with specialties & availability slots |
 | `Appointment` | Bookings (PENDING → CONFIRMED → COMPLETED) |
 | `StudentRegistration` | Applications awaiting admin approval |
-| `Donation` | Monetary donation pledges (BDT) |
+| `Donation` | Monetary donation pledges (INR) |
 | `BloodDonation` | Blood donor registry with health screening |
 | `BloodRequest` | Blood requests with urgency (LOW / MEDIUM / HIGH / URGENT) |
 | `LoginLog` | Security audit trail — every login, timestamped |
@@ -207,7 +207,7 @@ Make sure you have these installed — no excuses:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/sayan-does/AUdoc.git
+git clone https://github.com/voidnova-code/AUdoc.git
 cd AUdoc/AUdoc_back
 
 # 2. Create and activate a virtual environment
@@ -309,17 +309,19 @@ Contributions are welcome! Found a bug? Have a cool idea? Here's the drill:
 
 MIT License — do whatever you want with it, just don't blame us if something breaks. 😄
 
-This project was built with love for students at **Ahsanullah University of Science & Technology (AUST)**.
+This project was built with love for students at **Assam University Silchar (AUS)**.
 
 ---
 
 <div align="center">
 
-Made with ☕ caffeine, 💻 late nights, and the genuine hope that AUST students stay healthy.
+Made with ☕ caffeine, 💻 late nights, and the genuine hope that AUS students stay healthy.
 
 *"May your OTPs arrive fast, your appointments never be cancelled,*
 *and your blood type always be in stock."*
 
 ⭐ **Star this repo if it saved you from a WebMD spiral!** ⭐
+
+**Made with ❤️ at Assam University Silchar**
 
 </div>
