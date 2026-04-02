@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+import secrets
 
 # Load .env file if it exists (for local development)
 _env_path = Path(__file__).resolve().parent.parent / ".env"
@@ -31,20 +32,48 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-change-me-in-production",
-)
+# Generate a secure random key if none is provided
+_default_secret = os.environ.get("DJANGO_SECRET_KEY", "")
+if not _default_secret:
+    _secret_file = BASE_DIR / ".secret_key"
+    if _secret_file.exists():
+        _default_secret = _secret_file.read_text().strip()
+    else:
+        _default_secret = secrets.token_urlsafe(50)
+        try:
+            _secret_file.write_text(_default_secret)
+        except (OSError, IOError):
+            pass  # Running in read-only environment
+
+SECRET_KEY = _default_secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-ALLOWED_HOSTS = ["*"]
+DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in ("true", "1", "yes")
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  SECURITY: Allowed hosts - MUST be configured for production
+# ══════════════════════════════════════════════════════════════════════════════
+_allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
+if _allowed_hosts_env:
+    ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(",") if h.strip()]
+elif DEBUG:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
+else:
+    # Production: require explicit configuration
+    ALLOWED_HOSTS = [
+        "localhost",
+        "127.0.0.1",
+        # Add your production domain here or via DJANGO_ALLOWED_HOSTS env var
+    ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "https://churlish-xerically-karren.ngrok-free.dev",
 ]
+# Add additional trusted origins from environment
+_csrf_origins_env = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+if _csrf_origins_env:
+    CSRF_TRUSTED_ORIGINS.extend([o.strip() for o in _csrf_origins_env.split(",") if o.strip()])
 
 
 # Application definition
@@ -167,3 +196,114 @@ DEFAULT_FROM_EMAIL  = f"AUSdoc Campus Health <{EMAIL_HOST_USER}>"
 
 # ── Groq AI (Chatbot — free tier) ───────────────────────────────────────────
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  SECURITY SETTINGS
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── Session Security ─────────────────────────────────────────────────────────
+SESSION_COOKIE_SECURE = not DEBUG  # Only send cookies over HTTPS in production
+SESSION_COOKIE_HTTPONLY = True     # Prevent JavaScript access to session cookie
+SESSION_COOKIE_SAMESITE = "Lax"    # CSRF protection for session cookie
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1 week
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# ── CSRF Security ────────────────────────────────────────────────────────────
+CSRF_COOKIE_SECURE = not DEBUG     # Only send CSRF cookie over HTTPS in production
+CSRF_COOKIE_HTTPONLY = True        # Prevent JavaScript access to CSRF cookie
+CSRF_COOKIE_SAMESITE = "Lax"       # Strict same-site policy
+CSRF_FAILURE_VIEW = "django.views.csrf.csrf_failure"
+
+# ── SSL/HTTPS Settings (Production) ──────────────────────────────────────────
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "False").lower() in ("true", "1", "yes")
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# ── Security Headers ─────────────────────────────────────────────────────────
+SECURE_BROWSER_XSS_FILTER = True           # Enable XSS filter in browser
+SECURE_CONTENT_TYPE_NOSNIFF = True         # Prevent content-type sniffing
+X_FRAME_OPTIONS = "DENY"                   # Prevent clickjacking
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
+# HSTS (only enable in production with HTTPS)
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000           # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# ── API Security (Rate Limiting Configuration) ───────────────────────────────
+# Rate limits: max requests per window (in seconds)
+RATE_LIMIT_OTP = {
+    "max_requests": 5,      # Max OTP requests
+    "window_seconds": 300,  # Per 5-minute window
+}
+RATE_LIMIT_LOGIN = {
+    "max_requests": 10,     # Max login attempts
+    "window_seconds": 300,  # Per 5-minute window
+}
+RATE_LIMIT_API = {
+    "max_requests": 100,    # Max API requests
+    "window_seconds": 60,   # Per minute
+}
+
+# ── Content Security Policy ──────────────────────────────────────────────────
+# Add this header via middleware or nginx in production
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com")
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net")
+CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net")
+CSP_IMG_SRC = ("'self'", "data:", "https:")
+CSP_CONNECT_SRC = ("'self'", "https://api.groq.com")
+
+# ── Password Hashing ─────────────────────────────────────────────────────────
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
+# ── Logging (Security Events) ────────────────────────────────────────────────
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "security_file": {
+            "level": "WARNING",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs" / "security.log",
+            "formatter": "verbose",
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django.security": {
+            "handlers": ["security_file", "console"] if not DEBUG else ["console"],
+            "level": "WARNING",
+            "propagate": True,
+        },
+        "app.security": {
+            "handlers": ["security_file", "console"] if not DEBUG else ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
+
+# Create logs directory if it doesn't exist
+_logs_dir = BASE_DIR / "logs"
+if not _logs_dir.exists():
+    try:
+        _logs_dir.mkdir(parents=True, exist_ok=True)
+    except (OSError, IOError):
+        pass  # Running in read-only environment

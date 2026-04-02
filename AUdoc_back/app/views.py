@@ -1,6 +1,5 @@
 import json
 import os
-import random
 import time
 from datetime import date, timedelta
 
@@ -16,10 +15,23 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 
 from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm
 from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
+from .security import (
+    generate_secure_otp,
+    constant_time_compare,
+    rate_limit_otp,
+    rate_limit_login,
+    rate_limit_api,
+    get_client_ip,
+    log_failed_login,
+    log_security_event,
+    sanitize_string,
+    validate_student_id,
+    validate_email_format,
+)
 
 
 def about(request):
@@ -40,20 +52,30 @@ def about(request):
 
 def student_login(request):
     if request.method == "POST":
-        student_id  = request.POST.get("student_id", "").strip()
-        otp_entered = request.POST.get("otp", "").strip()
+        student_id  = sanitize_string(request.POST.get("student_id", ""), max_length=50)
+        otp_entered = sanitize_string(request.POST.get("otp", ""), max_length=10)
         otp_data    = request.session.get("login_otp_data", {})
+
+        # Validate student_id format
+        if not validate_student_id(student_id):
+            log_failed_login(request, student_id, "invalid_format")
+            messages.error(request, "Invalid Student ID format.")
+            return redirect("/accounts/login/")
 
         if not otp_entered:
             messages.error(request, "Please verify your Student ID with OTP before logging in.")
             return redirect("/accounts/login/")
         if otp_data.get("student_id") != student_id:
+            log_failed_login(request, student_id, "otp_mismatch_student_id")
             messages.error(request, "OTP was sent for a different Student ID. Please re-send.")
             return redirect("/accounts/login/")
         if time.time() > otp_data.get("expires", 0):
+            log_failed_login(request, student_id, "otp_expired")
             messages.error(request, "Your OTP has expired. Please request a new one.")
             return redirect("/accounts/login/")
-        if otp_data.get("otp") != otp_entered:
+        # Use constant-time comparison to prevent timing attacks
+        if not constant_time_compare(otp_data.get("otp", ""), otp_entered):
+            log_failed_login(request, student_id, "otp_incorrect")
             messages.error(request, "Incorrect OTP. Please check your email and try again.")
             return redirect("/accounts/login/")
 
@@ -62,27 +84,33 @@ def student_login(request):
         if user is not None:
             request.session["otp_login_verified"] = True
             login(request, user, backend="app.backends.StudentIDBackend")
+            log_security_event("successful_login", request, {"student_id": student_id}, level="info")
             return redirect("/")
+        log_failed_login(request, student_id, "user_not_found")
         messages.error(request, "Student ID not found or not yet approved. Please check and try again.")
     return redirect("/accounts/login/")
 
 
+@rate_limit_otp
 @require_POST
 def send_login_otp(request):
-    student_id = request.POST.get("student_id", "").strip()
-    if not student_id:
-        return JsonResponse({"error": "Please enter your Student ID first."}, status=400)
+    student_id = sanitize_string(request.POST.get("student_id", ""), max_length=50)
+    
+    # Validate student_id format
+    if not student_id or not validate_student_id(student_id):
+        return JsonResponse({"error": "Please enter a valid Student ID."}, status=400)
 
     try:
         user = User.objects.get(username=student_id)
     except User.DoesNotExist:
-        return JsonResponse({"error": "No approved account found for this Student ID."}, status=400)
+        # Return generic error to prevent user enumeration
+        return JsonResponse({"error": "If this Student ID exists, an OTP will be sent."}, status=200)
 
     email = user.email
     if not email:
         return JsonResponse({"error": "No email on file. Please contact health@au.edu."}, status=400)
 
-    otp = str(random.randint(100000, 999999))
+    otp = generate_secure_otp(6)
     request.session["login_otp_data"] = {
         "student_id": student_id,
         "otp":        otp,
@@ -189,17 +217,18 @@ def send_login_otp(request):
         return JsonResponse({"error": "Could not send email: " + str(e)}, status=500)
 
 
+@rate_limit_otp
 @require_POST
 def send_otp(request):
-    email = request.POST.get("email", "").strip()
+    email = sanitize_string(request.POST.get("email", ""), max_length=254)
 
-    if not email:
-        return JsonResponse({"error": "Please enter an email address first."}, status=400)
+    if not email or not validate_email_format(email):
+        return JsonResponse({"error": "Please enter a valid email address."}, status=400)
 
     if StudentRegistration.objects.filter(email=email).exists():
         return JsonResponse({"error": "This email is already registered."}, status=400)
 
-    otp = str(random.randint(100000, 999999))
+    otp = generate_secure_otp(6)
     request.session["otp_data"] = {
         "email": email,
         "otp":   otp,
@@ -313,7 +342,7 @@ def register(request):
 
     if request.method == "POST" and form.is_valid():
         email       = form.cleaned_data["email"]
-        otp_entered = request.POST.get("otp", "").strip()
+        otp_entered = sanitize_string(request.POST.get("otp", ""), max_length=10)
         otp_data    = request.session.get("otp_data", {})
 
         if not otp_entered:
@@ -322,7 +351,7 @@ def register(request):
             otp_error = "OTP was sent to a different email. Please re-verify."
         elif time.time() > otp_data.get("expires", 0):
             otp_error = "Your OTP has expired. Please request a new one."
-        elif otp_data.get("otp") != otp_entered:
+        elif not constant_time_compare(otp_data.get("otp", ""), otp_entered):
             otp_error = "Incorrect OTP. Please check your email and try again."
         else:
             # OTP valid — clear it and save registration
@@ -1064,9 +1093,10 @@ def admin_chart_data(request):
 
 
 @_admin_required
+@require_http_methods(["POST"])
 def admin_registration_action(request, pk):
     reg = get_object_or_404(StudentRegistration, pk=pk)
-    action = request.GET.get('action')
+    action = request.POST.get('action')
 
     if action == 'approve' and reg.status != 'APPROVED':
         if User.objects.filter(username=reg.student_id).exists():
@@ -1189,10 +1219,12 @@ def admin_registration_action(request, pk):
 
     return redirect(f"{reverse('admin_dashboard')}?tab=registrations")
 
+
 @_admin_required
+@require_http_methods(["POST"])
 def admin_appointment_status(request, pk):
     appt = get_object_or_404(Appointment, pk=pk)
-    new_status = request.GET.get('status')
+    new_status = request.POST.get('status')
     if new_status in ('PENDING', 'CONFIRMED', 'COMPLETED', 'REJECTED', 'CANCELLED'):
         appt.status = new_status
         appt.save()
@@ -1201,9 +1233,10 @@ def admin_appointment_status(request, pk):
 
 
 @_admin_required
+@require_http_methods(["POST"])
 def admin_blood_donation_status(request, pk):
     don = get_object_or_404(BloodDonation, pk=pk)
-    new_status = request.GET.get('status')
+    new_status = request.POST.get('status')
     if new_status in ('PENDING', 'APPROVED', 'COMPLETED', 'REJECTED'):
         don.status = new_status
         don.save()
@@ -1212,9 +1245,10 @@ def admin_blood_donation_status(request, pk):
 
 
 @_admin_required
+@require_http_methods(["POST"])
 def admin_blood_request_status(request, pk):
     req = get_object_or_404(BloodRequest, pk=pk)
-    new_status = request.GET.get('status')
+    new_status = request.POST.get('status')
     if new_status in ('PENDING', 'APPROVED', 'FULFILLED', 'REJECTED'):
         req.status = new_status
         req.save()
@@ -1223,6 +1257,7 @@ def admin_blood_request_status(request, pk):
 
 
 @_admin_required
+@require_http_methods(["POST"])
 def admin_donation_toggle_paid(request, pk):
     don = get_object_or_404(Donation, pk=pk)
     don.is_paid = not don.is_paid
@@ -1479,8 +1514,12 @@ def chat_api(request):
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout as auth_logout
 
+# Note: API endpoints use @csrf_exempt because Flutter app uses session-based auth
+# with OTP verification. Rate limiting provides protection against abuse.
+
 
 @csrf_exempt
+@rate_limit_otp
 @require_POST
 def api_send_login_otp(request):
     """API: Send login OTP for Flutter app."""
@@ -1489,20 +1528,22 @@ def api_send_login_otp(request):
     except (json.JSONDecodeError, ValueError):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    student_id = data.get("student_id", "").strip()
-    if not student_id:
-        return JsonResponse({"error": "Student ID is required"}, status=400)
+    student_id = sanitize_string(data.get("student_id", ""), max_length=50)
+    if not student_id or not validate_student_id(student_id):
+        return JsonResponse({"error": "Please enter a valid Student ID"}, status=400)
 
     try:
         user = User.objects.get(username=student_id)
     except User.DoesNotExist:
-        return JsonResponse({"error": "No approved account found for this Student ID"}, status=400)
+        # Return generic response to prevent user enumeration
+        log_security_event("api_otp_nonexistent_user", request, {"student_id": student_id})
+        return JsonResponse({"success": True, "message": "If this Student ID exists, an OTP will be sent"})
 
     email = user.email
     if not email:
         return JsonResponse({"error": "No email on file. Please contact health@au.edu"}, status=400)
 
-    otp = str(random.randint(100000, 999999))
+    otp = generate_secure_otp(6)
     request.session["login_otp_data"] = {
         "student_id": student_id,
         "otp": otp,
@@ -1532,7 +1573,8 @@ def api_send_login_otp(request):
         msg.attach_alternative(html_body, "text/html")
         msg.send()
     except Exception as e:
-        return JsonResponse({"error": f"Failed to send email: {str(e)}"}, status=500)
+        log_security_event("api_email_send_failed", request, {"error": str(e)}, level="error")
+        return JsonResponse({"error": "Failed to send email. Please try again later."}, status=500)
 
     at = email.index("@")
     masked_email = email[:2] + ("*" * max(at - 2, 1)) + email[at:]
@@ -1544,6 +1586,7 @@ def api_send_login_otp(request):
 
 
 @csrf_exempt
+@rate_limit_login
 @require_POST
 def api_student_login(request):
     """API: Verify OTP and login for Flutter app."""
@@ -1552,29 +1595,39 @@ def api_student_login(request):
     except (json.JSONDecodeError, ValueError):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    student_id = data.get("student_id", "").strip()
-    otp_entered = data.get("otp", "").strip()
+    student_id = sanitize_string(data.get("student_id", ""), max_length=50)
+    otp_entered = sanitize_string(data.get("otp", ""), max_length=10)
 
-    if not student_id or not otp_entered:
-        return JsonResponse({"error": "Student ID and OTP are required"}, status=400)
+    if not student_id or not validate_student_id(student_id):
+        log_failed_login(request, student_id, "api_invalid_student_id")
+        return JsonResponse({"error": "Invalid Student ID format"}, status=400)
+    
+    if not otp_entered:
+        return JsonResponse({"error": "OTP is required"}, status=400)
 
     otp_data = request.session.get("login_otp_data", {})
 
     if otp_data.get("student_id") != student_id:
+        log_failed_login(request, student_id, "api_otp_mismatch")
         return JsonResponse({"error": "OTP was sent for a different Student ID"}, status=400)
     if time.time() > otp_data.get("expires", 0):
+        log_failed_login(request, student_id, "api_otp_expired")
         return JsonResponse({"error": "OTP has expired. Please request a new one"}, status=400)
-    if otp_data.get("otp") != otp_entered:
+    # Use constant-time comparison
+    if not constant_time_compare(otp_data.get("otp", ""), otp_entered):
+        log_failed_login(request, student_id, "api_otp_incorrect")
         return JsonResponse({"error": "Incorrect OTP"}, status=400)
 
     del request.session["login_otp_data"]
 
     user = authenticate(request, username=student_id)
     if user is None:
+        log_failed_login(request, student_id, "api_user_not_found")
         return JsonResponse({"error": "Student ID not found or not approved"}, status=400)
 
     request.session["otp_login_verified"] = True
     login(request, user, backend="app.backends.StudentIDBackend")
+    log_security_event("api_successful_login", request, {"student_id": student_id}, level="info")
 
     # Build profile data for Flutter User model
     try:
@@ -1615,6 +1668,7 @@ def api_student_login(request):
 
 
 @csrf_exempt
+@rate_limit_otp
 @require_POST
 def api_send_register_otp(request):
     """API: Send registration OTP for Flutter app."""
@@ -1623,15 +1677,15 @@ def api_send_register_otp(request):
     except (json.JSONDecodeError, ValueError):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    email = data.get("email", "").strip()
-    if not email:
-        return JsonResponse({"error": "Email is required"}, status=400)
+    email = sanitize_string(data.get("email", ""), max_length=254)
+    if not email or not validate_email_format(email):
+        return JsonResponse({"error": "Please enter a valid email address"}, status=400)
 
     # Check if email already exists
     if User.objects.filter(email=email).exists():
         return JsonResponse({"error": "This email is already registered"}, status=400)
 
-    otp = str(random.randint(100000, 999999))
+    otp = generate_secure_otp(6)
     request.session["register_otp_data"] = {
         "email": email,
         "otp": otp,
@@ -1659,12 +1713,14 @@ def api_send_register_otp(request):
         msg.attach_alternative(html_body, "text/html")
         msg.send()
     except Exception as e:
-        return JsonResponse({"error": f"Failed to send email: {str(e)}"}, status=500)
+        log_security_event("api_register_email_failed", request, {"error": str(e)}, level="error")
+        return JsonResponse({"error": "Failed to send email. Please try again later."}, status=500)
 
     return JsonResponse({"success": True, "message": "OTP sent to your email"})
 
 
 @csrf_exempt
+@rate_limit_login
 @require_POST
 def api_register(request):
     """API: Register new student for Flutter app."""
@@ -1690,36 +1746,48 @@ def api_register(request):
         if not data.get(field):
             return JsonResponse({"error": f"{field} is required"}, status=400)
 
+    # Sanitize inputs
+    student_id = sanitize_string(data.get("student_id", ""), max_length=50)
+    email = sanitize_string(data.get("email", ""), max_length=254)
+    otp_entered = sanitize_string(data.get("otp", ""), max_length=10)
+
+    # Validate formats
+    if not validate_student_id(student_id):
+        return JsonResponse({"error": "Invalid Student ID format"}, status=400)
+    if not validate_email_format(email):
+        return JsonResponse({"error": "Invalid email format"}, status=400)
+
     # Verify OTP
     otp_data = request.session.get("register_otp_data", {})
-    if otp_data.get("email") != data.get("email"):
+    if otp_data.get("email") != email:
         return JsonResponse({"error": "OTP was sent for a different email"}, status=400)
     if time.time() > otp_data.get("expires", 0):
         return JsonResponse({"error": "OTP has expired. Please request a new one"}, status=400)
-    if otp_data.get("otp") != data.get("otp"):
+    if not constant_time_compare(otp_data.get("otp", ""), otp_entered):
         return JsonResponse({"error": "Incorrect OTP"}, status=400)
 
     del request.session["register_otp_data"]
 
     # Check if student ID already exists
-    if User.objects.filter(username=data["student_id"]).exists():
+    if User.objects.filter(username=student_id).exists():
         return JsonResponse({"error": "This Student ID is already registered"}, status=400)
-    if StudentRegistration.objects.filter(student_id=data["student_id"]).exists():
+    if StudentRegistration.objects.filter(student_id=student_id).exists():
         return JsonResponse({"error": "A registration with this Student ID is pending approval"}, status=400)
 
     registration = StudentRegistration.objects.create(
-        student_id=data["student_id"],
-        first_name=data["first_name"],
-        last_name=data["last_name"],
-        email=data["email"],
-        phone=data["phone"],
-        emergency_contact=data["emergency_contact"],
-        blood_group=data["blood_group"],
-        department=data["department"],
-        home_address=data["home_address"],
-        present_address=data["present_address"],
+        student_id=student_id,
+        first_name=sanitize_string(data["first_name"], max_length=150),
+        last_name=sanitize_string(data["last_name"], max_length=150),
+        email=email,
+        phone=sanitize_string(data["phone"], max_length=20),
+        emergency_contact=sanitize_string(data["emergency_contact"], max_length=20),
+        blood_group=sanitize_string(data["blood_group"], max_length=10),
+        department=sanitize_string(data["department"], max_length=20),
+        home_address=sanitize_string(data["home_address"], max_length=500),
+        present_address=sanitize_string(data["present_address"], max_length=500),
     )
 
+    log_security_event("api_registration_submitted", request, {"student_id": student_id}, level="info")
     return JsonResponse({
         "success": True,
         "message": "Registration submitted. Awaiting admin approval.",
@@ -1727,6 +1795,7 @@ def api_register(request):
     })
 
 
+@rate_limit_api
 def api_doctors(request):
     """API: Get list of doctors for Flutter app."""
     doctors = Doctor.objects.filter(is_available=True).order_by("specialized_in", "name")
@@ -1750,6 +1819,7 @@ def api_doctors(request):
 
 
 @csrf_exempt
+@rate_limit_api
 def api_appointments(request):
     """API: Get or create appointments for Flutter app."""
     if not request.user.is_authenticated:
@@ -1863,6 +1933,7 @@ def api_appointments(request):
 
 
 @csrf_exempt
+@rate_limit_api
 def api_blood_donations(request):
     """API: Get or create blood donations for Flutter app."""
     if not request.user.is_authenticated:
@@ -1913,18 +1984,23 @@ def api_blood_donations(request):
         except ValueError:
             return JsonResponse({"error": "Invalid date_of_birth format. Use YYYY-MM-DD"}, status=400)
 
+        # Sanitize inputs
+        donor_name = sanitize_string(data["donor_name"], max_length=150)
+        email = sanitize_string(data["email"], max_length=254)
+        phone = sanitize_string(data["phone"], max_length=20)
+
         # Create new donor registration
         donation = BloodDonation.objects.create(
-            student_id=data.get("student_id") or student_id,
-            donor_name=data["donor_name"],
-            email=data["email"],
-            phone=data["phone"],
-            blood_group=data["blood_group"],
+            student_id=sanitize_string(data.get("student_id", ""), max_length=50) or student_id,
+            donor_name=donor_name,
+            email=email,
+            phone=phone,
+            blood_group=sanitize_string(data["blood_group"], max_length=10),
             date_of_birth=dob,
             weight=int(data["weight"]),
             previous_donation=bool(data.get("previous_donation", False)),
-            health_condition=data.get("health_condition", ""),
-            message=data.get("message", ""),
+            health_condition=sanitize_string(data.get("health_condition", ""), max_length=200),
+            message=sanitize_string(data.get("message", ""), max_length=500),
         )
 
         return JsonResponse({
@@ -1937,6 +2013,7 @@ def api_blood_donations(request):
 
 
 @csrf_exempt
+@rate_limit_api
 def api_blood_requests(request):
     """API: Get or create blood requests for Flutter app."""
     if not request.user.is_authenticated:
@@ -2000,14 +2077,14 @@ def api_blood_requests(request):
             requester_name=data["requester_name"],
             email=data["email"],
             phone=data["phone"],
-            blood_group=data["blood_group"],
+            blood_group=sanitize_string(data["blood_group"], max_length=10),
             units_required=int(data["units_required"]),
-            urgency=data.get("urgency", "MEDIUM"),
-            hospital_name=data["hospital_name"],
-            hospital_contact=data["hospital_contact"],
-            reason=data["reason"],
+            urgency=sanitize_string(data.get("urgency", "MEDIUM"), max_length=10),
+            hospital_name=sanitize_string(data["hospital_name"], max_length=200),
+            hospital_contact=sanitize_string(data["hospital_contact"], max_length=200),
+            reason=sanitize_string(data["reason"], max_length=200),
             required_date=required_date,
-            notes=data.get("notes", ""),
+            notes=sanitize_string(data.get("notes", ""), max_length=500),
         )
 
         return JsonResponse({
@@ -2019,6 +2096,7 @@ def api_blood_requests(request):
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
+@rate_limit_api
 def api_profile(request):
     """API: Get user profile for Flutter app."""
     if not request.user.is_authenticated:
@@ -2063,6 +2141,9 @@ def api_profile(request):
 @require_POST
 def api_logout(request):
     """API: Logout user for Flutter app."""
+    if request.user.is_authenticated:
+        log_security_event("api_logout", request, {"student_id": request.user.username}, level="info")
     auth_logout(request)
     return JsonResponse({"success": True, "message": "Logged out successfully"})
+
 
