@@ -23,8 +23,9 @@
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
+[![Security](https://img.shields.io/badge/Security-Hardened-success?style=for-the-badge&logo=shield&logoColor=white)](#-security)
 
-[✨ Features](#-features) · [🛠️ Tech Stack](#️-tech-stack) · [📁 Structure](#️-project-structure) · [⚡ Quick Start](#-getting-started) · [🗺️ API Routes](#️-url-routes) · [🎛️ Admin Panel](#️-modern-admin-panel)
+[✨ Features](#-features) · [🛠️ Tech Stack](#️-tech-stack) · [🔒 Security](#-security) · [📁 Structure](#️-project-structure) · [⚡ Quick Start](#-getting-started) · [🗺️ API Routes](#️-url-routes) · [🎛️ Admin Panel](#️-modern-admin-panel)
 
 </div>
 
@@ -96,7 +97,7 @@ The system has two layers working together:
     │                            │                          │
     │──── Enter Student ID ─────>│                          │
     │<─── OTP sent to email ─────│                          │
-    │──── Enter OTP ────────────>│                          │
+    │──── Enter OTP ────────────>│ (rate limited + secure)  │
     │<─── Logged in! ────────────│                          │
     │                            │                          │
     │   (First time? Register!)  │                          │
@@ -108,6 +109,51 @@ The system has two layers working together:
 ```
 
 No passwords. No "Forgot password?" links. Just vibes and OTPs. ✌️
+
+> 🔒 **Security Note:** OTPs are generated using cryptographically secure random numbers, validated with constant-time comparison (timing-attack resistant), and all endpoints are rate-limited.
+
+---
+
+## 🔒 Security
+
+AUdoc takes security seriously. The application has been hardened against common web vulnerabilities:
+
+### Security Features
+
+| Feature | Protection Against | Status |
+|---------|-------------------|--------|
+| 🛡️ **Rate Limiting** | Brute force attacks on login/OTP endpoints | ✅ Active |
+| 🔐 **Secure OTP** | Cryptographically secure random generation | ✅ Active |
+| ⏱️ **Timing Attack Protection** | Constant-time OTP comparison | ✅ Active |
+| 🚫 **SQL Injection** | Parameterized queries via Django ORM | ✅ Protected |
+| 🔄 **CSRF Protection** | All state-changing operations require tokens | ✅ Active |
+| 🍪 **Secure Cookies** | HttpOnly, SameSite, Secure flags | ✅ Active |
+| 🔒 **Security Headers** | X-Frame-Options, CSP, HSTS, XSS filter | ✅ Active |
+| 🔑 **Argon2 Hashing** | Memory-hard password hashing algorithm | ✅ Active |
+| 📝 **Security Logging** | Failed login attempts, rate limit violations | ✅ Active |
+
+### Rate Limits
+
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| OTP Send | 5 requests | 5 minutes |
+| Login | 10 requests | 5 minutes |
+| API | 100 requests | 1 minute |
+
+### Security Configuration
+
+For production deployment, ensure these environment variables are set:
+
+```env
+# Security (REQUIRED for production)
+DJANGO_SECRET_KEY=<generate-strong-random-key>
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=yourdomain.com
+DJANGO_CSRF_TRUSTED_ORIGINS=https://yourdomain.com
+DJANGO_SECURE_SSL_REDIRECT=True
+```
+
+> 📄 For complete security documentation, see [`AUdoc_back/SECURITY.md`](AUdoc_back/SECURITY.md)
 
 ---
 
@@ -127,6 +173,7 @@ AUdoc/
 │   │   ├── views.py                 # Views + AJAX endpoints
 │   │   ├── forms.py                 # Django forms
 │   │   ├── admin.py                 # Customized admin with auto-provisioning
+│   │   ├── security.py              # 🔒 Security utilities (rate limiting, OTP)
 │   │   ├── backends.py              # Custom OTP authentication backend
 │   │   ├── signals.py               # Login audit signal handler
 │   │   ├── urls.py                  # App URL routes
@@ -136,6 +183,7 @@ AUdoc/
 │   │       └── cleanup_todays_appointments.py
 │   │
 │   ├── 📂 media/                    # Uploaded files (doctor photos)
+│   ├── SECURITY.md                  # 📄 Security documentation
 │   ├── .env.example                 # 👈 Copy this to .env and add your secrets
 │   ├── requirements.txt             # Python dependencies
 │   ├── manage.py                    # Django management CLI
