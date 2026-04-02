@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel – AUdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:      #4a7c59;
+      --primary-dark: #2e5c3a;
+      --accent:       #e8f5ec;
+      --sidebar-w:    240px;
+    }
+
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f4; color: #333; margin: 0; }
+
+    /* ── Sidebar ──────────────────────────────────────────── */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: #0d2a1a;
+      display: flex; flex-direction: column;
+      overflow-y: auto; z-index: 100;
+    }
+    .sidebar-brand {
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-brand .logo-box {
+      width: 36px; height: 36px; background: var(--primary);
+      border-radius: 9px; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .sidebar-brand .brand-name { color: #fff; font-weight: 700; font-size: 1rem; line-height: 1.1; }
+    .sidebar-brand .brand-sub  { color: #9abea8; font-size: .68rem; }
+
+    .sidebar-section { padding: 14px 12px 4px; font-size: .68rem; color: #5a8a6a; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
+
+    .sidebar nav a {
+      display: block; padding: 9px 16px; color: #9abea8;
+      text-decoration: none; border-radius: 6px;
+      margin: 2px 8px; transition: all .3s ease;
+      transform: translateX(0);
+    }
+    .sidebar nav a:hover {
+      background: rgba(74,124,89,.15); color: #c4ddc9;
+      transform: translateX(5px);
+    }
+    .sidebar nav a.active {
+      background: var(--primary); color: #fff;
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(74,124,89,0.3);
+    }
+    .sidebar nav a i { width: 16px; margin-right: 8px; }
+
+    /* ── Enhanced Animations ──────────────────────────────────── */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+      50% { box-shadow: 0 8px 30px rgba(74,124,89,0.2); }
+    }
+    .stat-card.updating {
+      animation: glow 1s ease-in-out;
+    }
+
+    /* ── Alert Messages ───────────────────────────────────────── */
+    .alerts-container .alert {
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      margin-bottom: 10px;
+    }
+    .alert-success {
+      background: linear-gradient(45deg, #d1edda, #c3e6cb);
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+    .alert-danger {
+      background: linear-gradient(45deg, #f8d7da, #f1b0b7);
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+    .alert-warning {
+      background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+      color: #856404;
+      border-left: 4px solid #ffc107;
+    }
+    .alert-info {
+      background: linear-gradient(45deg, #d1ecf1, #bee5eb);
+      color: #0c5460;
+      border-left: 4px solid #17a2b8;
+    }
+
+    /* ── Danger Zone ──────────────────────────────────────────── */
+    .danger-zone {
+      background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+      border: 2px solid #fc8181;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+    .danger-header {
+      color: #c53030;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .danger-description {
+      color: #742a2a;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .kill-button {
+      background: linear-gradient(45deg, #e53e3e, #c53030);
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+    }
+    .kill-button:hover {
+      background: linear-gradient(45deg, #c53030, #9c2626);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(229, 62, 62, 0.4);
+      color: white;
+    }
+    .stats-warning {
+      background: #fff5f5;
+      border-left: 4px solid #fc8181;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #fed7d7;
+    }
+    .stat-item:last-child { border-bottom: none; }
+    .stat-number {
+      font-weight: 700;
+      color: #c53030;
+    }
+
+    /* ── Main Content ──────────────────────────────────────── */
+    .content-wrapper { margin-left: var(--sidebar-w); min-height: 100vh; }
+    .content-header {
+      background: #fff; padding: 20px 24px 16px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .content-header h1 { margin: 0; color: var(--primary); font-size: 1.6rem; font-weight: 600; }
+    .content-body { padding: 20px 24px; }
+
+    /* ── Tab Navigation ──────────────────────────────────────── */
+    .tab-navigation {
+      background: #fff; border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.06);
+      margin-bottom: 20px; overflow: hidden;
+    }
+    /* ── Tab Content ──────────────────────────────────────────── */
+    .tab-content {
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .tab-content.active {
+      display: block !important;
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+    .nav-tabs { border-bottom: 2px solid #f8f9fa; margin: 0; }
+    .nav-tabs .nav-link {
+      border: none; border-radius: 0; color: #666;
+      font-weight: 500; padding: 14px 20px;
+      border-bottom: 3px solid transparent;
+    }
+    .nav-tabs .nav-link:hover { background: #f8f9fa; border-color: transparent; }
+    .nav-tabs .nav-link.active { color: var(--primary); border-bottom-color: var(--primary); background: #fff; }
+
+    /* ── Cards ─────────────────────────────────────────────── */
+    .card {
+      border: none; border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.06);
+      margin-bottom: 20px;
+    }
+    .card-header { background: var(--accent); border: none; padding: 16px 20px; }
+    .card-title { margin: 0; color: var(--primary); font-weight: 600; }
+
+    /* ── Tables ─────────────────────────────────────────────── */
+    .table { margin: 0; }
+    .table th {
+      background: var(--accent); color: var(--primary);
+      border: none; font-weight: 600; padding: 12px;
+    }
+    .table td { padding: 12px; border-top: 1px solid #f0f0f0; }
+    .table-responsive { border-radius: 8px; overflow: hidden; }
+
+    /* ── Badges ─────────────────────────────────────────────── */
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d1edda; color: #155724; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    .status-completed { background: #d4edda; color: #155724; }
+
+    /* ── Buttons ─────────────────────────────────────────────── */
+    .btn-primary { background: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+    .btn-sm { font-size: .8rem; padding: 4px 8px; }
+
+    /* ── Stats Cards ─────────────────────────────────────────── */
+    .stats-row { margin-bottom: 24px; }
+    .stat-card {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      padding: 24px; text-align: center;
+      border-left: 4px solid var(--primary);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(0,0,0,.12);
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 100px; height: 100px;
+      background: linear-gradient(45deg, rgba(74,124,89,0.1), rgba(74,124,89,0.05));
+      border-radius: 50%;
+      transform: translate(30px, -30px);
+    }
+    .stat-number {
+      font-size: 2.5rem; font-weight: 700;
+      color: var(--primary); margin: 0;
+      animation: countUp 2s ease-out;
+    }
+    .stat-label {
+      color: #666; font-size: .9rem;
+      margin-top: 8px; font-weight: 500;
+    }
+    .stat-icon {
+      position: absolute;
+      top: 20px; right: 20px;
+      font-size: 2rem;
+      color: rgba(74,124,89,0.2);
+      transition: all 0.3s ease;
+    }
+    .stat-card:hover .stat-icon {
+      color: rgba(74,124,89,0.4);
+      transform: scale(1.1);
+    }
+    .stat-growth {
+      font-size: 0.8rem;
+      margin-top: 4px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .growth-positive { background: #d1edda; color: #155724; }
+    .growth-negative { background: #f8d7da; color: #721c24; }
+    .growth-neutral { background: #e2e3e5; color: #495057; }
+
+    /* ── Dashboard Enhancements ──────────────────────────────── */
+    .dashboard-header {
+      background: linear-gradient(135deg, #4a7c59 0%, #2e5c3a 100%);
+      padding: 40px 0;
+      border-radius: 0 0 30px 30px;
+      color: white;
+      margin: -20px -24px 30px;
+      text-align: center;
+    }
+    .dashboard-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .dashboard-subtitle {
+      opacity: 0.9;
+      font-size: 1.1rem;
+      margin-top: 8px;
+    }
+
+    .activity-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      padding: 20px;
+      height: 100%;
+      transition: all 0.3s ease;
+    }
+    .activity-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,.12);
+    }
+    .activity-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .activity-icon {
+      width: 40px; height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #5a8a6a);
+      border-radius: 4px;
+      transition: width 2s ease-out;
+      animation: slideIn 2s ease-out;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { font-weight: 500; color: #666; }
+    .metric-value { font-weight: 700; color: var(--primary); }
+
+    /* ── Animations ───────────────────────────────────────────── */
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { width: 0; }
+      to { width: var(--progress-width, 100%); }
+    }
+    .fade-in-up {
+      animation: fadeInUp 0.6s ease-out;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Chart Container ──────────────────────────────────────── */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: 20px 0;
+    }
+    .mini-chart {
+      height: 150px;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .content-wrapper { margin-left: 0; }
+      .sidebar.show { transform: translateX(0); }
+      .content-header { padding: 16px 20px 12px; }
+      .content-header h1 { font-size: 1.4rem; }
+      .content-body { padding: 16px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-box">
+        <i class="bi bi-hospital" style="color: #fff; font-size: .9rem;"></i>
+      </div>
+      <div>
+        <div class="brand-name">AUdoc Admin</div>
+        <div class="brand-sub">Management Panel</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">Dashboard</div>
+    <nav>
+      <a href="#" data-tab="dashboard" class="tab-link active">
+        <i class="bi bi-speedometer2"></i> Overview
+      </a>
+      <a href="#" data-tab="todays-appointments" class="tab-link">
+        <i class="bi bi-calendar-check"></i> Today's Appointments
+      </a>
+    </nav>
+
+    <div class="sidebar-section">Registration</div>
+    <nav>
+      <a href="#" data-tab="registrations" class="tab-link">
+        <i class="bi bi-person-plus"></i> Student Registrations
+      </a>
+    </nav>
+
+    <div class="sidebar-section">Appointments</div>
+    <nav>
+      <a href="#" data-tab="appointments" class="tab-link">
+        <i class="bi bi-calendar3"></i> All Appointments
+      </a>
+    </nav>
+
+    <div class="sidebar-section">Blood Services</div>
+    <nav>
+      <a href="#" data-tab="blood-donations" class="tab-link">
+        <i class="bi bi-heart-pulse"></i> Blood Donations
+      </a>
+      <a href="#" data-tab="blood-requests" class="tab-link">
+        <i class="bi bi-droplet"></i> Blood Requests
+      </a>
+    </nav>
+
+    <div class="sidebar-section">Management</div>
+    <nav>
+      <a href="#" data-tab="doctors" class="tab-link">
+        <i class="bi bi-person-badge"></i> Doctors
+      </a>
+      <a href="#" data-tab="staff-members" class="tab-link">
+        <i class="bi bi-people"></i> Staff Members
+      </a>
+    </nav>
+
+    <div class="sidebar-section">System</div>
+    <nav>
+      <a href="#" data-tab="donations" class="tab-link">
+        <i class="bi bi-cash-coin"></i> Donations
+      </a>
+      <a href="#" data-tab="feedback" class="tab-link">
+        <i class="bi bi-chat-dots"></i> Feedback
+      </a>
+      <a href="#" data-tab="login-logs" class="tab-link">
+        <i class="bi bi-clock-history"></i> Login Logs
+      </a>
+    </nav>
+
+    <div class="sidebar-section" style="color: #dc3545;">Danger Zone</div>
+    <nav>
+      <a href="#" data-tab="danger-zone" class="tab-link" style="color: #dc3545;" onmouseover="this.style.background='rgba(220,53,69,0.15)'" onmouseout="this.style.background=''">
+        <i class="bi bi-exclamation-triangle-fill"></i> Data Management
+      </a>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-wrapper">
+    <div class="content-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1>Admin Dashboard</h1>
+        <button class="btn btn-outline-secondary d-md-none" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="content-body">
+      <!-- Django Messages -->
+      {% if messages %}
+      <div class="alerts-container mb-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert" data-aos="fade-down">
+          <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <!-- Enhanced Dashboard Tab -->
+      <div id="dashboard" class="tab-content active">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header" data-aos="fade-down">
+          <div class="dashboard-title">
+            <i class="bi bi-speedometer2 me-3"></i>
+            AUdoc Control Center
+          </div>
+          <div class="dashboard-subtitle">Real-time Campus Health Management Dashboard</div>
+        </div>
+
+        <!-- Enhanced Stats Cards -->
+        <div class="row stats-row">
+          <div class="col-md-3 mb-3">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="stat-icon">
+                <i class="bi bi-person-plus-fill"></i>
+              </div>
+              <div class="stat-number" data-target="{{ stat_pending_reg }}">0</div>
+              <div class="stat-label">Pending Registrations</div>
+              <div class="stat-growth growth-positive">
+                <i class="bi bi-arrow-up me-1"></i>+12%
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="stat-icon">
+                <i class="bi bi-calendar-check-fill"></i>
+              </div>
+              <div class="stat-number" data-target="{{ stat_pending_appts }}">0</div>
+              <div class="stat-label">Pending Appointments</div>
+              <div class="stat-growth growth-negative">
+                <i class="bi bi-arrow-down me-1"></i>-3%
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+              <div class="stat-icon">
+                <i class="bi bi-person-badge-fill"></i>
+              </div>
+              <div class="stat-number" data-target="{{ stat_active_doctors }}">0</div>
+              <div class="stat-label">Active Doctors</div>
+              <div class="stat-growth growth-positive">
+                <i class="bi bi-arrow-up me-1"></i>+5%
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="400">
+              <div class="stat-icon">
+                <i class="bi bi-clock-fill"></i>
+              </div>
+              <div class="stat-number" data-target="{{ stat_todays_pending }}">0</div>
+              <div class="stat-label">Today's Pending</div>
+              <div class="stat-growth growth-neutral">
+                <i class="bi bi-dash me-1"></i>0%
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts and Analytics Row -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <div class="activity-card" data-aos="fade-right">
+              <div class="activity-header">
+                <div class="activity-icon">
+                  <i class="bi bi-graph-up"></i>
+                </div>
+                <div>
+                  <h5 class="card-title mb-1">Weekly Activity Overview</h5>
+                  <small class="text-muted">Appointments and registrations trends</small>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="weeklyChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="activity-card" data-aos="fade-left">
+              <div class="activity-header">
+                <div class="activity-icon">
+                  <i class="bi bi-pie-chart"></i>
+                </div>
+                <div>
+                  <h5 class="card-title mb-1">Department Distribution</h5>
+                  <small class="text-muted">Appointment breakdown</small>
+                </div>
+              </div>
+              <div class="chart-container mini-chart">
+                <canvas id="departmentChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Health and Quick Actions -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="activity-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="activity-header">
+                <div class="activity-icon">
+                  <i class="bi bi-speedometer"></i>
+                </div>
+                <div>
+                  <h5 class="card-title mb-1">System Health</h5>
+                  <small class="text-muted">Real-time performance metrics</small>
+                </div>
+              </div>
+
+              <div class="metric-row">
+                <span class="metric-label">Database Performance</span>
+                <span class="metric-value">Fast</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="--progress-width: 92%; width: 92%;"></div>
+              </div>
+
+              <div class="metric-row">
+                <span class="metric-label">Server Load</span>
+                <span class="metric-value">Optimal</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="--progress-width: 68%; width: 68%;"></div>
+              </div>
+
+              <div class="metric-row">
+                <span class="metric-label">Storage Usage</span>
+                <span class="metric-value">{{ stat_feedback }}% Used</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="--progress-width: {{ stat_feedback }}%; width: {{ stat_feedback }}%;"></div>
+              </div>
+
+              <div class="metric-row">
+                <span class="metric-label">Active Sessions</span>
+                <span class="metric-value">{{ stat_staff }} Users</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="activity-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="activity-header">
+                <div class="activity-icon">
+                  <i class="bi bi-lightning-charge"></i>
+                </div>
+                <div>
+                  <h5 class="card-title mb-1">Quick Actions</h5>
+                  <small class="text-muted">Fast access to common tasks</small>
+                </div>
+              </div>
+
+              <div class="d-grid gap-3">
+                <button class="btn btn-primary d-flex align-items-center" onclick="showTab('registrations')" style="background: linear-gradient(45deg, var(--primary), #5a8a6a);">
+                  <i class="bi bi-person-plus me-2"></i>
+                  <div class="text-start">
+                    <div>Manage Registrations</div>
+                    <small style="opacity: 0.8;">{{ stat_pending_reg }} pending approval</small>
+                  </div>
+                </button>
+                <button class="btn btn-success d-flex align-items-center" onclick="showTab('todays-appointments')" style="background: linear-gradient(45deg, #28a745, #20c997);">
+                  <i class="bi bi-calendar-check me-2"></i>
+                  <div class="text-start">
+                    <div>Today's Schedule</div>
+                    <small style="opacity: 0.8;">{{ stat_todays_confirmed }} confirmed</small>
+                  </div>
+                </button>
+                <button class="btn btn-info d-flex align-items-center" onclick="showTab('blood-donations')" style="background: linear-gradient(45deg, #17a2b8, #20c997);">
+                  <i class="bi bi-heart-pulse me-2"></i>
+                  <div class="text-start">
+                    <div>Blood Bank</div>
+                    <small style="opacity: 0.8;">Manage donations & requests</small>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="activity-card" data-aos="fade-up">
+              <div class="activity-header">
+                <div class="activity-icon">
+                  <i class="bi bi-clock-history"></i>
+                </div>
+                <div>
+                  <h5 class="card-title mb-1">Recent System Activity</h5>
+                  <small class="text-muted">Last 24 hours</small>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-3 text-center">
+                  <div class="metric-value">{{ stat_todays_confirmed }}</div>
+                  <div class="metric-label">Appointments Confirmed</div>
+                </div>
+                <div class="col-md-3 text-center">
+                  <div class="metric-value">{{ stat_pending_reg }}</div>
+                  <div class="metric-label">New Registrations</div>
+                </div>
+                <div class="col-md-3 text-center">
+                  <div class="metric-value">{{ stat_feedback }}</div>
+                  <div class="metric-label">Feedback Received</div>
+                </div>
+                <div class="col-md-3 text-center">
+                  <div class="metric-value">{{ stat_staff }}</div>
+                  <div class="metric-label">Staff Active</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Appointments Tab -->
+      <div id="todays-appointments" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Today's Appointments (FCFS Queue)</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Queue #</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Department</th>
+                    <th>Doctor</th>
+                    <th>Time Slot</th>
+                    <th>Status</th>
+                    <th>Deadline</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for today_appt in todays_appointments %}
+                  <tr>
+                    <td><span class="badge bg-primary">#{{ forloop.counter }}</span></td>
+                    <td><strong>{{ today_appt.appointment.student_id }}</strong></td>
+                    <td>{{ today_appt.appointment.student_name }}</td>
+                    <td>{{ today_appt.appointment.student_department }}</td>
+                    <td>{{ today_appt.appointment.doctor.name }}</td>
+                    <td>{{ today_appt.appointment.appointment_time|time:"H:i" }}</td>
+                    <td>
+                      {% if today_appt.status == "CONFIRMED" %}
+                        <span class="badge status-confirmed">Confirmed</span>
+                      {% elif today_appt.status == "PENDING" %}
+                        <span class="badge status-pending">Pending</span>
+                      {% else %}
+                        <span class="badge status-cancelled">{{ today_appt.status|title }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ today_appt.response_deadline|date:"H:i" }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('todays', {{ today_appt.id }})">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="9" class="text-center text-muted">No appointments for today</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registrations Tab -->
+      <div id="registrations" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Student Registrations</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for reg in registrations %}
+                  <tr>
+                    <td><strong>{{ reg.student_id }}</strong></td>
+                    <td>{{ reg.get_full_name }}</td>
+                    <td>{{ reg.email }}</td>
+                    <td>{{ reg.department }}</td>
+                    <td>{{ reg.phone }}</td>
+                    <td>
+                      {% if reg.status == "APPROVED" %}
+                        <span class="badge status-confirmed">Approved</span>
+                      {% elif reg.status == "PENDING" %}
+                        <span class="badge status-pending">Pending</span>
+                      {% else %}
+                        <span class="badge status-cancelled">Rejected</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ reg.registered_at|date:"M d, Y" }}</td>
+                    <td>
+                      {% if reg.status == "PENDING" %}
+                      <div class="btn-group" role="group">
+                        <a href="{% url 'admin_registration_action' reg.pk %}?action=approve" class="btn btn-sm btn-success">
+                          <i class="bi bi-check"></i>
+                        </a>
+                        <a href="{% url 'admin_registration_action' reg.pk %}?action=reject" class="btn btn-sm btn-danger">
+                          <i class="bi bi-x"></i>
+                        </a>
+                      </div>
+                      {% endif %}
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('registration', {{ reg.id }})">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="8" class="text-center text-muted">No registrations found</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointments Tab -->
+      <div id="appointments" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">All Appointments</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Doctor</th>
+                    <th>Date & Time</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for appointment in appointments %}
+                  <tr>
+                    <td><strong>{{ appointment.student_id }}</strong></td>
+                    <td>{{ appointment.student_name }}</td>
+                    <td>{{ appointment.doctor.name }}</td>
+                    <td>
+                      {{ appointment.appointment_date }}<br>
+                      <small class="text-muted">{{ appointment.appointment_time|time:"H:i" }}</small>
+                    </td>
+                    <td>{{ appointment.student_department }}</td>
+                    <td>
+                      {% if appointment.status == "CONFIRMED" %}
+                        <span class="badge status-confirmed">Confirmed</span>
+                      {% elif appointment.status == "PENDING" %}
+                        <span class="badge status-pending">Pending</span>
+                      {% elif appointment.status == "COMPLETED" %}
+                        <span class="badge status-completed">Completed</span>
+                      {% else %}
+                        <span class="badge status-cancelled">{{ appointment.status|title }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ appointment.created_at|date:"M d" }}</td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <a href="{% url 'admin_appointment_status' appointment.pk %}?status=CONFIRMED" class="btn btn-sm btn-success">
+                          <i class="bi bi-check"></i>
+                        </a>
+                        <a href="{% url 'admin_appointment_status' appointment.pk %}?status=CANCELLED" class="btn btn-sm btn-danger">
+                          <i class="bi bi-x"></i>
+                        </a>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('appointment', {{ appointment.id }})">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="8" class="text-center text-muted">No appointments found</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blood Donations Tab -->
+      <div id="blood-donations" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Blood Donors</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Donor Name</th>
+                    <th>Blood Group</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Weight</th>
+                    <th>Health Condition</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for donor in blood_donations %}
+                  <tr>
+                    <td><strong>{{ donor.student_id }}</strong></td>
+                    <td>{{ donor.donor_name }}</td>
+                    <td><span class="badge bg-danger">{{ donor.blood_group }}</span></td>
+                    <td>{{ donor.phone }}</td>
+                    <td>{{ donor.email }}</td>
+                    <td>{{ donor.weight }} kg</td>
+                    <td>{{ donor.health_condition }}</td>
+                    <td>
+                      {% if donor.status == "APPROVED" %}
+                        <span class="badge status-confirmed">Approved</span>
+                      {% elif donor.status == "PENDING" %}
+                        <span class="badge status-pending">Pending</span>
+                      {% else %}
+                        <span class="badge status-cancelled">{{ donor.status|title }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if donor.status == "PENDING" %}
+                      <div class="btn-group" role="group">
+                        <a href="{% url 'admin_blood_donation_status' donor.pk %}?status=APPROVED" class="btn btn-sm btn-success">
+                          <i class="bi bi-check"></i>
+                        </a>
+                        <a href="{% url 'admin_blood_donation_status' donor.pk %}?status=REJECTED" class="btn btn-sm btn-danger">
+                          <i class="bi bi-x"></i>
+                        </a>
+                      </div>
+                      {% endif %}
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('blood-donation', {{ donor.id }})">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="9" class="text-center text-muted">No blood donors found</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blood Requests Tab -->
+      <div id="blood-requests" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Blood Requests</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Requester Name</th>
+                    <th>Blood Group</th>
+                    <th>Units Required</th>
+                    <th>Hospital</th>
+                    <th>Urgency</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for request in blood_requests %}
+                  <tr>
+                    <td><strong>{{ request.student_id }}</strong></td>
+                    <td>{{ request.requester_name }}</td>
+                    <td><span class="badge bg-info">{{ request.blood_group }}</span></td>
+                    <td>{{ request.units_required }}</td>
+                    <td>{{ request.hospital_name }}</td>
+                    <td>{{ request.urgency }}</td>
+                    <td>
+                      {% if request.status == "APPROVED" %}
+                        <span class="badge status-confirmed">Approved</span>
+                      {% elif request.status == "PENDING" %}
+                        <span class="badge status-pending">Pending</span>
+                      {% else %}
+                        <span class="badge status-cancelled">{{ request.status|title }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if request.status == "PENDING" %}
+                      <div class="btn-group" role="group">
+                        <a href="{% url 'admin_blood_request_status' request.pk %}?status=APPROVED" class="btn btn-sm btn-success">
+                          <i class="bi bi-check"></i>
+                        </a>
+                        <a href="{% url 'admin_blood_request_status' request.pk %}?status=REJECTED" class="btn btn-sm btn-danger">
+                          <i class="bi bi-x"></i>
+                        </a>
+                      </div>
+                      {% endif %}
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('blood-request', {{ request.id }})">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="8" class="text-center text-muted">No blood requests found</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other tabs would continue here... -->
+      <div id="doctors" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Doctors Management</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Doctor Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Specialization</th>
+                    <th>Available Days</th>
+                    <th>Available Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for doctor in doctors %}
+                  <tr>
+                    <td><strong>{{ doctor.id }}</strong></td>
+                    <td>{{ doctor.name }}</td>
+                    <td>{{ doctor.email }}</td>
+                    <td>{{ doctor.phone }}</td>
+                    <td>{{ doctor.specialized_in }}</td>
+                    <td>{{ doctor.available_days }}</td>
+                    <td>{{ doctor.available_time }}</td>
+                    <td>
+                      {% if doctor.is_available %}
+                        <span class="badge status-confirmed">Active</span>
+                      {% else %}
+                        <span class="badge status-cancelled">Inactive</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('doctor', {{ doctor.id }})">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <a href="{% url 'admin:app_doctor_change' doctor.pk %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="9" class="text-center text-muted">No doctors found</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="staff-members" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Staff Members</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Staff ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Is Doctor</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for staff in staff_members %}
+                  <tr>
+                    <td><strong>{{ staff.staff_id }}</strong></td>
+                    <td>{{ staff.name }}</td>
+                    <td>{{ staff.email }}</td>
+                    <td>{{ staff.phone }}</td>
+                    <td>
+                      {% if staff.is_doctor %}
+                        <span class="badge status-confirmed">Yes</span>
+                      {% else %}
+                        <span class="badge status-pending">No</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('staff', '{{ staff.staff_id }}')">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <a href="{% url 'admin:app_staffprofile_change' staff.pk %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">No staff members found</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="donations" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Donations</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Donor Name</th>
+                    <th>Email</th>
+                    <th>Amount</th>
+                    <th>Payment Status</th>
+                    <th>Donated At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for donation in donations %}
+                  <tr>
+                    <td><strong>{{ donation.student_id }}</strong></td>
+                    <td>{{ donation.name }}</td>
+                    <td>{{ donation.email }}</td>
+                    <td>₹{{ donation.amount }}</td>
+                    <td>
+                      {% if donation.is_paid %}
+                        <span class="badge status-confirmed">Paid</span>
+                      {% else %}
+                        <span class="badge status-pending">Pending</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ donation.donated_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('donation', {{ donation.id }})">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      {% if not donation.is_paid %}
+                      <a href="{% url 'admin_donation_toggle_paid' donation.pk %}" class="btn btn-sm btn-success">
+                        <i class="bi bi-check"></i>
+                      </a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="7" class="text-center text-muted">No donations found</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="feedback" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Feedback</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Rating</th>
+                    <th>Message</th>
+                    <th>Submitted At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for fb in feedback %}
+                  <tr>
+                    <td><strong>{{ fb.name }}</strong></td>
+                    <td>
+                      <div class="text-warning">
+                        {% for i in "12345"|make_list %}
+                          {% if forloop.counter <= fb.stars %}
+                            <i class="bi bi-star-fill"></i>
+                          {% else %}
+                            <i class="bi bi-star"></i>
+                          {% endif %}
+                        {% endfor %}
+                        <span class="ms-1">{{ fb.stars }}/5</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="text-truncate" style="max-width: 300px;" title="{{ fb.message }}">
+                        {{ fb.message|truncatechars:60 }}
+                      </div>
+                    </td>
+                    <td>{{ fb.submitted_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('feedback', {{ fb.id }})">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <a href="{% url 'admin:app_helpdesk_delete' fb.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">No feedback found</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="login-logs" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Login Logs</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>IP Address</th>
+                    <th>Verified</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for log in login_logs %}
+                  <tr>
+                    <td><strong>{{ log.username }}</strong></td>
+                    <td>{{ log.date|date:"M d, Y" }}</td>
+                    <td>{{ log.time|time:"H:i:s" }}</td>
+                    <td>
+                      <code>{{ log.ip_address }}</code>
+                    </td>
+                    <td>
+                      {% if log.is_verified %}
+                        <span class="badge status-confirmed">Verified</span>
+                      {% else %}
+                        <span class="badge status-pending">Unverified</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('login-log', {{ log.id }})">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <a href="{% url 'admin:app_loginlog_delete' log.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">No login logs found</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DANGER ZONE Tab -->
+      <div id="danger-zone" class="tab-content">
+        <div class="danger-zone" data-aos="fade-up">
+          <div class="danger-header">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            DANGER ZONE - STUDENT DATA MANAGEMENT
+          </div>
+          <div class="danger-description">
+            <strong>⚠️ WARNING:</strong> This section contains destructive operations that cannot be undone.
+            Proceed with extreme caution as these actions will permanently delete data from the database.
+          </div>
+
+          <!-- Data Statistics -->
+          <div class="stats-warning">
+            <h6 class="mb-3" style="color: #c53030; font-weight: 700;">Current Database Status:</h6>
+            <div class="stat-item">
+              <span>Student Registrations:</span>
+              <span class="stat-number">{{ stat_pending_reg }}+ records</span>
+            </div>
+            <div class="stat-item">
+              <span>Appointments:</span>
+              <span class="stat-number">{{ stat_pending_appts }}+ records</span>
+            </div>
+            <div class="stat-item">
+              <span>Blood Donations:</span>
+              <span class="stat-number">{{ stat_pending_blooddon }}+ records</span>
+            </div>
+            <div class="stat-item">
+              <span>Blood Requests:</span>
+              <span class="stat-number">{{ stat_pending_bloodreq }}+ records</span>
+            </div>
+            <div class="stat-item">
+              <span>Feedback Entries:</span>
+              <span class="stat-number">{{ stat_feedback }} records</span>
+            </div>
+            <div class="stat-item">
+              <span>Active Staff:</span>
+              <span class="stat-number">{{ stat_staff }} records</span>
+            </div>
+          </div>
+
+          <!-- Kill Button -->
+          <div class="text-center">
+            <h5 style="color: #c53030; margin-bottom: 16px; font-weight: 700;">
+              🗑️ NUCLEAR OPTION: PURGE ALL STUDENT DATA
+            </h5>
+            <p style="color: #742a2a; margin-bottom: 20px;">
+              This will permanently delete ALL student-related data including registrations, appointments,
+              blood donations/requests, feedback, login logs, and user accounts.
+              <strong>Doctors and staff data will be preserved.</strong>
+            </p>
+
+            <button
+              type="button"
+              class="btn kill-button"
+              onclick="confirmDataPurge()"
+              data-aos="pulse"
+              data-aos-delay="500"
+            >
+              <i class="bi bi-trash3-fill me-2"></i>
+              🚨 KILL ALL STUDENT DATA 🚨
+            </button>
+          </div>
+
+          <!-- Hidden Form for Data Purge -->
+          <form id="purgeForm" method="post" action="{% url 'admin_clear_all_data' %}" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" id="confirmationInput" name="confirmation" value="">
+          </form>
+
+          <div class="mt-4 p-3" style="background: #fff; border-radius: 8px; border: 1px solid #fc8181;">
+            <small style="color: #742a2a;">
+              <strong>Security Notice:</strong> This action requires typing the exact confirmation phrase
+              and will be logged for security auditing. Make sure you have a database backup before proceeding.
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Initialize AOS (Animate On Scroll)
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-cubic',
+      once: true,
+      offset: 100
+    });
+
+    // Animated Counter Function
+    function animateCounter(element, target, duration = 2000) {
+      let start = 0;
+      const end = parseInt(target);
+      const increment = end / (duration / 16);
+
+      function updateCounter() {
+        start += increment;
+        if (start < end) {
+          element.textContent = Math.floor(start);
+          requestAnimationFrame(updateCounter);
+        } else {
+          element.textContent = end;
+        }
+      }
+      updateCounter();
+    }
+
+    // Initialize counters when dashboard is shown
+    function initializeCounters() {
+      document.querySelectorAll('.stat-number[data-target]').forEach(counter => {
+        const target = counter.getAttribute('data-target');
+        animateCounter(counter, target);
+      });
+    }
+
+    // Weekly Activity Chart
+    function initializeWeeklyChart() {
+      const ctx = document.getElementById('weeklyChart');
+      if (!ctx) return;
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            label: 'Appointments',
+            data: [12, 19, 8, 15, 22, 14, 9],
+            borderColor: '#4a7c59',
+            backgroundColor: 'rgba(74, 124, 89, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+          }, {
+            label: 'Registrations',
+            data: [5, 12, 6, 9, 15, 8, 4],
+            borderColor: '#5a8a6a',
+            backgroundColor: 'rgba(90, 138, 106, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 20
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0,0,0,0.1)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          },
+          elements: {
+            point: {
+              radius: 6,
+              hoverRadius: 8
+            }
+          }
+        }
+      });
+    }
+
+    // Department Distribution Chart
+    function initializeDepartmentChart() {
+      const ctx = document.getElementById('departmentChart');
+      if (!ctx) return;
+
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['General', 'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics'],
+          datasets: [{
+            data: [35, 25, 15, 15, 10],
+            backgroundColor: [
+              '#4a7c59',
+              '#5a8a6a',
+              '#6b9b7a',
+              '#7cac8b',
+              '#8dbd9c'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                  size: 12
+                }
+              }
+            }
+          },
+          cutout: '70%'
+        }
+      });
+    }
+
+    // Real-time updates (every 30 seconds)
+    function startRealTimeUpdates() {
+      setInterval(() => {
+        fetch('{% url "admin_dashboard_stats" %}')
+          .then(response => response.json())
+          .then(data => {
+            // Update stat cards with new data
+            updateStatCard('todays_appointments', data.todays_appointments);
+            updateStatCard('blood_donors', data.blood_donors);
+            updateStatCard('blood_requests', data.blood_requests);
+            updateStatCard('active_doctors', data.active_doctors);
+          })
+          .catch(error => console.log('Stats update error:', error));
+      }, 30000); // Update every 30 seconds
+    }
+
+    function updateStatCard(type, data) {
+      // Add pulse effect to updated cards
+      const card = document.querySelector(`[data-stat="${type}"]`);
+      if (card) {
+        card.style.animation = 'pulse 0.5s ease-in-out';
+        setTimeout(() => {
+          card.style.animation = '';
+        }, 500);
+      }
+    }
+
+    // Enhanced Tab switching with animations
+    function showTab(tabName) {
+      // Hide all tab content with fade out
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.opacity = '0';
+        content.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+          content.style.display = 'none';
+          content.classList.remove('active');
+        }, 200);
+      });
+
+      // Remove active class from all tab links
+      document.querySelectorAll('.tab-link').forEach(link => {
+        link.classList.remove('active');
+      });
+
+      // Show selected tab content with fade in
+      setTimeout(() => {
+        const selectedTab = document.getElementById(tabName);
+        if (selectedTab) {
+          selectedTab.style.display = 'block';
+          selectedTab.classList.add('active');
+          setTimeout(() => {
+            selectedTab.style.opacity = '1';
+            selectedTab.style.transform = 'translateY(0)';
+          }, 50);
+
+          // Initialize counters for dashboard
+          if (tabName === 'dashboard') {
+            setTimeout(initializeCounters, 300);
+          }
+
+          // Refresh AOS if switching to danger zone to ensure animations work
+          if (tabName === 'danger-zone') {
+            setTimeout(() => {
+              if (typeof AOS !== 'undefined') {
+                AOS.refresh();
+              }
+            }, 300);
+          }
+        }
+      }, 200);
+
+      // Add active class to selected tab link
+      const selectedLink = document.querySelector(`[data-tab="${tabName}"]`);
+      if (selectedLink) {
+        selectedLink.classList.add('active');
+      }
+
+      // Update header title with animation
+      const titles = {
+        'dashboard': 'AUdoc Control Center',
+        'todays-appointments': 'Today\'s Appointments',
+        'registrations': 'Student Registrations',
+        'appointments': 'All Appointments',
+        'blood-donations': 'Blood Donations',
+        'blood-requests': 'Blood Requests',
+        'doctors': 'Doctors Management',
+        'staff-members': 'Staff Members',
+        'donations': 'Donations',
+        'feedback': 'Feedback',
+        'login-logs': 'Login Logs',
+        'danger-zone': '🚨 DANGER ZONE 🚨'
+      };
+
+      const header = document.querySelector('.content-header h1');
+      header.style.opacity = '0';
+      setTimeout(() => {
+        header.textContent = titles[tabName] || 'Admin Dashboard';
+        header.style.opacity = '1';
+      }, 100);
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize charts
+      setTimeout(() => {
+        initializeWeeklyChart();
+        initializeDepartmentChart();
+      }, 1000);
+
+      // Initialize counters
+      setTimeout(initializeCounters, 1500);
+
+      // Start real-time updates
+      // startRealTimeUpdates();
+
+      // Add smooth transitions to all content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      });
+
+      // Enhanced sidebar interactions
+      document.querySelectorAll('.tab-link').forEach(link => {
+        link.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateX(5px)';
+        });
+        link.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateX(0)';
+        });
+      });
+    });
+
+    // Tab switching functionality (enhanced version)
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tabName = this.getAttribute('data-tab');
+        showTab(tabName);
+      });
+    });
+
+    // Sidebar toggle for mobile
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('show');
+    }
+
+    // View details function (enhanced with modal-like effect)
+    function viewDetails(type, id) {
+      // Add a nice loading effect
+      const button = event.target.closest('button');
+      const originalText = button.innerHTML;
+      button.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+      setTimeout(() => {
+        button.innerHTML = originalText;
+        alert(`Viewing ${type} details for ID: ${id}`);
+      }, 500);
+    }
+
+    // DANGER ZONE: Data Purge Confirmation
+    function confirmDataPurge() {
+      // Multi-step confirmation process
+      const step1 = confirm(
+        "⚠️ DANGER ZONE WARNING ⚠️\n\n" +
+        "This will PERMANENTLY DELETE ALL student-related data including:\n" +
+        "• Student registrations and profiles\n" +
+        "• All appointments\n" +
+        "• Blood donations and requests\n" +
+        "• Feedback and login logs\n" +
+        "• Student user accounts\n\n" +
+        "This action CANNOT be undone!\n\n" +
+        "Are you absolutely sure you want to continue?"
+      );
+
+      if (!step1) {
+        return;
+      }
+
+      // Second confirmation
+      const step2 = confirm(
+        "🚨 FINAL WARNING 🚨\n\n" +
+        "This is your LAST CHANCE to cancel!\n\n" +
+        "All student data will be PERMANENTLY ERASED.\n" +
+        "Make sure you have a database backup!\n\n" +
+        "Click OK to proceed with data purge, or Cancel to abort."
+      );
+
+      if (!step2) {
+        return;
+      }
+
+      // Text confirmation
+      const confirmation = prompt(
+        "🔥 DATA PURGE ACTIVATION 🔥\n\n" +
+        "To confirm this destructive action, type the following phrase EXACTLY:\n\n" +
+        "DELETE_ALL_STUDENT_DATA\n\n" +
+        "Type it below:"
+      );
+
+      if (confirmation === 'DELETE_ALL_STUDENT_DATA') {
+        // Show final loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-hourglass-split"></i> PURGING DATA...';
+        button.disabled = true;
+
+        // Submit the form
+        document.getElementById('confirmationInput').value = confirmation;
+        document.getElementById('purgeForm').submit();
+      } else if (confirmation !== null) {
+        alert("❌ Incorrect confirmation phrase. Data purge cancelled for safety.");
+      }
+    }
+
+    // Initialize dashboard by default
+    showTab('dashboard');
+
+    // Debug function for testing danger zone
+    window.testDangerZone = function() {
+      console.log('Testing danger zone...');
+      showTab('danger-zone');
+      setTimeout(() => {
+        const dangerZone = document.getElementById('danger-zone');
+        console.log('Danger zone element:', dangerZone);
+        console.log('Danger zone visible:', dangerZone && dangerZone.style.display !== 'none');
+        console.log('Danger zone has active class:', dangerZone && dangerZone.classList.contains('active'));
+      }, 500);
+    };
+
+    // Add keyboard shortcut for testing (Ctrl+D)
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        testDangerZone();
+      }
+    });
+  </script>
+</body>
+</html>

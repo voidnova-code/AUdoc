@@ -1,17 +1,60 @@
+import uuid
+
 from django.db import models
 from django.conf import settings
 
 
 STUDENT_DEPT_CHOICES = [
-    ("CSE",  "Computer Science & Engineering"),
-    ("EEE",  "Electrical & Electronic Engineering"),
-    ("ME",   "Mechanical Engineering"),
-    ("CE",   "Civil Engineering"),
-    ("TE",   "Textile Engineering"),
-    ("IPE",  "Industrial & Production Engineering"),
-    ("BBA",  "Business Administration"),
-    ("ENG",  "English"),
-    ("OTHER", "Other"),
+    # Language & Literature
+    ("LING",    "Linguistics"),
+    ("BEN",     "Bengali"),
+    ("HINDI",   "Hindi"),
+    ("MANI",    "Manipuri"),
+    ("SANS",    "Sanskrit"),
+    ("ASM",     "Assamese"),
+    ("ENG",     "English"),
+    ("ARAB",    "Arabic"),
+    ("FREN",    "French"),
+    # Social Sciences
+    ("ECON",    "Economics"),
+    ("COM",     "Commerce"),
+    ("POLSCI",  "Political Science"),
+    ("HIST",    "History"),
+    ("SOCIO",   "Sociology"),
+    ("SWRK",    "Social Work"),
+    # Arts, Media & Humanities
+    ("MASSCOM", "Mass Communication"),
+    ("VISART",  "Visual Arts"),
+    ("PERART",  "Performing Arts"),
+    ("PHIL",    "Philosophy"),
+    # Education & Management
+    ("EDU",     "Education"),
+    ("BBA",     "Business Administration"),
+    ("LIS",     "Library & Information Science"),
+    # Physical & Mathematical Sciences
+    ("PHY",     "Physics"),
+    ("CHEM",    "Chemistry"),
+    ("MATH",    "Mathematics"),
+    ("STAT",    "Statistics"),
+    ("CSE",     "Computer Science"),
+    # Life Sciences
+    ("LSBIO",   "Life Science & Bioinformatics"),
+    ("MICRO",   "Microbiology"),
+    ("BIOTECH", "Biotechnology"),
+    # Engineering, Technology & Applied Sciences
+    ("MECH",   "Mechanical Engineering"),
+    ("CIVIL",  "Civil Engineering"),
+    ("CSC",    "Computer Science Engineering"),
+    ("IT",      "Information Technology"),
+    ("ECE",     "Electronics & Telecommunication"),
+    ("AGENG",   "Agricultural Engineering"),
+    # Environment & Earth Sciences
+    ("ECO",     "Ecology & Environmental Science"),
+    ("EARTH",   "Earth Sciences"),
+    # Professional Programs
+    ("LAW",     "Law"),
+    ("PHARMA",  "Pharmaceutical Sciences"),
+    ("OTHER",   "Other"),
 ]
 
 MEDICAL_DEPT_CHOICES = [
@@ -124,6 +167,18 @@ class Doctor(models.Model):
         help_text='e.g. "9:00 AM – 5:00 PM"',
     )
     is_available    = models.BooleanField(default=True, verbose_name="Available")
+    photo           = models.ImageField(
+        upload_to='doctors/',
+        blank=True,
+        null=True,
+        verbose_name="Profile Photo",
+    )
+
+    @property
+    def available_days_list(self):
+        if self.available_days:
+            return [d.strip() for d in self.available_days.split(',') if d.strip()]
+        return []
 
     class Meta:
         ordering = ["name"]
@@ -422,3 +477,107 @@ class LoginLog(models.Model):
 
     def __str__(self):
         return f"{self.username} — {self.date} {self.time}"
+
+
+class HelpDesk(models.Model):
+    STAR_CHOICES = [(i, f"{i} Star{'s' if i > 1 else ''}") for i in range(1, 6)]
+
+    name         = models.CharField(max_length=150, verbose_name="Name")
+    stars        = models.PositiveSmallIntegerField(
+        choices=STAR_CHOICES,
+        verbose_name="Rating",
+    )
+    message      = models.TextField(blank=True, verbose_name="Message")
+    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name="Submitted At")
+
+    class Meta:
+        ordering = ["-submitted_at"]
+        verbose_name = "Help Desk Feedback"
+        verbose_name_plural = "Help Desk Feedback"
+
+    def __str__(self):
+        return f"{self.name} — {self.stars}★ ({self.submitted_at.strftime('%d %b %Y')})"
+
+
+class DonorResponse(models.Model):
+    RESPONSE_CHOICES = [
+        ("PENDING",  "Pending"),
+        ("ACCEPTED", "Accepted"),
+        ("DECLINED", "Declined"),
+    ]
+
+    blood_request = models.ForeignKey(
+        "BloodRequest",
+        on_delete=models.CASCADE,
+        related_name="donor_responses",
+        verbose_name="Blood Request",
+    )
+    donor = models.ForeignKey(
+        "BloodDonation",
+        on_delete=models.CASCADE,
+        related_name="responses",
+        verbose_name="Donor",
+    )
+    token        = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    response     = models.CharField(
+        max_length=10,
+        choices=RESPONSE_CHOICES,
+        default="PENDING",
+        verbose_name="Response",
+    )
+    responded_at = models.DateTimeField(null=True, blank=True, verbose_name="Responded At")
+
+    class Meta:
+        unique_together = ("blood_request", "donor")
+        ordering = ["-blood_request__created_at"]
+        verbose_name = "Donor Response"
+        verbose_name_plural = "Donor Responses"
+
+    def __str__(self):
+        return f"{self.donor.donor_name} → {self.blood_request} [{self.response}]"
+
+
+class TodaysAppointment(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING",   "Pending Confirmation"),
+        ("CONFIRMED", "Confirmed"),
+        ("DECLINED",  "Declined"),
+        ("EXPIRED",   "Expired"),
+    ]
+
+    appointment         = models.ForeignKey(
+        "Appointment",
+        on_delete=models.CASCADE,
+        related_name="todays_appointments",
+        verbose_name="Appointment",
+    )
+    confirmation_token  = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    email_sent_at       = models.DateTimeField(null=True, blank=True, verbose_name="Email Sent At")
+    response_deadline   = models.DateTimeField(verbose_name="Response Deadline")
+    status              = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+        verbose_name="Status",
+    )
+    responded_at        = models.DateTimeField(null=True, blank=True, verbose_name="Responded At")
+    queue_position      = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Queue Position (FCFS)",
+        help_text="Position in the queue after confirmation"
+    )
+    created_at          = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+
+    class Meta:
+        ordering = ["appointment__created_at"]  # Order by original booking time (FCFS)
+        verbose_name = "Today's Appointment"
+        verbose_name_plural = "Today's Appointments"
+
+    def __str__(self):
+        return f"{self.appointment.student_name} - {self.appointment.appointment_date} [{self.status}]"
+
+    def is_expired(self):
+        """Check if the confirmation window has expired"""
+        from django.utils import timezone
+        return timezone.now() > self.response_deadline and self.status == "PENDING"

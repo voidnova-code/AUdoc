@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
-from .models import BloodRequest, BloodDonation, LoginLog, Doctor, Appointment, Donation, StudentProfile, StaffProfile, StudentRegistration
+from .models import BloodRequest, BloodDonation, DonorResponse, HelpDesk, LoginLog, Doctor, Appointment, Donation, StudentProfile, StaffProfile, StudentRegistration, TodaysAppointment
 
 
 # ── Staff admin form with password hashing ──────────────────────────────────
@@ -126,109 +126,6 @@ class StudentRegistrationAdmin(admin.ModelAdmin):
                 home_address=obj.home_address,
                 present_address=obj.present_address,
             )
-
-            # Send approval email — no password, just Student ID needed to log in
-            subject = "\U0001f389 You're In! Your AUdoc Registration is Approved"
-            plain_text = (
-                "Hey {name}!\n\n"
-                "BIG NEWS -- your AUdoc registration has been APPROVED!\n\n"
-                "Log in at: http://localhost:8000/accounts/login/\n"
-                "Use the 'Student' tab and enter your Student ID: {sid}\n"
-                "No password needed!\n\n"
-                "Stay healthy,\nThe AUdoc Team"
-            ).format(name=obj.first_name, sid=obj.student_id)
-
-            html_body = (
-                "<!DOCTYPE html>"
-                "<html lang='en'>"
-                "<head><meta charset='UTF-8'/><meta name='viewport' content='width=device-width,initial-scale=1.0'/></head>"
-                "<body style='margin:0;padding:0;background:#e8f5e9;font-family:Segoe UI,Arial,sans-serif;'>"
-                "<table width='100%' cellpadding='0' cellspacing='0' style='background:#e8f5e9;padding:40px 0;'>"
-                "<tr><td align='center'>"
-                "<table width='560' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(29,131,72,.18);'>"
-
-                # Header
-                "<tr><td style='background:linear-gradient(135deg,#1d8348 0%,#145a32 100%);padding:36px 40px;text-align:center;'>"
-                "<div style='display:inline-block;background:rgba(255,255,255,.15);border-radius:14px;padding:12px 18px;margin-bottom:14px;'>"
-                "<span style='font-size:2.4rem;'>&#127881;</span>"
-                "</div>"
-                "<h1 style='margin:0;color:#ffffff;font-size:1.6rem;font-weight:700;letter-spacing:-.5px;'>Congratulations, {name}!</h1>"
-                "<p style='margin:6px 0 0;color:#a9dfbf;font-size:.9rem;'>Your AUdoc registration has been approved</p>"
-                "</td></tr>"
-
-                # Body
-                "<tr><td style='padding:36px 40px 28px;'>"
-                "<p style='margin:0 0 6px;font-size:1.4rem;'>&#127775; Big News!</p>"
-                "<p style='margin:0 0 24px;color:#555;font-size:.97rem;line-height:1.6;'>"
-                "The admin team reviewed your application, had a cup of tea &#9749;, and stamped it with a big green tick. "
-                "Welcome to the <strong style='color:#1d8348;'>AUdoc</strong> family! &#128588;"
-                "</p>"
-
-                # Login steps box
-                "<table width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:28px;'>"
-                "<tr><td style='background:#f0faf4;border:1.5px solid #a9dfbf;border-radius:14px;padding:24px 28px;'>"
-                "<p style='margin:0 0 14px;font-weight:700;font-size:.95rem;color:#1d8348;text-transform:uppercase;letter-spacing:1px;'>&#128274; How to log in (super easy!)</p>"
-                "<table cellpadding='0' cellspacing='0'>"
-                "<tr><td style='padding:5px 0;'><span style='display:inline-block;background:#1d8348;color:#fff;border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;font-size:.8rem;font-weight:700;margin-right:10px;'>1</span>"
-                "<span style='color:#333;font-size:.92rem;'>Go to: <a href='http://localhost:8000/accounts/login/' style='color:#1a5c96;'>AUdoc Login Page</a></span></td></tr>"
-                "<tr><td style='padding:5px 0;'><span style='display:inline-block;background:#1d8348;color:#fff;border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;font-size:.8rem;font-weight:700;margin-right:10px;'>2</span>"
-                "<span style='color:#333;font-size:.92rem;'>Click the <strong>Student</strong> tab &#127891;</span></td></tr>"
-                "<tr><td style='padding:5px 0;'><span style='display:inline-block;background:#1d8348;color:#fff;border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;font-size:.8rem;font-weight:700;margin-right:10px;'>3</span>"
-                "<span style='color:#333;font-size:.92rem;'>Enter your Student ID: <strong style='font-family:Courier New,monospace;background:#eef4ff;color:#134a7a;padding:2px 10px;border-radius:6px;font-size:1rem;'>{sid}</strong></span></td></tr>"
-                "<tr><td style='padding:5px 0;'><span style='display:inline-block;background:#1d8348;color:#fff;border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;font-size:.8rem;font-weight:700;margin-right:10px;'>4</span>"
-                "<span style='color:#333;font-size:.92rem;'>Hit <strong>Login</strong> &mdash; that's it! &#129395; No password. Nada. Zero. Zilch.</span></td></tr>"
-                "</table>"
-                "</td></tr></table>"
-
-                # Features
-                "<p style='margin:0 0 12px;font-weight:700;font-size:.92rem;color:#444;'>&#10024; Once you are in, you can:</p>"
-                "<table cellpadding='0' cellspacing='0' style='margin-bottom:24px;'>"
-                "<tr><td style='padding:4px 0;color:#555;font-size:.9rem;'>&#128197;&nbsp; Book appointments with campus doctors</td></tr>"
-                "<tr><td style='padding:4px 0;color:#555;font-size:.9rem;'>&#128203;&nbsp; Check doctor availability &amp; schedules</td></tr>"
-                "<tr><td style='padding:4px 0;color:#555;font-size:.9rem;'>&#129657;&nbsp; Stop Googling symptoms at 2&nbsp;AM and see a real doctor</td></tr>"
-                "</table>"
-
-                "<p style='margin:0;color:#888;font-size:.85rem;line-height:1.6;'>"
-                "Questions? Stuck? Just say hi at <a href='mailto:health@au.edu' style='color:#1d8348;'>health@au.edu</a> &mdash; we are a friendly bunch. &#128522;"
-                "</p>"
-                "</td></tr>"
-
-                # Footer
-                "<tr><td style='background:#f4faf6;padding:20px 40px;text-align:center;border-top:1px solid #d5ead8;'>"
-                "<p style='margin:0 0 6px;font-size:.95rem;'>Stay healthy out there! &#128170;&#127995;</p>"
-                "<p style='margin:0;font-size:.8rem;color:#999;'>"
-                "&#169; 2026 <strong style='color:#1d8348;'>AUdoc</strong> &mdash; Ahsanullah University Campus Health<br/>"
-                "Academic Block C, Room 101&nbsp;|&nbsp;health@au.edu"
-                "</p>"
-                "</td></tr>"
-
-                "</table>"
-                "</td></tr></table>"
-                "</body></html>"
-            ).format(name=obj.first_name, sid=obj.student_id)
-
-            try:
-                msg = EmailMultiAlternatives(
-                    subject=subject,
-                    body=plain_text,
-                    from_email=None,
-                    to=[obj.email],
-                )
-                msg.attach_alternative(html_body, "text/html")
-                msg.send(fail_silently=False)
-                self.message_user(
-                    request,
-                    f"Account created and approval email sent to {obj.email}.",
-                    level=messages.SUCCESS,
-                )
-            except Exception as e:
-                self.message_user(
-                    request,
-                    f"Account created but email failed to send: {e}",
-                    level=messages.WARNING,
-                )
-
-
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
     list_display = (
@@ -324,10 +221,11 @@ class DonationAdmin(admin.ModelAdmin):
 @admin.register(BloodDonation)
 class BloodDonationAdmin(admin.ModelAdmin):
     list_display = (
-        "donor_name", "blood_group", "phone", "email",
+        "student_id", "donor_name", "blood_group", "phone", "email",
+        "date_of_birth", "weight", "previous_donation", "health_condition",
         "status", "created_at",
     )
-    list_filter  = ("status", "blood_group", "created_at")
+    list_filter  = ("status", "blood_group", "previous_donation", "created_at")
     search_fields = ("student_id", "donor_name", "email", "phone")
     ordering     = ("-created_at",)
     readonly_fields = ("created_at",)
@@ -349,8 +247,9 @@ class BloodDonationAdmin(admin.ModelAdmin):
 @admin.register(BloodRequest)
 class BloodRequestAdmin(admin.ModelAdmin):
     list_display = (
-        "requester_name", "blood_group", "units_required", "urgency",
-        "required_date", "status", "created_at",
+        "student_id", "requester_name", "email", "phone", "blood_group",
+        "units_required", "reason", "urgency", "required_date",
+        "hospital_name", "hospital_contact", "requested_donor", "status", "created_at",
     )
     list_filter  = ("status", "blood_group", "urgency", "required_date", "created_at")
     search_fields = ("student_id", "requester_name", "email", "phone", "hospital_name")
@@ -369,7 +268,7 @@ class BloodRequestAdmin(admin.ModelAdmin):
             "fields": ("hospital_name", "hospital_contact"),
         }),
         ("Request Details", {
-            "fields": ("notes", "status", "created_at"),
+            "fields": ("notes", "requested_donor", "status", "created_at"),
         }),
     )
 
@@ -391,3 +290,96 @@ class LoginLogAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return True
+
+
+@admin.register(DonorResponse)
+class DonorResponseAdmin(admin.ModelAdmin):
+    list_display  = ("donor", "blood_request", "response", "responded_at")
+    list_filter   = ("response",)
+    search_fields = ("donor__donor_name", "donor__email", "blood_request__requester_name")
+    ordering      = ("-blood_request__created_at",)
+    readonly_fields = ("token", "responded_at")
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(HelpDesk)
+class HelpDeskAdmin(admin.ModelAdmin):
+    list_display  = ("name", "stars", "short_message", "submitted_at")
+    list_filter   = ("stars", "submitted_at")
+    search_fields = ("name", "message")
+    ordering      = ("-submitted_at",)
+    readonly_fields = ("submitted_at",)
+    date_hierarchy  = "submitted_at"
+    fieldsets = (
+        ("Feedback", {
+            "fields": ("name", "stars", "message"),
+        }),
+        ("Meta", {
+            "fields": ("submitted_at",),
+        }),
+    )
+
+    @admin.display(description="Message Preview")
+    def short_message(self, obj):
+        return (obj.message[:60] + "…") if len(obj.message) > 60 else (obj.message or "—")
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(TodaysAppointment)
+class TodaysAppointmentAdmin(admin.ModelAdmin):
+    list_display = (
+        "id", "get_student_name", "get_student_id", "get_appointment_date",
+        "get_appointment_time", "status", "queue_position", "email_sent_at",
+        "response_deadline", "responded_at",
+    )
+    list_filter = ("status", "appointment__appointment_date", "email_sent_at")
+    search_fields = (
+        "appointment__student_name", "appointment__student_id",
+        "appointment__email", "appointment__phone",
+    )
+    ordering = ("queue_position", "responded_at", "-created_at")
+    readonly_fields = (
+        "confirmation_token", "email_sent_at", "responded_at",
+        "created_at", "queue_position",
+    )
+    list_editable = ("status",)
+    date_hierarchy = "created_at"
+    fieldsets = (
+        ("Appointment Details", {
+            "fields": ("appointment",),
+        }),
+        ("Confirmation Status", {
+            "fields": (
+                "status", "confirmation_token", "email_sent_at",
+                "response_deadline", "responded_at",
+            ),
+        }),
+        ("Queue Information", {
+            "fields": ("queue_position", "created_at"),
+        }),
+    )
+
+    @admin.display(description="Student Name", ordering="appointment__student_name")
+    def get_student_name(self, obj):
+        return obj.appointment.student_name
+
+    @admin.display(description="Student ID", ordering="appointment__student_id")
+    def get_student_id(self, obj):
+        return obj.appointment.student_id
+
+    @admin.display(description="Appointment Date", ordering="appointment__appointment_date")
+    def get_appointment_date(self, obj):
+        return obj.appointment.appointment_date
+
+    @admin.display(description="Appointment Time", ordering="appointment__appointment_time")
+    def get_appointment_time(self, obj):
+        return obj.appointment.appointment_time
+
+    def has_add_permission(self, request):
+        # Prevent manual creation - should be created automatically
+        return False
+

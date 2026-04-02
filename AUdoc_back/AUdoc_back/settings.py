@@ -37,9 +37,14 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+ALLOWED_HOSTS = ["*"]
 
-ALLOWED_HOSTS = []
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://churlish-xerically-karren.ngrok-free.dev",
+]
 
 
 # Application definition
@@ -130,10 +135,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+MEDIA_URL  = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_REDIRECT_URL  = "/"
+LOGIN_REDIRECT_URL  = "/post-login/"
 LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL           = "/accounts/login/"
 
@@ -155,3 +164,6 @@ EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL  = f"AUSdoc Campus Health <{EMAIL_HOST_USER}>"
+
+# ── Groq AI (Chatbot — free tier) ───────────────────────────────────────────
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")

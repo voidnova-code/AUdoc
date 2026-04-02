@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from .models import (
     BLOOD_GROUP_CHOICES, MEDICAL_DEPT_CHOICES, STUDENT_DEPT_CHOICES,
-    TIME_SLOT_CHOICES, Appointment, BloodRequest, BloodDonation, Doctor, Donation, StudentRegistration,
+    TIME_SLOT_CHOICES, Appointment, Doctor, StudentRegistration,
 )
 
 
@@ -196,12 +196,7 @@ class DonationForm(forms.Form):
         label="Custom Amount (Rs)",
         widget=forms.NumberInput(attrs={"placeholder": "Enter amount (Rs 10 – 100)", "min": "10", "max": "100", "step": "0.01"}),
     )
-    message = forms.CharField(
-        required=False,
-        label="Message (optional)",
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Leave a kind note…"}),
-    )
-
+    
     def clean(self):
         cleaned = super().clean()
         preset = cleaned.get("preset_amount")
@@ -229,6 +224,37 @@ class DonationForm(forms.Form):
 
         cleaned["amount"] = amount
         return cleaned
+
+
+STAR_CHOICES = [(i, f"{i} Star{'s' if i > 1 else ''}") for i in range(1, 6)]
+
+
+class HelpDeskForm(forms.Form):
+    name = forms.CharField(
+        max_length=150,
+        label="Your Name",
+        widget=forms.TextInput(attrs={"placeholder": "Enter your full name"}),
+    )
+    stars = forms.ChoiceField(
+        choices=[(str(i), i) for i in range(1, 6)],
+        label="Rating",
+        widget=forms.HiddenInput(),
+    )
+    message = forms.CharField(
+        required=False,
+        label="Message (optional)",
+        widget=forms.Textarea(attrs={"rows": 4, "placeholder": "Share your experience or suggestions…"}),
+    )
+
+    def clean_stars(self):
+        val = self.cleaned_data["stars"]
+        try:
+            val = int(val)
+        except (ValueError, TypeError):
+            raise forms.ValidationError("Please select a star rating.")
+        if val < 1 or val > 5:
+            raise forms.ValidationError("Rating must be between 1 and 5.")
+        return val
 
 
 class BloodDonationForm(forms.Form):
@@ -330,7 +356,7 @@ class BloodRequestForm(forms.Form):
     )
     required_date = forms.DateField(
         label="Date Needed By",
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.HiddenInput(),
     )
     hospital_name = forms.CharField(
         max_length=200,

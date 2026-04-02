@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -8,19 +8,23 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <style>
     :root {
-      --primary:      #1a5c96;
-      --primary-dark: #134a7a;
-      --accent:       #e3eef8;
+      --primary:      #4a7c59;
+      --primary-dark: #2e5c3a;
+      --accent:       #e8f5ec;
       --green:        #1d8348;
       --green-light:  #d5f0e2;
       --red:          #c41e3a;
+      --bs-primary:          #4a7c59;
+      --bs-primary-rgb:      74, 124, 89;
+      --bs-link-color:       #4a7c59;
+      --bs-link-hover-color: #2e5c3a;
     }
 
-    body { font-family: 'Segoe UI', sans-serif; color: #333; background: #f4f8fc; }
+    body { font-family: 'Segoe UI', sans-serif; color: #333; background: #faf9f4; }
 
     /* Topbar */
-    .topbar { background: var(--primary-dark); color: #c8ddef; font-size: .82rem; padding: 6px 0; }
-    .topbar a { color: #c8ddef; text-decoration: none; }
+    .topbar { background: var(--primary-dark); color: #c8e6d0; font-size: .82rem; padding: 6px 0; }
+    .topbar a { color: #c8e6d0; text-decoration: none; }
     .topbar a:hover { color: #fff; }
 
     /* Navbar */
@@ -41,7 +45,7 @@
 
     /* Tab styling */
     .nav-tabs {
-      border-bottom: 2px solid #e3eef8;
+      border-bottom: 2px solid #e8f5ec;
       margin-bottom: 30px;
     }
 
@@ -70,7 +74,7 @@
     .form-card {
       background: #fff;
       border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(26,92,150,.12);
+      box-shadow: 0 8px 32px rgba(74,124,89,.12);
       padding: 36px 40px;
     }
 
@@ -78,7 +82,7 @@
     .info-card {
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(26,92,150,.08);
+      box-shadow: 0 4px 16px rgba(74,124,89,.08);
       padding: 24px;
     }
 
@@ -106,13 +110,13 @@
     .form-label { font-weight: 600; font-size: .88rem; color: #444; }
     .form-control, .form-select {
       border-radius: 10px;
-      border: 1.5px solid #d0dfee;
+      border: 1.5px solid #d5e8d9;
       font-size: .93rem;
       padding: 10px 14px;
     }
     .form-control:focus, .form-select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(26,92,150,.1);
+      box-shadow: 0 0 0 3px rgba(74,124,89,.1);
     }
     textarea.form-control { resize: vertical; min-height: 90px; }
     .invalid-feedback { font-size: .82rem; }
@@ -139,7 +143,7 @@
       display: flex;
       align-items: center;
       padding: 12px;
-      border: 1.5px solid #d0dfee;
+      border: 1.5px solid #d5e8d9;
       border-radius: 10px;
       cursor: pointer;
       transition: border-color .15s, background .15s;
@@ -169,8 +173,8 @@
     .req-card-low    { border-color: #b2dfdb; background: #f5fffb; }
 
     /* Footer */
-    footer { background: #0d2d4a; color: #9ab3c8; padding: 40px 0 20px; }
-    footer .divider { border-color: #1e4a6e; margin: 20px 0 14px; }
+    footer { background: #0d2418; color: #9abea8; padding: 40px 0 20px; }
+    footer .divider { border-color: #1e4a2e; margin: 20px 0 14px; }
 
     /* ── Navbar sliding pill indicator ── */
     .navbar-nav { position: relative; }
@@ -187,6 +191,32 @@
       z-index: 0;
     }
     .navbar-nav .nav-link { position: relative; z-index: 1; }
+    /* ── Scroll-reveal ── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    /* ── Scroll-to-top ── */
+    #scroll-top {
+      position: fixed; bottom: 30px; right: 30px;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--primary); color: #fff; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; box-shadow: 0 4px 16px rgba(74,124,89,.3);
+      opacity: 0; visibility: hidden; z-index: 998;
+      transition: opacity .3s, visibility .3s, transform .3s;
+    }
+    #scroll-top.show { opacity: 1; visibility: visible; }
+    #scroll-top:hover { transform: translateY(-3px); }
+    /* ── Page fade-in ── */
+    @keyframes pagein { from { opacity:0; } to { opacity:1; } }
+    body { animation: pagein .4s ease; }
+    /* ── Submit loading state ── */
+    .btn-loading { pointer-events: none; opacity: .75; }
+    .btn-spinner { display: none; width: 1rem; height: 1rem;
+      border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+      border-radius: 50%; animation: spin .7s linear infinite; margin-right: .4rem; }
+    .btn-loading .btn-spinner { display: inline-block; }
+    .btn-loading .btn-text { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -226,8 +256,7 @@
         <li class="nav-item"><a class="nav-link" href="{% url 'appointment' %}">Appointments</a></li>
         <li class="nav-item"><a class="nav-link active" href="{% url 'blood_bank' %}">Blood Bank</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'donation' %}">Donation</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Help Desk</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
       </ul>
       <div class="d-flex gap-2 align-items-center">
         {% if user.is_authenticated %}
@@ -256,7 +285,7 @@
 <div class="page-header">
   <div class="container">
     <nav aria-label="breadcrumb" class="mb-3">
-      <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color:#c0d8f0;font-size:.85rem;">
+      <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color:#9abea8;font-size:.85rem;">
         <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a></li>
         <li class="breadcrumb-item active text-white">Blood Bank</li>
       </ol>
@@ -317,19 +346,19 @@
             </div>
             <div class="row g-3">
               <div class="col-6">
-                <div style="background:#f4f8fc;border-radius:10px;padding:12px 14px;">
+                <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
                   <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">Donor Name</div>
                   <div class="fw-semibold mt-1">{{ existing_donation.donor_name }}</div>
                 </div>
               </div>
               <div class="col-6">
-                <div style="background:#f4f8fc;border-radius:10px;padding:12px 14px;">
+                <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
                   <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">Blood Group</div>
                   <div class="fw-bold mt-1" style="color:var(--red);font-size:1.1rem;">{{ existing_donation.blood_group }}</div>
                 </div>
               </div>
               <div class="col-6">
-                <div style="background:#f4f8fc;border-radius:10px;padding:12px 14px;">
+                <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
                   <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">Application Status</div>
                   <div class="mt-1">
                     {% if existing_donation.status == "APPROVED" %}
@@ -345,7 +374,7 @@
                 </div>
               </div>
               <div class="col-6">
-                <div style="background:#f4f8fc;border-radius:10px;padding:12px 14px;">
+                <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
                   <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">Registered On</div>
                   <div class="fw-semibold mt-1">{{ existing_donation.created_at|date:"d M Y" }}</div>
                 </div>
@@ -356,7 +385,7 @@
           <!-- ── Blood Requests List ── -->
           <div class="form-card">
             <div class="blood-badge"><i class="bi bi-list-ul me-2"></i>Blood Donation Requests</div>
-            <h5 class="fw-bold mb-1" style="color:#0d2d4a;">People Who Need Blood</h5>
+            <h5 class="fw-bold mb-1" style="color:#0d2a1a;">People Who Need Blood</h5>
             <p class="text-muted small mb-4">Active blood requests from the community. If you can help, contact them directly.</p>
 
             {% if blood_requests %}
@@ -365,7 +394,7 @@
                   <div class="req-card {% if req.urgency == 'URGENT' %}req-card-urgent{% elif req.urgency == 'HIGH' %}req-card-high{% elif req.urgency == 'MEDIUM' %}req-card-medium{% else %}req-card-low{% endif %}">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                       <div>
-                        <span class="fw-bold" style="font-size:1rem;color:#0d2d4a;">{{ req.requester_name }}</span>
+                        <span class="fw-bold" style="font-size:1rem;color:#0d2a1a;">{{ req.requester_name }}</span>
                         <span class="ms-2 fw-bold" style="font-size:1.15rem;color:var(--red);">{{ req.blood_group }}</span>
                       </div>
                       <div class="d-flex gap-2 flex-wrap">
@@ -424,7 +453,7 @@
           <!-- ── Registration Form (first-time donor) ── -->
           <div class="form-card">
             <div class="blood-badge"><i class="bi bi-heart-pulse-fill me-2"></i>Blood Donor Registration</div>
-            <h5 class="fw-bold mb-1" style="color:#0d2d4a;">Register as a Blood Donor</h5>
+            <h5 class="fw-bold mb-1" style="color:#0d2a1a;">Register as a Blood Donor</h5>
             <p class="text-muted small mb-4">Complete this form to register as a blood donor. We'll contact you when your blood type is needed.</p>
 
             <form method="post" novalidate>
@@ -600,8 +629,9 @@
               </div>
 
               <!-- ── Submit ── -->
-              <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill fw-semibold">
-                <i class="bi bi-heart-pulse-fill me-2"></i>Register as a Donor
+              <button type="submit" id="donateSubmitBtn" class="btn btn-danger btn-lg w-100 rounded-pill fw-semibold">
+                <span class="btn-spinner"></span>
+                <span class="btn-text"><i class="bi bi-heart-pulse-fill me-2"></i>Register as a Donor</span>
               </button>
               <p class="text-muted small text-center mt-3 mb-0">
                 <i class="bi bi-lock me-1"></i>Your information is kept secure and confidential.
@@ -618,7 +648,7 @@
         <div class="tab-pane fade {% if active_tab == 'request' %}show active{% endif %}" id="request-content" role="tabpanel">
           <div class="form-card">
             <div class="blood-badge request"><i class="bi bi-droplet-fill me-2"></i>Blood Request Form</div>
-            <h5 class="fw-bold mb-1" style="color:#0d2d4a;">Request Blood Urgently</h5>
+            <h5 class="fw-bold mb-1" style="color:#0d2a1a;">Request Blood Urgently</h5>
             <p class="text-muted small mb-4">Fill out this form to request blood. Our team will match your request with available donors and contact you shortly.</p>
 
             <form method="post" novalidate>
@@ -776,21 +806,7 @@
                 {% endfor %}
               </div>
 
-              <!-- Required Date -->
-              <div class="mb-3">
-                <label class="form-label" for="id_required_date">
-                  Required Date <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="date" name="required_date" id="id_required_date"
-                  class="form-control{% if form_request.required_date.errors %} is-invalid{% endif %}"
-                  value="{{ form_request.required_date.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_request.required_date.errors %}
-                  <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+              {{ form_request.required_date }}
 
               <!-- ── Hospital Information ── -->
               <p class="section-label">Hospital Information</p>
@@ -843,8 +859,9 @@
               </div>
 
               <!-- ── Submit ── -->
-              <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill fw-semibold">
-                <i class="bi bi-droplet-fill me-2"></i>Submit Blood Request
+              <button type="submit" id="requestSubmitBtn" class="btn btn-danger btn-lg w-100 rounded-pill fw-semibold">
+                <span class="btn-spinner"></span>
+                <span class="btn-text"><i class="bi bi-droplet-fill me-2"></i>Submit Blood Request</span>
               </button>
               <p class="text-muted small text-center mt-3 mb-0">
                 <i class="bi bi-lock me-1"></i>Your information is kept secure and confidential.
@@ -911,9 +928,6 @@
           <h6 class="fw-bold mb-0">Quick Links</h6>
         </div>
         <div class="d-flex flex-column gap-2">
-          <a href="{% url 'blood_donors_list' %}" class="btn btn-sm btn-outline-danger rounded-pill">
-            <i class="bi bi-people-fill me-1"></i>View All Available Donors
-          </a>
           <a href="mailto:health@au.edu" class="btn btn-sm btn-danger rounded-pill">
             <i class="bi bi-envelope me-1"></i>Contact Health Center
           </a>
@@ -985,6 +999,58 @@
     nav.addEventListener('mouseleave', () => {
       const cur = nav.querySelector('.nav-link.active');
       if (cur) moveTo(cur); else pill.style.opacity = '0';
+    });
+  })();
+</script>
+
+<!-- ══════════ SCROLL TO TOP ══════════ -->
+<button id="scroll-top" aria-label="Back to top"><i class="bi bi-chevron-up"></i></button>
+
+<script>
+  // ── Scroll-reveal ──────────────────────────────────────────
+  (function () {
+    const els = document.querySelectorAll('.reveal');
+    if (!els.length) return;
+    const seen = new Set();
+    els.forEach(el => {
+      const p = el.parentElement;
+      if (p && !seen.has(p)) {
+        seen.add(p);
+        Array.from(p.querySelectorAll(':scope > .reveal')).forEach((s, i) => {
+          s.style.transitionDelay = (i * 0.1) + 's';
+        });
+      }
+    });
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    els.forEach(el => io.observe(el));
+  })();
+
+  // ── Scroll-to-top ──────────────────────────────────────────
+  (function () {
+    const btn = document.getElementById('scroll-top');
+    if (!btn) return;
+    window.addEventListener('scroll', () => btn.classList.toggle('show', window.scrollY > 320));
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  })();
+
+  // ── Form submit loading state ──────────────────────────────
+  (function () {
+    [['form[name="donate_form"]', 'donateSubmitBtn'],
+     ['form[name="request_form"]', 'requestSubmitBtn']].forEach(function ([sel, btnId]) {
+      const form = document.querySelector(sel);
+      const btn  = document.getElementById(btnId);
+      if (form && btn) {
+        form.addEventListener('submit', function () { btn.classList.add('btn-loading'); });
+      }
+    });
+    // Fallback: any form with these buttons
+    document.querySelectorAll('form').forEach(function (form) {
+      form.addEventListener('submit', function () {
+        const btn = form.querySelector('#donateSubmitBtn, #requestSubmitBtn');
+        if (btn) btn.classList.add('btn-loading');
+      });
     });
   })();
 </script>

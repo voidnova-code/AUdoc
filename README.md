@@ -18,12 +18,13 @@
 **The official campus health management system for Assam University Silchar**
 
 [![Django](https://img.shields.io/badge/Django-6.0.3-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![DRF](https://img.shields.io/badge/DRF-3.16.1-ff1709?style=for-the-badge&logo=django&logoColor=white)](https://www.django-rest-framework.org/)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
 
-[✨ Features](#-features) · [🛠️ Tech Stack](#️-tech-stack) · [📁 Structure](#️-project-structure) · [⚡ Quick Start](#-getting-started) · [🗺️ API Routes](#️-url-routes)
+[✨ Features](#-features) · [🛠️ Tech Stack](#️-tech-stack) · [📁 Structure](#️-project-structure) · [⚡ Quick Start](#-getting-started) · [🗺️ API Routes](#️-url-routes) · [🎛️ Admin Panel](#️-modern-admin-panel)
 
 </div>
 
@@ -54,9 +55,13 @@ The system has two layers working together:
 | 🔐 **Passwordless Login** | Student ID + OTP to email. No forgotten passwords. Ever. | ✅ Live |
 | 📋 **Self Registration** | Sign up, verify email via OTP, get approved by admin | ✅ Live |
 | 📅 **Doctor Appointments** | Book 30-min slots across 8 specialties | ✅ Live |
+| 📧 **Smart Confirmations** | Morning email confirmations with 2-hour response window | ✅ Live |
+| 🎫 **FCFS Queue System** | First Come, First Serve queue assignment on confirmation | ✅ Live |
 | 🩸 **Blood Bank** | Donate blood, request blood, or target a specific donor. Heroes only. | ✅ Live |
+| 💬 **AI Chatbot** | Get instant answers about campus health services | ✅ Live |
 | 💸 **Donations** | Support the health center financially. Even ₹10 counts! | ✅ Live |
 | 📊 **Appointment History** | Track all past, upcoming, and completed visits | ✅ Live |
+| ⭐ **Help Desk Feedback** | Rate your experience and provide feedback | ✅ Live |
 | 📱 **Mobile App** | Cross-platform app (Android, iOS, Web, Windows, macOS, Linux) | 🚧 In Progress |
 
 ### The 8 Medical Specialties 🩺
@@ -69,11 +74,18 @@ The system has two layers working together:
 
 | Feature | Description |
 |---------|-------------|
+| 🎨 **Modern Admin Panel** | Glass-morphism UI with dark/light mode toggle |
+| 📊 **Interactive Dashboard** | Real-time stats, charts, and trend indicators |
+| 📈 **Live Charts** | Appointment trends & blood group distribution (Chart.js) |
+| 🎫 **FCFS Queue View** | Today's appointments with queue positions |
 | ✅ **Registration Workflow** | Review → Approve/Reject → auto-create user account + send welcome email |
 | 👨‍⚕️ **Doctor Management** | Manage doctors, specialties, availability, and time slots |
+| 👥 **Staff Management** | Add and manage health center staff |
 | 🩸 **Blood Bank Admin** | Handle donor registrations and requests with 4 urgency levels |
-| 📊 **Login Audit Log** | Every student login logged with timestamp & IP. Big Brother mode: ON. |
-| 🏥 **Custom Admin Panel** | Django admin with fieldsets, filters, inline editing, and search |
+| 📊 **Login Audit Log** | Every student login logged with timestamp & IP |
+| 🔍 **Advanced Search** | Fast search across all data tables with filtering |
+| 📤 **Export Data** | Download data as CSV/Excel files |
+| 📱 **Mobile Responsive** | Works perfectly on mobile, tablet, and desktop |
 
 ---
 
@@ -111,15 +123,21 @@ AUdoc/
 │   │   └── wsgi.py / asgi.py        # Deployment entry points
 │   │
 │   ├── 📂 app/                      # The main application
-│   │   ├── models.py                # 8 database models
-│   │   ├── views.py                 # 7 view functions
-│   │   ├── forms.py                 # 5 Django forms
+│   │   ├── models.py                # 12 database models
+│   │   ├── views.py                 # Views + AJAX endpoints
+│   │   ├── forms.py                 # Django forms
 │   │   ├── admin.py                 # Customized admin with auto-provisioning
 │   │   ├── backends.py              # Custom OTP authentication backend
 │   │   ├── signals.py               # Login audit signal handler
-│   │   └── 📂 templates/app/        # HTML templates
+│   │   ├── urls.py                  # App URL routes
+│   │   ├── 📂 templates/app/        # HTML templates
+│   │   └── 📂 management/commands/  # Custom Django commands
+│   │       ├── send_appointment_confirmations.py
+│   │       └── cleanup_todays_appointments.py
 │   │
+│   ├── 📂 media/                    # Uploaded files (doctor photos)
 │   ├── .env.example                 # 👈 Copy this to .env and add your secrets
+│   ├── requirements.txt             # Python dependencies
 │   ├── manage.py                    # Django management CLI
 │   └── db.sqlite3                   # Local database (gitignored)
 │
@@ -143,12 +161,14 @@ AUdoc/
 ```
 ┌──────────────────┬──────────────────────────────────────────────┐
 │  Backend         │  Django 6.0.3  ·  Python 3.12                │
+│  API Framework   │  Django REST Framework 3.16.1                │
 │  Mobile/Desktop  │  Flutter  ·  Dart SDK ^3.11.1                │
-│  Database        │  SQLite3  (swap to PostgreSQL for prod)       │
+│  Database        │  SQLite3  (swap to PostgreSQL for prod)      │
 │  Authentication  │  Custom OTP-based  (no passwords for students)│
 │  Email           │  Gmail SMTP  ·  TLS  ·  Port 587             │
-│  UI Theme        │  Material Design 3                           │
-│  Admin           │  Django Admin  (heavily customized)          │
+│  Charts          │  Chart.js  (interactive dashboards)          │
+│  UI Theme        │  Material Design 3  ·  Glass-morphism        │
+│  Admin           │  Custom Modern Panel  (dark/light mode)      │
 └──────────────────┴──────────────────────────────────────────────┘
 ```
 
@@ -160,33 +180,63 @@ AUdoc/
 |-------|---------|
 | `StudentProfile` | Approved student records linked to auth users |
 | `StaffProfile` | Campus staff & doctor directory |
-| `Doctor` | Doctors with specialties & availability slots |
+| `Doctor` | Doctors with specialties, availability slots & profile photos |
 | `Appointment` | Bookings (PENDING → CONFIRMED → COMPLETED) |
+| `TodaysAppointment` | Daily confirmations with FCFS queue positions |
 | `StudentRegistration` | Applications awaiting admin approval |
 | `Donation` | Monetary donation pledges (INR) |
 | `BloodDonation` | Blood donor registry with health screening |
 | `BloodRequest` | Blood requests with urgency (LOW / MEDIUM / HIGH / URGENT) |
+| `DonorResponse` | Track donor accept/decline responses |
+| `HelpDesk` | User feedback with star ratings |
 | `LoginLog` | Security audit trail — every login, timestamped |
 
 ---
 
 ## 🌐 URL Routes
 
-> Django serves server-side rendered HTML. Two endpoints are AJAX (return JSON).
+> Django serves server-side rendered HTML. Several endpoints are AJAX (return JSON).
+
+### Public Routes
+
+| Method | URL | Description |
+|--------|-----|-------------|
+| `GET/POST` | `/` | Home — top doctors, donor spotlights |
+| `GET/POST` | `/register/` | Student registration + email OTP verification |
+| `POST` | `/send-otp/` | **[AJAX]** Send OTP for registration |
+| `POST` | `/student-login/` | Validate OTP and log student in |
+| `POST` | `/send-login-otp/` | **[AJAX]** Send OTP for login |
+| `GET/POST` | `/donation/` | Submit a monetary donation |
+| `GET/POST` | `/blood-bank/` | Blood donation or request (tabbed UI) |
+| `GET` | `/blood-donors/` | Filterable blood donor directory |
+| `GET` | `/blood/respond/<token>/<action>/` | Donor accept/decline blood request |
+| `GET` | `/about/` | About page |
+
+### Authenticated Routes
 
 | Method | URL | Auth | Description |
 |--------|-----|------|-------------|
-| `GET/POST` | `/` | ❌ | Home — top doctors, donor spotlights |
-| `GET/POST` | `/register/` | ❌ | Student registration + email OTP verification |
-| `POST` | `/send-otp/` | ❌ | **[AJAX]** Send OTP for registration |
-| `POST` | `/student-login/` | ❌ | Validate OTP and log student in |
-| `POST` | `/send-login-otp/` | ❌ | **[AJAX]** Send OTP for login |
 | `GET/POST` | `/appointment/` | ✅ Login | Book & view appointments |
-| `GET/POST` | `/donation/` | ❌ | Submit a monetary donation |
-| `GET/POST` | `/blood-bank/` | ❌ | Blood donation or request (tabbed UI) |
-| `GET` | `/blood-donors/` | ❌ | Filterable blood donor directory |
-| `GET/POST` | `/blood-donors/<id>/request/` | ❌ | Request blood from a specific donor |
-| `ANY` | `/admin/` | 🔑 Staff | Full Django admin panel |
+| `GET` | `/appointment/confirm/<token>/<action>/` | ✅ | Confirm/decline appointment |
+| `POST` | `/chat/` | ✅ | **[AJAX]** AI Chatbot API |
+
+### Admin Panel Routes
+
+| Method | URL | Description |
+|--------|-----|-------------|
+| `GET` | `/manage/` | Modern admin dashboard |
+| `GET` | `/manage/stats/` | **[AJAX]** Real-time statistics |
+| `GET` | `/manage/chart-data/` | **[AJAX]** Chart data (appointments/blood groups) |
+| `POST` | `/manage/registration/<pk>/action/` | Approve/reject registration |
+| `POST` | `/manage/appointment/<pk>/status/` | Update appointment status |
+| `POST` | `/manage/blood-donation/<pk>/status/` | Update blood donation status |
+| `POST` | `/manage/blood-request/<pk>/status/` | Update blood request status |
+| `POST` | `/manage/donation/<pk>/toggle-paid/` | Toggle donation paid status |
+| `POST` | `/manage/doctor/save/` | Add/edit doctor |
+| `DELETE` | `/manage/doctor/<pk>/delete/` | Delete doctor |
+| `POST` | `/manage/staff/save/` | Add/edit staff |
+| `DELETE` | `/manage/staff/<pk>/delete/` | Delete staff |
+| `POST` | `/manage/clear-all-data/` | Clear all data (danger!) |
 
 ---
 
@@ -216,7 +266,7 @@ myenv\Scripts\activate      # Windows
 source myenv/bin/activate   # macOS / Linux
 
 # 3. Install dependencies
-pip install django
+pip install -r requirements.txt
 
 # 4. Set up your secrets
 cp .env.example .env
@@ -233,7 +283,10 @@ python manage.py runserver
 ```
 
 Visit 👉 `http://127.0.0.1:8000` — if you see a page, it worked. Celebrate responsibly. 🎉
-Admin panel 👉 `http://127.0.0.1:8000/admin/`
+
+Admin panel 👉 `http://127.0.0.1:8000/manage/` (Modern UI)
+
+Django admin 👉 `http://127.0.0.1:8000/admin/` (Default Django)
 
 ---
 
@@ -257,8 +310,13 @@ Create the file `AUdoc_back/.env` (it's in `.gitignore`, your secrets are safe):
 
 ```env
 DJANGO_SECRET_KEY=your-super-long-random-secret-key-here
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
 EMAIL_HOST_USER=your-gmail@gmail.com
 EMAIL_HOST_PASSWORD=your-gmail-app-password
+DEFAULT_FROM_EMAIL=AUdoc Health Center <your-gmail@gmail.com>
+SITE_URL=http://localhost:8000
 ```
 
 > ⚠️ **Never commit `.env` to git.** It's gitignored for a reason. We are not animals.
@@ -268,14 +326,72 @@ EMAIL_HOST_PASSWORD=your-gmail-app-password
 
 ---
 
+## 🎛️ Modern Admin Panel
+
+The admin panel has been completely redesigned with a modern glass-morphism UI!
+
+### ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| 🎨 **Glass-morphism UI** | Modern translucent interface with backdrop blur |
+| 🌗 **Dark/Light Mode** | Toggle button with smooth transitions |
+| 📊 **Interactive Charts** | Line charts & doughnut charts with real data |
+| 📈 **Real-time Stats** | Auto-refresh every 30 seconds |
+| 🎫 **FCFS Queue View** | Today's appointments in queue order |
+| 🔍 **Advanced Search** | Fast search with DataTables integration |
+| 📱 **Mobile Responsive** | Works on all devices |
+
+### Access
+
+Navigate to: `http://localhost:8000/manage/`
+
+*(Staff/admin account required)*
+
+---
+
+## ⏰ Scheduled Tasks (Today's Appointments)
+
+The system supports automated daily appointment confirmations:
+
+### How It Works
+
+1. **8:00 AM** — System sends confirmation emails to patients with appointments today
+2. **2-Hour Window** — Patients accept or decline via email link
+3. **FCFS Queue** — Confirmed patients get queue positions (First Come, First Serve)
+4. **Midnight** — Old records are cleaned up automatically
+
+### Setup (Windows Task Scheduler)
+
+```bash
+# Send confirmations at 8 AM
+python manage.py send_appointment_confirmations
+
+# Cleanup at midnight
+python manage.py cleanup_todays_appointments
+```
+
+### Setup (Linux/macOS Cron)
+
+```bash
+# Add to crontab -e
+0 8 * * * cd /path/to/AUdoc_back && python manage.py send_appointment_confirmations
+0 0 * * * cd /path/to/AUdoc_back && python manage.py cleanup_todays_appointments
+```
+
+---
+
 ## 📋 Roadmap
 
-- [ ] Flutter app ↔ Django REST API integration
+- [x] ~~Flutter app ↔ Django REST API integration~~ ✅ DRF installed
+- [x] ~~Modern admin panel with charts~~ ✅ Glass-morphism UI
+- [x] ~~FCFS queue system~~ ✅ Today's Appointments
+- [x] ~~AI Chatbot~~ ✅ Chat API endpoint
 - [ ] Push notifications for appointment confirmations
 - [ ] Prescription & medical history records
 - [ ] PostgreSQL support for production
 - [ ] Docker + CI/CD pipeline
-- [ ] Dark mode (because devs live in the dark 🌑)
+- [ ] Dark mode for student portal (admin has it! 🌑)
 
 ---
 
@@ -284,7 +400,9 @@ EMAIL_HOST_PASSWORD=your-gmail-app-password
 - **SQLite** is used for development. Swap to **PostgreSQL** or **MySQL** for production.
 - `DEBUG = True` is development-only. Set it to `False` in production, or regret it deeply.
 - The `myenv/` folder is gitignored. Always create your own virtual environment.
-- The Flutter app is a **UI prototype** — backend integration is coming soon™.
+- The Flutter app is a **UI prototype** — backend integration with DRF is in progress.
+- The modern admin panel is at `/manage/`, not `/admin/`.
+- Doctor profile photos are stored in `media/doctors/`.
 
 ---
 

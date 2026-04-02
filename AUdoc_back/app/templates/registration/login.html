@@ -8,394 +8,619 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <style>
     :root {
-      --primary:      #1a5c96;
-      --primary-dark: #134a7a;
-      --green:        #1d8348;
-      --green-light:  #d5f0e2;
+      --primary:      #4a7c59;
+      --primary-dark: #2e5c3a;
+      --accent:       #e8f5ec;
+      --cream:        #faf9f4;
     }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #e3eef8 0%, #cde2f5 100%);
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
+      background: var(--cream);
     }
 
-    /* ── Topbar ── */
-    .topbar { background: var(--primary-dark); color: #c8ddef; font-size: .82rem; padding: 6px 0; }
+    /* ══════════════════════════════════════════
+       LEFT PANEL
+    ══════════════════════════════════════════ */
+    .left-panel {
+      width: 46%;
+      background: linear-gradient(145deg, #0d2a1a 0%, #1a4a2a 50%, #2e5c3a 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 60px 52px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
 
-    /* ── Navbar ── */
-    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
-    .navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
+    /* Floating decorative circles */
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      width: 380px; height: 380px;
+      border-radius: 50%;
+      background: rgba(74,124,89,.15);
+      top: -100px; right: -100px;
+      pointer-events: none;
+    }
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: rgba(74,124,89,.1);
+      bottom: -60px; left: -60px;
+      pointer-events: none;
+    }
+    .dot-grid {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
 
-    /* ── Wrapper ── */
-    .login-wrapper {
+    .panel-logo {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 52px; position: relative; z-index: 1;
+    }
+    .panel-logo .icon {
+      width: 50px; height: 50px;
+      background: rgba(255,255,255,.12);
+      border: 1.5px solid rgba(255,255,255,.2);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: #fff;
+      backdrop-filter: blur(8px);
+    }
+    .panel-logo .name { color: #fff; font-weight: 700; font-size: 1.3rem; line-height: 1.1; }
+    .panel-logo .sub  { color: rgba(255,255,255,.55); font-size: .72rem; }
+
+    .panel-headline {
+      position: relative; z-index: 1; margin-bottom: 36px;
+    }
+    .panel-headline h1 {
+      font-size: 2.2rem; font-weight: 800; color: #fff;
+      line-height: 1.2; margin-bottom: 12px;
+    }
+    .panel-headline h1 span { color: #6dcea0; }
+    .panel-headline p { color: rgba(255,255,255,.6); font-size: .95rem; line-height: 1.6; max-width: 340px; }
+
+    .panel-features { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; }
+    .feat-item {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 14px 18px;
+      backdrop-filter: blur(6px);
+      transition: background .2s;
+    }
+    .feat-item:hover { background: rgba(255,255,255,.1); }
+    .feat-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(109,206,160,.15);
+      display: flex; align-items: center; justify-content: center;
+      color: #6dcea0; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .feat-item .ft { color: #fff; font-size: .88rem; font-weight: 600; }
+    .feat-item .fs { color: rgba(255,255,255,.5); font-size: .76rem; margin-top: 1px; }
+
+    .panel-footer {
+      position: absolute; bottom: 28px; left: 52px; right: 52px;
+      display: flex; align-items: center; gap: 8px;
+      color: rgba(255,255,255,.35); font-size: .75rem; z-index: 1;
+    }
+
+    /* ══════════════════════════════════════════
+       RIGHT PANEL (FORM)
+    ══════════════════════════════════════════ */
+    .right-panel {
       flex: 1;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 48px 16px;
+      padding: 40px 32px;
+      overflow-y: auto;
     }
 
-    /* ── Card ── */
-    .login-card {
-      background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 20px 60px rgba(26,92,150,.18);
-      padding: 40px 36px;
+    .form-box {
       width: 100%;
-      max-width: 460px;
+      max-width: 420px;
     }
 
-    /* ── Brand ── */
-    .brand-block { text-align: center; margin-bottom: 24px; }
-    .brand-block .logo-icon {
-      width: 56px; height: 56px;
-      background: var(--primary); border-radius: 16px;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 1.6rem; color: #fff; margin-bottom: 10px;
+    .form-header {
+      text-align: center;
+      margin-bottom: 32px;
     }
-    .brand-block h4 { font-weight: 700; color: var(--primary); margin: 0; font-size: 1.5rem; }
-    .brand-block span { font-size: .8rem; color: #888; display: block; margin-top: 2px; }
+    .form-header .logo-bubble {
+      width: 62px; height: 62px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 18px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: #fff;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(74,124,89,.35);
+      animation: logoPop .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes logoPop {
+      0%   { transform: scale(.4); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .form-header h2 { font-size: 1.55rem; font-weight: 800; color: #1a3a25; margin-bottom: 4px; }
+    .form-header p  { font-size: .85rem; color: #888; }
 
     /* ── Tabs ── */
-    .login-tabs {
+    .auth-tabs {
       display: flex;
-      border-radius: 12px;
-      background: #f0f4f9;
+      background: #eef7f1;
+      border-radius: 14px;
       padding: 4px;
-      margin-bottom: 24px;
+      margin-bottom: 26px;
     }
-    .login-tab {
-      flex: 1;
-      text-align: center;
-      padding: 9px 0;
-      border-radius: 10px;
-      font-size: .875rem;
-      font-weight: 600;
-      cursor: pointer;
-      color: #888;
-      transition: all .2s;
-      border: none;
-      background: transparent;
+    .auth-tab {
+      flex: 1; text-align: center;
+      padding: 10px 0;
+      border-radius: 11px;
+      font-size: .875rem; font-weight: 600;
+      cursor: pointer; color: #777;
+      transition: all .25s;
+      border: none; background: transparent;
     }
-    .login-tab.active {
+    .auth-tab.active {
       background: #fff;
       color: var(--primary);
-      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      box-shadow: 0 2px 12px rgba(74,124,89,.14);
     }
+    .auth-tab i { margin-right: 5px; }
 
-    /* ── Form ── */
-    .form-label { font-weight: 600; font-size: .875rem; color: #444; }
-    .form-control {
-      border-radius: 10px;
-      padding: .65rem 1rem;
-      border: 1.5px solid #dde6f0;
-      font-size: .95rem;
+    /* ── Form controls ── */
+    .field-group { margin-bottom: 18px; }
+    .field-label {
+      font-weight: 600; font-size: .82rem; color: #4a5568;
+      margin-bottom: 6px; display: block;
     }
-    .form-control:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(26,92,150,.12);
-    }
-    .form-control.is-invalid { border-color: #dc3545; }
-    .input-group .form-control { border-right: none; border-radius: 10px 0 0 10px; }
-    .input-group .btn-toggle {
+    .field-label i { color: var(--primary); margin-right: 4px; }
+    .field-input {
+      width: 100%;
+      padding: .68rem 1rem;
+      border: 1.5px solid #d5e8d9;
+      border-radius: 11px;
+      font-size: .93rem;
+      font-family: inherit;
       background: #fff;
-      border: 1.5px solid #dde6f0;
-      border-left: none;
-      border-radius: 0 10px 10px 0;
-      color: #888;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    .field-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(74,124,89,.1);
+    }
+    .field-input.is-invalid { border-color: #e53e3e; }
+
+    .input-with-btn {
+      display: flex;
+      border: 1.5px solid #d5e8d9;
+      border-radius: 11px;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .input-with-btn:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(74,124,89,.1);
+    }
+    .input-with-btn .field-input {
+      border: none; border-radius: 0; box-shadow: none;
+      flex: 1; padding-right: .5rem;
+    }
+    .input-with-btn .iab-btn {
+      padding: 0 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      font-size: .82rem; font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .input-with-btn .iab-btn:hover    { background: var(--primary-dark); }
+    .input-with-btn .iab-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* Password field with eye toggle */
+    .pw-wrap {
+      display: flex;
+      border: 1.5px solid #d5e8d9;
+      border-radius: 11px;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .pw-wrap:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(74,124,89,.1);
+    }
+    .pw-wrap .field-input { border: none; border-radius: 0; box-shadow: none; flex: 1; }
+    .pw-wrap .eye-btn {
       padding: 0 14px;
+      background: #fff; border: none;
+      color: #aaa; cursor: pointer; font-size: 1rem;
+      transition: color .15s;
     }
-    .input-group .btn-toggle:hover { color: var(--primary); }
-    .input-group:focus-within .form-control,
-    .input-group:focus-within .btn-toggle { border-color: var(--primary); }
-
-    /* ── Buttons ── */
-    .btn-login {
-      background: var(--primary); color: #fff; border: none;
-      border-radius: 10px; padding: .75rem; font-size: 1rem;
-      font-weight: 600; width: 100%; transition: background .2s;
-    }
-    .btn-login:hover { background: var(--primary-dark); color: #fff; }
-
-    /* ── Alerts ── */
-    .error-box {
-      background: #fff0f0; border: 1px solid #f5c2c7;
-      border-radius: 10px; padding: 12px 16px;
-      color: #842029; font-size: .875rem; margin-bottom: 16px;
-    }
-    .success-box {
-      background: var(--green-light); border: 1px solid #a3d9b8;
-      border-radius: 10px; padding: 12px 16px;
-      color: var(--green); font-size: .875rem; margin-bottom: 16px;
-    }
+    .pw-wrap .eye-btn:hover { color: var(--primary); }
 
     /* ── OTP section ── */
-    .otp-section { display:none; }
-    .otp-sent-note {
-      background:#e8f5e9; border:1px solid #a3d9b8; border-radius:10px;
-      padding:10px 14px; font-size:.82rem; color:#1d8348; margin-bottom:12px;
+    .otp-banner {
+      background: #eef7f1;
+      border: 1px solid #b7dfc0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: .82rem; color: var(--primary-dark);
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
     }
-    .otp-digit-input {
-      font-size:1.6rem; font-weight:700; text-align:center;
-      letter-spacing:6px; font-family:'Courier New',monospace;
-      border-radius:12px; border:2px solid #dde6f0; padding:.6rem 1rem;
-      background:#f9fbfe; width:100%;
-    }
-    .otp-digit-input:focus {
-      border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,92,150,.12);
-      outline:none;
-    }
-    .countdown { font-size:.8rem; color:#888; }
-    .countdown.urgent { color:#dc3545; font-weight:600; }
-    .btn-resend {
-      background:none; border:none; color:var(--primary);
-      font-size:.82rem; font-weight:600; padding:0; cursor:pointer;
-      text-decoration:underline;
-    }
-    .btn-resend:disabled { color:#aaa; text-decoration:none; cursor:not-allowed; }
-    .btn-send-otp {
-      background:var(--primary); color:#fff; border:none;
-      border-radius:0 10px 10px 0; padding:0 16px;
-      font-size:.82rem; font-weight:600; white-space:nowrap;
-      transition:background .2s;
-    }
-    .btn-send-otp:hover { background:var(--primary-dark); }
-    .btn-send-otp:disabled { background:#aaa; cursor:not-allowed; }
+    .otp-banner i { font-size: 1rem; flex-shrink: 0; }
 
-    /* ── Footer ── */
-    footer { background: #0d2d4a; color: #9ab3c8; text-align: center; padding: 16px; font-size: .82rem; }
+    .otp-digit-row {
+      display: flex; gap: 8px; margin-bottom: 10px; justify-content: center;
+    }
+    .otp-box {
+      flex: 0 0 42px; width: 42px; height: 46px;
+      border: 1.5px solid #d5e8d9;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 1.2rem; font-weight: 700;
+      color: #1a3a25;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, transform .1s;
+      caret-color: var(--primary);
+    }
+    .otp-box:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(74,124,89,.15);
+      transform: scale(1.06);
+    }
+    .otp-box.filled { border-color: var(--primary); background: #eef7f1; }
+
+    .otp-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .8rem;
+    }
+    .otp-timer { color: #888; }
+    .otp-timer.urgent { color: #e53e3e; font-weight: 600; }
+    .btn-resend {
+      background: none; border: none; color: var(--primary);
+      font-size: .8rem; font-weight: 600; padding: 0; cursor: pointer;
+      text-decoration: underline; text-underline-offset: 2px;
+    }
+    .btn-resend:disabled { color: #aaa; text-decoration: none; cursor: not-allowed; }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      width: 100%;
+      padding: .78rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 16px rgba(74,124,89,.35);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-submit:hover {
+      opacity: .92;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(74,124,89,.4);
+    }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* ── Alert boxes ── */
+    .msg-box {
+      border-radius: 10px; padding: 11px 15px;
+      font-size: .84rem; margin-bottom: 16px;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .msg-box.error   { background: #fff0f0; border: 1px solid #f5c2c7; color: #842029; }
+    .msg-box.success { background: #eef7f1; border: 1px solid #b7dfc0; color: var(--primary-dark); }
+    .msg-box i { margin-top: 1px; flex-shrink: 0; }
+
+    /* ── Info note ── */
+    .info-note {
+      background: #f4f8f5;
+      border: 1px solid #d5e8d9;
+      border-radius: 10px;
+      padding: 11px 15px;
+      font-size: .8rem; color: #666;
+      text-align: center; margin-top: 20px;
+    }
+    .info-note strong { color: var(--primary-dark); }
+
+    /* ── Link text ── */
+    .auth-link { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .auth-link:hover { color: var(--primary-dark); text-decoration: underline; }
+
+    /* ── Panel separator ── */
+    .tab-panel { animation: fadeUp .2s ease both; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Divider ── */
+    .section-hint {
+      text-align: center; font-size: .82rem; color: #999;
+      margin-bottom: 20px;
+    }
+
+    /* ── Back to home ── */
+    .back-link {
+      position: absolute; top: 20px; right: 24px;
+      display: flex; align-items: center; gap: 6px;
+      color: #888; font-size: .82rem; text-decoration: none;
+      padding: 6px 14px; border-radius: 20px;
+      border: 1.5px solid #e0ece4;
+      background: #fff;
+      transition: all .2s;
+    }
+    .back-link:hover { color: var(--primary); border-color: var(--primary); }
+
+    @media (max-width: 767px) {
+      .left-panel { display: none; }
+      .right-panel { padding: 36px 20px; }
+    }
   </style>
 </head>
 <body>
 
-<!-- ══════════ TOPBAR ══════════ -->
-<div class="topbar d-none d-md-block">
-  <div class="container d-flex justify-content-between align-items-center">
-    <div class="d-flex gap-4">
-      <span><i class="bi bi-geo-alt me-1"></i>Academic Block C, Room 101, AU Main Campus</span>
-      <span><i class="bi bi-clock me-1"></i>Mon – Fri: 8:00 AM – 5:00 PM</span>
+<!-- ════════════ LEFT PANEL ════════════ -->
+<div class="left-panel">
+  <div class="dot-grid"></div>
+
+  <div class="panel-logo">
+    <div class="icon"><i class="bi bi-hospital-fill"></i></div>
+    <div>
+      <div class="name">AUdoc</div>
+      <div class="sub">Campus Health Portal</div>
     </div>
-    <div class="d-flex gap-3">
-      <span><i class="bi bi-telephone me-1"></i>+880-XXX-XXXXXX</span>
-      <span><i class="bi bi-envelope me-1"></i>health@au.edu</span>
+  </div>
+
+  <div class="panel-headline">
+    <h1>Your campus health,<br><span>one click away.</span></h1>
+    <p>AUdoc connects Assam University students with campus doctors — fast, paperless, and always available.</p>
+  </div>
+
+  <div class="panel-features">
+    <div class="feat-item">
+      <div class="feat-icon"><i class="bi bi-calendar-check-fill"></i></div>
+      <div>
+        <div class="ft">Book appointments online</div>
+        <div class="fs">No queues. Pick a doctor and a time slot.</div>
+      </div>
     </div>
+    <div class="feat-item">
+      <div class="feat-icon"><i class="bi bi-droplet-fill"></i></div>
+      <div>
+        <div class="ft">Blood bank access</div>
+        <div class="fs">Register as donor or request blood instantly.</div>
+      </div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-icon"><i class="bi bi-shield-check-fill"></i></div>
+      <div>
+        <div class="ft">OTP-secured sign in</div>
+        <div class="fs">No password needed — your email keeps you safe.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-footer">
+    <i class="bi bi-geo-alt"></i>
+    Academic Block C, Room 101 &nbsp;·&nbsp; Mon–Fri 8 AM–5 PM
   </div>
 </div>
 
-<!-- ══════════ NAVBAR ══════════ -->
-<nav class="navbar navbar-expand-lg">
-  <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-      <div style="width:38px;height:38px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-        <i class="bi bi-hospital-fill text-white" style="font-size:1.1rem;"></i>
-      </div>
-      <div>
-        <div class="brand-name">AUdoc</div>
-        <span class="brand-sub">Campus Health Portal</span>
-      </div>
-    </a>
-    <div class="ms-auto">
-      <a href="/" class="btn btn-outline-secondary btn-sm px-3 rounded-pill">
-        <i class="bi bi-arrow-left me-1"></i>Back to Home
-      </a>
-    </div>
-  </div>
-</nav>
+<!-- ════════════ RIGHT PANEL ════════════ -->
+<div class="right-panel" style="position:relative;">
 
-<!-- ══════════ LOGIN CARD ══════════ -->
-<div class="login-wrapper">
-  <div class="login-card">
+  <a href="/" class="back-link">
+    <i class="bi bi-arrow-left"></i> Home
+  </a>
 
-    <div class="brand-block">
-      <div class="logo-icon"><i class="bi bi-hospital-fill"></i></div>
-      <h4>AUdoc</h4>
-      <span>Campus Health Portal</span>
+  <div class="form-box">
+
+    <div class="form-header">
+      <div class="logo-bubble"><i class="bi bi-hospital-fill"></i></div>
+      <h2>Welcome back</h2>
+      <p>Sign in to your AUdoc account</p>
     </div>
 
-    <!-- Django messages (e.g. error from student_login view) -->
+    <!-- Flash messages -->
     {% if messages %}
       {% for message in messages %}
-        <div class="{% if message.tags == 'success' %}success-box{% else %}error-box{% endif %}">
-          <i class="bi bi-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
-          {{ message }}
+        <div class="msg-box {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+          <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% else %}exclamation-circle-fill{% endif %}"></i>
+          <span>{{ message }}</span>
         </div>
       {% endfor %}
     {% endif %}
 
-    <!-- ── Tabs ── -->
-    <div class="login-tabs">
-      <button class="login-tab active" id="tabStudent" onclick="switchTab('student')">
-        <i class="bi bi-mortarboard-fill me-1"></i> Student
+    <!-- Tab switcher -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabStudent" onclick="switchTab('student')">
+        <i class="bi bi-mortarboard-fill"></i>Student
       </button>
-      <button class="login-tab" id="tabStaff" onclick="switchTab('staff')">
-        <i class="bi bi-person-badge-fill me-1"></i> Staff / Admin
+      <button class="auth-tab" id="tabStaff" onclick="switchTab('staff')">
+        <i class="bi bi-person-badge-fill"></i>Staff / Admin
       </button>
     </div>
 
-    <!-- ══ STUDENT LOGIN ══ -->
-    <div id="panelStudent">
-      <p class="text-muted mb-3" style="font-size:.88rem; text-align:center;">
-        Enter your Student ID — we'll send a verification code to your registered email.
-      </p>
+    <!-- ══ STUDENT PANEL ══ -->
+    <div id="panelStudent" class="tab-panel">
+      <p class="section-hint">Enter your Student ID — we'll send a one-time code to your registered email.</p>
 
       <form method="post" action="{% url 'student_login' %}" id="studentLoginForm">
         {% csrf_token %}
         {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
         <input type="hidden" name="otp" id="hiddenLoginOtp" />
 
-        <!-- Student ID + Send OTP button -->
-        <div class="mb-3">
-          <label for="id_student_id" class="form-label">
-            <i class="bi bi-badge-id me-1"></i>Student ID
-          </label>
-          <div class="input-group">
-            <input
-              type="text"
-              name="student_id"
-              id="id_student_id"
-              class="form-control"
-              placeholder="e.g. AU2021050123"
-              autocomplete="username"
-              autofocus
-              oninput="resetLoginOtpState()"
-            />
-            <button type="button" class="btn-send-otp" id="btnSendLoginOtp" onclick="sendLoginOtp()">
-              Send OTP
+        <!-- Student ID -->
+        <div class="field-group">
+          <label class="field-label"><i class="bi bi-badge-id"></i>Student ID</label>
+          <div class="input-with-btn">
+            <input type="text" name="student_id" id="id_student_id"
+                   class="field-input" placeholder="e.g. AU2021050123"
+                   autocomplete="username" autofocus
+                   oninput="resetLoginOtpState()" />
+            <button type="button" class="iab-btn" id="btnSendLoginOtp" onclick="sendLoginOtp()">
+              <i class="bi bi-send me-1"></i>Send OTP
             </button>
           </div>
         </div>
 
-        <!-- OTP section (hidden until OTP is sent) -->
-        <div class="otp-section mb-4" id="loginOtpSection">
-          <div class="otp-sent-note" id="loginOtpSentNote">
-            <i class="bi bi-envelope-check me-1"></i>
-            OTP sent to <strong id="loginMaskedEmail"></strong>
+        <!-- OTP section -->
+        <div id="loginOtpSection" style="display:none;" class="mb-4">
+          <div class="otp-banner">
+            <i class="bi bi-envelope-check-fill"></i>
+            <span>Code sent to <strong id="loginMaskedEmail"></strong></span>
           </div>
-          <label class="form-label">
-            <i class="bi bi-shield-lock me-1"></i>Enter 6-digit OTP
-          </label>
-          <input
-            type="text"
-            id="loginOtpInput"
-            class="otp-digit-input mb-2"
-            maxlength="6"
-            inputmode="numeric"
-            placeholder="――――――"
-            oninput="this.value=this.value.replace(/\D/g,''); document.getElementById('hiddenLoginOtp').value=this.value;"
-          />
-          <div class="d-flex justify-content-between align-items-center">
-            <span class="countdown" id="loginCountdown">Expires in <strong id="loginTimerDisplay">10:00</strong></span>
+          <label class="field-label"><i class="bi bi-shield-lock"></i>6-digit OTP</label>
+          <div class="otp-digit-row" id="otpBoxRow">
+            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="0" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="1" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="2" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="3" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="4" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="5" />
+          </div>
+          <div class="otp-meta">
+            <span class="otp-timer" id="loginCountdown">
+              Expires in <strong id="loginTimerDisplay">10:00</strong>
+            </span>
             <button type="button" class="btn-resend" id="btnResendLoginOtp" onclick="sendLoginOtp()" disabled>
               Resend OTP
             </button>
           </div>
         </div>
 
-        <button type="submit" class="btn-login" id="btnStudentLogin" onclick="return validateLoginOtp()">
-          <i class="bi bi-box-arrow-in-right me-2"></i>Login
+        <button type="submit" class="btn-submit" onclick="return validateLoginOtp()">
+          <i class="bi bi-box-arrow-in-right"></i>Sign In
         </button>
       </form>
 
-      <div class="text-center mt-4" style="font-size:.875rem; color:#666;">
-        Not registered yet?
-        <a href="{% url 'register' %}" class="text-primary fw-semibold">Register here</a>
-      </div>
+      <p class="text-center mt-4" style="font-size:.875rem; color:#888;">
+        New here? <a href="{% url 'register' %}" class="auth-link">Create an account</a>
+      </p>
     </div>
 
-    <!-- ══ STAFF / ADMIN LOGIN ══ -->
-    <div id="panelStaff" style="display:none;">
-      <p class="text-muted mb-3" style="font-size:.88rem; text-align:center;">
-        Staff and admin sign in with username and password.
-      </p>
+    <!-- ══ STAFF PANEL ══ -->
+    <div id="panelStaff" class="tab-panel" style="display:none;">
+      <p class="section-hint">Staff and administrators sign in with username and password.</p>
 
-      <!-- Show Django form errors for staff login -->
       {% if form.errors %}
-      <div class="error-box">
-        <i class="bi bi-exclamation-circle me-2"></i>
-        Invalid username or password. Please try again.
-      </div>
+        <div class="msg-box error">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          <span>Invalid username or password. Please try again.</span>
+        </div>
       {% endif %}
 
       <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
 
-        <div class="mb-3">
-          <label for="id_username" class="form-label">
-            <i class="bi bi-person me-1"></i>Username
-          </label>
-          <input
-            type="text"
-            name="username"
-            id="id_username"
-            class="form-control"
-            placeholder="Enter your username"
-            value="{{ form.username.value|default:'' }}"
-            autocomplete="username"
-          />
+        <div class="field-group">
+          <label class="field-label"><i class="bi bi-person"></i>Username</label>
+          <input type="text" name="username" id="id_username" class="field-input"
+                 placeholder="Enter your username"
+                 value="{{ form.username.value|default:'' }}"
+                 autocomplete="username" />
         </div>
 
-        <div class="mb-4">
-          <label for="id_password" class="form-label">
-            <i class="bi bi-lock me-1"></i>Password
-          </label>
-          <div class="input-group">
-            <input
-              type="password"
-              name="password"
-              id="id_password"
-              class="form-control"
-              placeholder="Enter your password"
-              autocomplete="current-password"
-            />
-            <button type="button" class="btn-toggle" id="togglePassword" tabindex="-1">
+        <div class="field-group">
+          <label class="field-label"><i class="bi bi-lock"></i>Password</label>
+          <div class="pw-wrap">
+            <input type="password" name="password" id="id_password" class="field-input"
+                   placeholder="Enter your password" autocomplete="current-password" />
+            <button type="button" class="eye-btn" id="togglePassword" tabindex="-1">
               <i class="bi bi-eye" id="toggleIcon"></i>
             </button>
           </div>
         </div>
 
-        <button type="submit" class="btn-login">
-          <i class="bi bi-box-arrow-in-right me-2"></i>Sign In as Staff
+        <button type="submit" class="btn-submit">
+          <i class="bi bi-box-arrow-in-right"></i>Sign In as Staff
         </button>
       </form>
     </div>
 
-    <!-- Info note -->
-    <div class="mt-4 p-3 rounded-3" style="background:#f4f8fc; font-size:.8rem; color:#666; text-align:center;">
-      <i class="bi bi-info-circle text-primary me-1"></i>
-      Students: use your official <strong>Student ID</strong> to sign in.
-      For access issues, contact <strong>health@au.edu</strong>
+    <div class="info-note">
+      <i class="bi bi-info-circle" style="color:var(--primary);"></i>
+      Students use their <strong>Student ID</strong> + OTP.
+      Issues? Email <strong>health@au.edu</strong>
     </div>
 
   </div>
 </div>
 
-<!-- ══════════ FOOTER ══════════ -->
-<footer>
-  &copy; 2026 AUdoc – Ahsanullah University Campus Health. All rights reserved.
-</footer>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // If Django returned form errors it means the staff form was submitted — auto-switch to staff tab
   {% if form.errors %}switchTab('staff');{% endif %}
 
-  // ── Student OTP logic ───────────────────────────────────────────────
-  let loginOtpVerified = false;
+  // ══ OTP box logic ════════════════════════════════════════
+  const otpBoxes = document.querySelectorAll('#otpBoxRow .otp-box');
+  otpBoxes.forEach((box, i) => {
+    box.addEventListener('input', function () {
+      const v = this.value.replace(/\D/, '');
+      this.value = v;
+      this.classList.toggle('filled', v !== '');
+      if (v && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
+      syncHiddenOtp();
+    });
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && !this.value && i > 0) {
+        otpBoxes[i - 1].focus();
+        otpBoxes[i - 1].value = '';
+        otpBoxes[i - 1].classList.remove('filled');
+        syncHiddenOtp();
+      }
+    });
+    box.addEventListener('paste', function (e) {
+      e.preventDefault();
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+      paste.split('').forEach((ch, j) => {
+        if (otpBoxes[j]) { otpBoxes[j].value = ch; otpBoxes[j].classList.add('filled'); }
+      });
+      syncHiddenOtp();
+      if (otpBoxes[paste.length - 1]) otpBoxes[Math.min(paste.length, 5)].focus();
+    });
+  });
+
+  function syncHiddenOtp() {
+    let val = '';
+    otpBoxes.forEach(b => val += b.value);
+    document.getElementById('hiddenLoginOtp').value = val;
+  }
+
+  // ══ OTP send / state ═════════════════════════════════════
   let loginCountdownInterval = null;
+  let loginOtpVerified = false;
 
   function resetLoginOtpState() {
     loginOtpVerified = false;
     clearInterval(loginCountdownInterval);
     document.getElementById('loginOtpSection').style.display = 'none';
-    document.getElementById('loginOtpInput').value = '';
+    otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
     document.getElementById('hiddenLoginOtp').value = '';
-    document.getElementById('btnSendLoginOtp').disabled = false;
-    document.getElementById('btnSendLoginOtp').textContent = 'Send OTP';
+    const btn = document.getElementById('btnSendLoginOtp');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
   }
 
   function sendLoginOtp() {
@@ -404,42 +629,43 @@
 
     const btn = document.getElementById('btnSendLoginOtp');
     btn.disabled = true;
-    btn.textContent = 'Sending…';
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" style="width:12px;height:12px;"></span>Sending…';
 
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
     fetch("{% url 'send_login_otp' %}", {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrf },
       body: 'student_id=' + encodeURIComponent(sid),
     })
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        btn.textContent = 'Resend OTP';
+        btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend';
         document.getElementById('loginMaskedEmail').textContent = data.email;
         document.getElementById('loginOtpSection').style.display = 'block';
-        document.getElementById('loginOtpInput').value = '';
+        otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
         document.getElementById('hiddenLoginOtp').value = '';
         loginOtpVerified = false;
         startLoginCountdown();
+        otpBoxes[0].focus();
       } else {
         alert(data.error || 'Failed to send OTP.');
         btn.disabled = false;
-        btn.textContent = 'Send OTP';
+        btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
       }
     })
     .catch(() => {
       alert('Network error. Please try again.');
       btn.disabled = false;
-      btn.textContent = 'Send OTP';
+      btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
     });
   }
 
   function startLoginCountdown() {
     clearInterval(loginCountdownInterval);
     let seconds = 600;
-    const display  = document.getElementById('loginTimerDisplay');
-    const counter  = document.getElementById('loginCountdown');
+    const display   = document.getElementById('loginTimerDisplay');
+    const counter   = document.getElementById('loginCountdown');
     const resendBtn = document.getElementById('btnResendLoginOtp');
     resendBtn.disabled = true;
 
@@ -448,7 +674,7 @@
       const m = String(Math.floor(seconds / 60)).padStart(2, '0');
       const s = String(seconds % 60).padStart(2, '0');
       display.textContent = m + ':' + s;
-      counter.className = 'countdown' + (seconds <= 60 ? ' urgent' : '');
+      counter.className = 'otp-timer' + (seconds <= 60 ? ' urgent' : '');
       if (seconds <= 0) {
         clearInterval(loginCountdownInterval);
         display.textContent = '00:00';
@@ -459,7 +685,7 @@
   }
 
   function validateLoginOtp() {
-    const otp = document.getElementById('loginOtpInput').value.trim();
+    const otp = document.getElementById('hiddenLoginOtp').value.trim();
     if (!otp || otp.length < 6) {
       alert('Please enter the 6-digit OTP sent to your email.');
       return false;
@@ -467,17 +693,19 @@
     return true;
   }
 
-  // ── Staff password toggle ────────────────────────────────────────────
-
+  // ══ Tab switch ═══════════════════════════════════════════
   function switchTab(tab) {
     const isStudent = tab === 'student';
     document.getElementById('panelStudent').style.display = isStudent ? '' : 'none';
     document.getElementById('panelStaff').style.display   = isStudent ? 'none' : '';
     document.getElementById('tabStudent').classList.toggle('active', isStudent);
     document.getElementById('tabStaff').classList.toggle('active', !isStudent);
+    if (isStudent) document.getElementById('panelStudent').classList.remove('tab-panel');
+    void document.getElementById(isStudent ? 'panelStudent' : 'panelStaff').offsetWidth;
+    document.getElementById(isStudent ? 'panelStudent' : 'panelStaff').classList.add('tab-panel');
   }
 
-  // Password visibility toggle for staff form
+  // ══ Password toggle ═══════════════════════════════════════
   document.getElementById('togglePassword').addEventListener('click', () => {
     const inp = document.getElementById('id_password');
     const ico = document.getElementById('toggleIcon');

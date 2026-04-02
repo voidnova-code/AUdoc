@@ -8,205 +8,284 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <style>
     :root {
-      --primary:      #1a5c96;
-      --primary-dark: #134a7a;
-      --accent:       #e3eef8;
-      --green:        #1d8348;
-      --green-light:  #d5f0e2;
+      --primary:      #4a7c59;
+      --primary-dark: #2e5c3a;
+      --accent:       #e8f5ec;
+      --cream:        #faf9f4;
     }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #e3eef8 0%, #cde2f5 100%);
       min-height: 100vh;
+      background: var(--cream);
       display: flex;
       flex-direction: column;
     }
 
-    /* ── Topbar ── */
+    /* ══════════════════════════════════════
+       TOPBAR + NAV
+    ══════════════════════════════════════ */
     .topbar {
-      background: var(--primary-dark);
-      color: #c8ddef;
-      font-size: .82rem;
-      padding: 6px 0;
+      background: var(--primary-dark); color: #c8e6d0;
+      font-size: .8rem; padding: 6px 0;
     }
+    .topbar a { color: #c8e6d0; text-decoration: none; }
+    .topbar a:hover { color: #fff; }
+    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 10px 0; }
+    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.2rem; line-height: 1.1; }
+    .navbar-brand .brand-sub  { color: #888; font-size: .7rem; display: block; }
 
-    /* ── Navbar ── */
-    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
-    .navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
-    .nav-link { color: #555 !important; font-weight: 500; }
-    .nav-link:hover { color: var(--primary) !important; }
-
-    /* ── Page wrapper ── */
-    .register-wrapper {
-      flex: 1;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 48px 16px;
-    }
-
-    /* ── Card ── */
-    .register-card {
-      background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 20px 60px rgba(26,92,150,.18);
-      padding: 44px 40px;
-      width: 100%;
-      max-width: 640px;
-    }
-
-    /* ── Brand block ── */
-    .brand-block {
+    /* ══════════════════════════════════════
+       HERO STRIP
+    ══════════════════════════════════════ */
+    .reg-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      padding: 28px 0 22px;
       text-align: center;
-      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
     }
-    .brand-block .logo-icon {
-      width: 56px; height: 56px;
-      background: var(--primary);
-      border-radius: 16px;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 1.6rem; color: #fff;
-      margin-bottom: 12px;
+    .reg-hero::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.05);
+      top: -80px; right: -60px;
     }
-    .brand-block h4 {
-      font-weight: 700; color: var(--primary); margin: 0; font-size: 1.6rem;
+    .reg-hero::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.05);
+      bottom: -60px; left: -40px;
     }
-    .brand-block span {
-      font-size: .8rem; color: #888; display: block; margin-top: 2px;
+    .reg-hero h1 { color: #fff; font-size: 1.55rem; font-weight: 800; margin-bottom: 6px; position: relative; z-index: 1; }
+    .reg-hero p  { color: rgba(255,255,255,.7); font-size: .88rem; position: relative; z-index: 1; }
+
+    /* ══════════════════════════════════════
+       STEP PROGRESS
+    ══════════════════════════════════════ */
+    .step-bar {
+      display: flex; align-items: center;
+      max-width: 540px; margin: 0 auto;
+      padding: 20px 16px 0;
+    }
+    .step {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      flex: 0 0 auto;
+    }
+    .step-circle {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #e0ece4; color: #aaa;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .82rem; font-weight: 700;
+      transition: all .3s;
+    }
+    .step.done .step-circle   { background: var(--primary); color: #fff; }
+    .step.active .step-circle { background: var(--primary-dark); color: #fff; box-shadow: 0 0 0 4px rgba(74,124,89,.2); }
+    .step-label { font-size: .72rem; color: #999; white-space: nowrap; font-weight: 500; }
+    .step.done .step-label, .step.active .step-label { color: var(--primary-dark); font-weight: 600; }
+    .step-line { flex: 1; height: 2px; background: #e0ece4; margin: 0 4px; margin-bottom: 20px; transition: background .3s; }
+    .step-line.done { background: var(--primary); }
+
+    /* ══════════════════════════════════════
+       MAIN FORM AREA
+    ══════════════════════════════════════ */
+    .reg-body {
+      flex: 1;
+      padding: 0 16px 48px;
+    }
+    .reg-card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.07);
+      max-width: 640px;
+      margin: 24px auto 0;
+      overflow: hidden;
     }
 
-    .campus-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--green-light); color: var(--green);
-      font-size: .78rem; font-weight: 600;
-      padding: 5px 12px; border-radius: 50px;
-      margin-bottom: 24px;
+    /* ── Section headers ── */
+    .sec-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 28px;
+      background: linear-gradient(135deg, #eef7f1, #f4fbf6);
+      border-bottom: 1px solid #d5e8d9;
     }
-
-    /* ── Section divider ── */
-    .section-divider {
-      display: flex; align-items: center; gap: 10px;
-      margin: 24px 0 16px;
-      color: var(--primary); font-size: .8rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .05em;
-    }
-    .section-divider::before,
-    .section-divider::after {
-      content: ""; flex: 1; height: 1px; background: #dde6f0;
-    }
-
-    /* ── Form controls ── */
-    .form-label { font-weight: 600; font-size: .875rem; color: #444; }
-    .form-control,
-    .form-select {
-      border-radius: 10px;
-      padding: .65rem 1rem;
-      border: 1.5px solid #dde6f0;
-      font-size: .95rem;
-    }
-    .form-control:focus,
-    .form-select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(26,92,150,.12);
-    }
-    .form-control.is-invalid,
-    .form-select.is-invalid {
-      border-color: #dc3545;
-    }
-    textarea.form-control { resize: vertical; }
-
-    /* ── Submit button ── */
-    .btn-verify {
-      white-space: nowrap;
+    .sec-head .sec-icon {
+      width: 36px; height: 36px; border-radius: 10px;
       background: var(--primary); color: #fff;
-      border: none; border-radius: 0 10px 10px 0;
-      padding: 0 16px; font-size: .85rem; font-weight: 600;
-      transition: background .2s; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
     }
-    .btn-verify:hover   { background: var(--primary-dark); }
-    .btn-verify:disabled { background: #aaa; cursor: not-allowed; }
-    .email-verified-badge {
+    .sec-head h6 { color: var(--primary-dark); font-weight: 700; font-size: .92rem; margin: 0; }
+    .sec-head span { color: #888; font-size: .76rem; }
+
+    .sec-body { padding: 22px 28px; }
+
+    /* ── Fields ── */
+    .field-label {
+      display: block; font-weight: 600; font-size: .82rem; color: #4a5568; margin-bottom: 6px;
+    }
+    .field-label i { color: var(--primary); margin-right: 4px; }
+
+    .field-input {
+      width: 100%;
+      padding: .65rem 1rem;
+      border: 1.5px solid #d5e8d9;
+      border-radius: 10px;
+      font-size: .93rem; font-family: inherit;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .field-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(74,124,89,.1);
+      background: #fafffd;
+    }
+    .field-input.is-invalid { border-color: #e53e3e; background: #fff8f8; }
+    .invalid-msg { color: #e53e3e; font-size: .78rem; margin-top: 4px; }
+    .field-hint  { color: #999; font-size: .76rem; margin-top: 4px; }
+
+    textarea.field-input { resize: vertical; min-height: 74px; }
+
+    /* ── Email + OTP ── */
+    .input-action {
+      display: flex;
+      border: 1.5px solid #d5e8d9;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .input-action:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(74,124,89,.1);
+    }
+    .input-action .field-input { border: none; border-radius: 0; box-shadow: none; flex: 1; }
+    .ia-btn {
+      padding: 0 18px;
+      background: var(--primary); color: #fff; border: none;
+      font-size: .82rem; font-weight: 600; white-space: nowrap;
+      cursor: pointer; transition: background .2s; flex-shrink: 0;
+    }
+    .ia-btn:hover    { background: var(--primary-dark); }
+    .ia-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+    .verified-badge {
       display: none; align-items: center; gap: 6px;
-      background: var(--green-light); color: var(--green);
+      background: #eef7f1; color: var(--primary-dark);
       font-size: .8rem; font-weight: 600;
-      padding: 5px 12px; border-radius: 50px; margin-top: 6px;
+      padding: 5px 12px; border-radius: 20px; margin-top: 6px;
+      border: 1px solid #b7dfc0;
     }
-    .otp-section {
+
+    .otp-panel {
       display: none;
       margin-top: 14px;
-      padding: 16px;
-      background: #f4f8fc;
+      padding: 16px 18px;
+      background: #f4fbf6;
       border-radius: 12px;
-      border: 1.5px solid #dde6f0;
+      border: 1.5px solid #d5e8d9;
     }
-    .otp-input {
-      letter-spacing: .35em;
-      font-size: 1.4rem;
-      font-weight: 700;
+    .otp-hint { font-size: .82rem; color: var(--primary-dark); margin-bottom: 10px; }
+    .otp-digit-row { display: flex; gap: 8px; margin-bottom: 10px; justify-content: center; }
+    .otp-box {
+      flex: 0 0 42px; width: 42px; height: 46px;
+      border: 1.5px solid #d5e8d9;
+      border-radius: 10px;
       text-align: center;
-      border-radius: 10px;
-      padding: .5rem 1rem;
-      border: 1.5px solid #dde6f0;
-      width: 100%;
+      font-size: 1.2rem; font-weight: 700;
+      color: #1a3a25;
+      background: #fff; outline: none;
+      transition: border-color .2s, box-shadow .2s, transform .1s;
+      caret-color: var(--primary);
     }
-    .otp-input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(26,92,150,.12);
-      outline: none;
-    }
-    .btn-register {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: .75rem;
-      font-size: 1rem;
-      font-weight: 600;
-      width: 100%;
-      transition: background .2s;
-    }
-    .btn-register:hover { background: var(--primary-dark); color: #fff; }
-
-    /* ── Error / success boxes ── */
-    .error-box {
-      background: #fff0f0;
-      border: 1px solid #f5c2c7;
-      border-radius: 10px;
-      padding: 12px 16px;
-      color: #842029;
-      font-size: .875rem;
-      margin-bottom: 18px;
-    }
-    .success-box {
-      background: var(--green-light);
-      border: 1px solid #a3d9b8;
-      border-radius: 10px;
-      padding: 12px 16px;
-      color: var(--green);
-      font-size: .875rem;
-      margin-bottom: 18px;
+    .otp-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(74,124,89,.15); transform: scale(1.06); }
+    .otp-box.filled { border-color: var(--primary); background: #eef7f1; }
+    .otp-meta { display: flex; justify-content: space-between; align-items: center; font-size: .8rem; }
+    .otp-timer { color: #888; }
+    .otp-timer.urgent { color: #e53e3e; font-weight: 600; }
+    .btn-resend {
+      background: none; border: none; color: var(--primary);
+      font-size: .8rem; font-weight: 600; cursor: pointer;
+      text-decoration: underline; padding: 0; display: none;
     }
 
-    .divider-text {
-      text-align: center; color: #aaa; font-size: .85rem; margin: 20px 0;
-      position: relative;
+    /* ── Blood group picker ── */
+    .blood-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
     }
-    .divider-text::before,
-    .divider-text::after {
-      content: ""; position: absolute; top: 50%; width: 40%; height: 1px; background: #e5e5e5;
+    .blood-option { display: none; }
+    .blood-label {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 52px; border-radius: 10px;
+      border: 2px solid #d5e8d9;
+      font-size: .95rem; font-weight: 700; color: #555;
+      cursor: pointer; transition: all .18s;
+      user-select: none;
     }
-    .divider-text::before { left: 0; }
-    .divider-text::after  { right: 0; }
+    .blood-label:hover { border-color: var(--primary); color: var(--primary); background: #eef7f1; }
+    .blood-option:checked + .blood-label {
+      background: #c41e3a; border-color: #c41e3a; color: #fff;
+      box-shadow: 0 4px 12px rgba(196,30,58,.3);
+      transform: scale(1.04);
+    }
+    .blood-label small { font-size: .62rem; font-weight: 400; color: inherit; opacity: .75; margin-top: 1px; }
+
+    /* ── Dept search ── */
+    .dept-search-wrap { position: relative; margin-bottom: 6px; }
+    .dept-search {
+      width: 100%; padding: .55rem .9rem .55rem 2rem;
+      border: 1.5px solid #d5e8d9; border-radius: 8px;
+      font-size: .85rem; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .dept-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(74,124,89,.1); }
+    .dept-search-icon { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: .85rem; pointer-events: none; }
+    .dept-select { height: auto; max-height: 180px; overflow-y: auto; }
+
+    /* ── Submit ── */
+    .btn-submit {
+      width: 100%;
+      padding: .78rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; border: none; border-radius: 11px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 16px rgba(74,124,89,.35);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-submit:hover { opacity: .92; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(74,124,89,.4); }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* ── Alert boxes ── */
+    .msg-box {
+      border-radius: 10px; padding: 11px 15px;
+      font-size: .84rem; margin-bottom: 16px;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .msg-box.error   { background: #fff0f0; border: 1px solid #f5c2c7; color: #842029; }
+    .msg-box.success { background: #eef7f1; border: 1px solid #b7dfc0; color: var(--primary-dark); }
+    .msg-box i { margin-top: 1px; flex-shrink: 0; }
+
+    /* ── Info note ── */
+    .info-note {
+      background: #f4f8f5; border: 1px solid #d5e8d9;
+      border-radius: 10px; padding: 11px 15px;
+      font-size: .8rem; color: #666;
+      text-align: center;
+    }
 
     /* ── Footer ── */
-    footer {
-      background: #0d2d4a;
-      color: #9ab3c8;
-      text-align: center;
-      padding: 16px;
-      font-size: .82rem;
+    footer { background: #0d2a1a; color: #9abea8; text-align: center; padding: 14px; font-size: .8rem; }
+
+    @media (max-width: 480px) {
+      .sec-body { padding: 18px 16px; }
+      .blood-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
     }
   </style>
 </head>
@@ -220,7 +299,7 @@
       <span><i class="bi bi-clock me-1"></i>Mon – Fri: 8:00 AM – 5:00 PM</span>
     </div>
     <div class="d-flex gap-3">
-      <span><i class="bi bi-telephone me-1"></i>+880-XXX-XXXXXX</span>
+      <span><i class="bi bi-telephone me-1"></i>+91-XXX-XXXXXXX</span>
       <span><i class="bi bi-envelope me-1"></i>health@au.edu</span>
     </div>
   </div>
@@ -239,345 +318,327 @@
       </div>
     </a>
     <div class="ms-auto d-flex gap-2">
-      <a href="/" class="btn btn-outline-secondary btn-sm px-3 rounded-pill">
-        <i class="bi bi-arrow-left me-1"></i>Back to Home
+      <a href="{% url 'login' %}" class="btn btn-success btn-sm rounded-pill px-3" style="background:var(--primary);border-color:var(--primary);">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+      </a>
+      <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i>Home
       </a>
     </div>
   </div>
 </nav>
 
-<!-- ══════════ REGISTRATION FORM ══════════ -->
-<div class="register-wrapper">
-  <div class="register-card">
+<!-- ══════════ HERO ══════════ -->
+<div class="reg-hero">
+  <div class="container">
+    <h1><i class="bi bi-person-plus-fill me-2"></i>Student Registration</h1>
+    <p>Create your AUdoc account to book campus doctor appointments online</p>
+  </div>
+</div>
 
-    <!-- Brand block -->
-    <div class="brand-block">
-      <div class="logo-icon">
-        <i class="bi bi-hospital-fill"></i>
-      </div>
-      <h4>AUdoc</h4>
-      <span>Campus Health Portal</span>
+<!-- ══════════ STEP BAR ══════════ -->
+<div class="container">
+  <div class="step-bar" id="stepBar">
+    <div class="step active" id="step1">
+      <div class="step-circle"><i class="bi bi-person"></i></div>
+      <div class="step-label">Personal</div>
     </div>
-
-    <div class="text-center">
-      <div class="campus-badge">
-        <i class="bi bi-person-plus-fill"></i> Student Registration
-      </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step" id="step2">
+      <div class="step-circle"><i class="bi bi-mortarboard"></i></div>
+      <div class="step-label">Academic</div>
     </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step" id="step3">
+      <div class="step-circle"><i class="bi bi-geo-alt"></i></div>
+      <div class="step-label">Address</div>
+    </div>
+  </div>
+</div>
 
-    <p class="text-center text-muted mb-4" style="font-size:.9rem;">
-      Create your AUdoc account to book campus doctor appointments online.
-    </p>
+<!-- ══════════ FORM ══════════ -->
+<div class="reg-body">
+  <div class="reg-card">
 
-    <!-- Django messages -->
+    <!-- Messages -->
     {% if messages %}
-      {% for message in messages %}
-        <div class="{% if message.tags == 'success' %}success-box{% else %}error-box{% endif %}">
-          <i class="bi bi-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
-          {{ message }}
-        </div>
-      {% endfor %}
+      <div style="padding:16px 28px 0;">
+        {% for message in messages %}
+          <div class="msg-box {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+            <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% else %}exclamation-circle-fill{% endif %}"></i>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
     {% endif %}
 
-    <!-- Non-field form errors -->
     {% if form.non_field_errors %}
-    <div class="error-box">
-      <i class="bi bi-exclamation-circle me-2"></i>
-      {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-    </div>
+      <div style="padding:16px 28px 0;">
+        <div class="msg-box error">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          <span>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</span>
+        </div>
+      </div>
     {% endif %}
 
     <form method="post" action="{% url 'register' %}" novalidate>
       {% csrf_token %}
 
-      <!-- ── Personal Information ── -->
-      <div class="section-divider">
-        <i class="bi bi-person me-1"></i> Personal Information
-      </div>
-
-      <div class="row g-3 mb-3">
-        <div class="col-sm-6">
-          <label for="id_first_name" class="form-label">
-            {{ form.first_name.label }}
-          </label>
-          <input
-            type="text"
-            name="first_name"
-            id="id_first_name"
-            class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
-            placeholder="Enter your first name"
-            value="{{ form.first_name.value|default:'' }}"
-            autocomplete="given-name"
-          />
-          {% if form.first_name.errors %}
-          <div class="invalid-feedback">{{ form.first_name.errors|join:", " }}</div>
-          {% endif %}
-        </div>
-        <div class="col-sm-6">
-          <label for="id_last_name" class="form-label">
-            {{ form.last_name.label }}
-          </label>
-          <input
-            type="text"
-            name="last_name"
-            id="id_last_name"
-            class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
-            placeholder="Enter your last name"
-            value="{{ form.last_name.value|default:'' }}"
-            autocomplete="family-name"
-          />
-          {% if form.last_name.errors %}
-          <div class="invalid-feedback">{{ form.last_name.errors|join:", " }}</div>
-          {% endif %}
+      <!-- ══ SECTION 1: Personal Information ══ -->
+      <div class="sec-head">
+        <div class="sec-icon"><i class="bi bi-person"></i></div>
+        <div>
+          <h6>Personal Information</h6>
+          <span>Your basic contact details</span>
         </div>
       </div>
-
-      <div class="mb-3">
-        <label for="id_email" class="form-label">
-          <i class="bi bi-envelope me-1"></i>{{ form.email.label }}
-        </label>
-        <!-- Email input + Verify button -->
-        <div class="input-group" style="border-radius:10px;overflow:hidden;">
-          <input
-            type="email"
-            name="email"
-            id="id_email"
-            class="form-control {% if form.email.errors %}is-invalid{% endif %}"
-            placeholder="Enter your university email"
-            value="{{ form.email.value|default:'' }}"
-            autocomplete="email"
-            oninput="onEmailChange()"
-          />
-          <button type="button" class="btn-verify" id="btnVerify" onclick="sendOtp()">
-            <i class="bi bi-send me-1"></i>Verify
-          </button>
-        </div>
-        {% if form.email.errors %}
-        <div class="text-danger mt-1" style="font-size:.82rem;">{{ form.email.errors|join:", " }}</div>
-        {% endif %}
-
-        <!-- Verified badge (shown after OTP confirmed) -->
-        <div class="email-verified-badge" id="verifiedBadge">
-          <i class="bi bi-patch-check-fill"></i> Email verified
+      <div class="sec-body">
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label class="field-label"><i class="bi bi-type"></i>First Name</label>
+            <input type="text" name="first_name" id="id_first_name"
+                   class="field-input {% if form.first_name.errors %}is-invalid{% endif %}"
+                   placeholder="Enter first name"
+                   value="{{ form.first_name.value|default:'' }}"
+                   autocomplete="given-name" />
+            {% if form.first_name.errors %}<p class="invalid-msg">{{ form.first_name.errors|join:", " }}</p>{% endif %}
+          </div>
+          <div class="col-sm-6">
+            <label class="field-label"><i class="bi bi-type"></i>Last Name</label>
+            <input type="text" name="last_name" id="id_last_name"
+                   class="field-input {% if form.last_name.errors %}is-invalid{% endif %}"
+                   placeholder="Enter last name"
+                   value="{{ form.last_name.value|default:'' }}"
+                   autocomplete="family-name" />
+            {% if form.last_name.errors %}<p class="invalid-msg">{{ form.last_name.errors|join:", " }}</p>{% endif %}
+          </div>
         </div>
 
-        <!-- OTP section (shown after clicking Verify) -->
-        <div class="otp-section" id="otpSection">
-          <p class="mb-2" style="font-size:.85rem; color:#555;">
-            <i class="bi bi-envelope-check me-1 text-primary"></i>
-            A 6-digit code was sent to <strong id="otpEmailLabel"></strong>.
-            Enter it below:
-          </p>
-          <input
-            type="text"
-            id="otpInput"
-            class="otp-input"
-            maxlength="6"
-            placeholder="_ _ _ _ _ _"
-            inputmode="numeric"
-            autocomplete="one-time-code"
-          />
-          <div class="d-flex justify-content-between align-items-center mt-2">
-            <span id="otpTimer" style="font-size:.8rem; color:#888;"></span>
-            <button type="button" class="btn btn-link btn-sm p-0 text-primary" id="btnResend"
-                    onclick="sendOtp()" style="font-size:.8rem; display:none;">
-              Resend OTP
+        <!-- Email + OTP verify -->
+        <div class="mb-3">
+          <label class="field-label"><i class="bi bi-envelope"></i>University Email</label>
+          <div class="input-action">
+            <input type="email" name="email" id="id_email"
+                   class="field-input {% if form.email.errors %}is-invalid{% endif %}"
+                   placeholder="yourname@au.ac.in"
+                   value="{{ form.email.value|default:'' }}"
+                   autocomplete="email" oninput="onEmailChange()" />
+            <button type="button" class="ia-btn" id="btnVerify" onclick="sendOtp()">
+              <i class="bi bi-send me-1"></i>Verify
             </button>
           </div>
-          {% if otp_error %}
-          <div class="text-danger mt-2" style="font-size:.82rem;">
-            <i class="bi bi-exclamation-circle me-1"></i>{{ otp_error }}
+          {% if form.email.errors %}<p class="invalid-msg">{{ form.email.errors|join:", " }}</p>{% endif %}
+
+          <div class="verified-badge" id="verifiedBadge">
+            <i class="bi bi-patch-check-fill"></i> Email verified
           </div>
-          {% endif %}
-        </div>
 
-        <!-- Hidden OTP value submitted with the form -->
-        <input type="hidden" name="otp" id="otpHidden" />
+          <div class="otp-panel" id="otpSection">
+            <p class="otp-hint">
+              <i class="bi bi-envelope-check me-1"></i>
+              Code sent to <strong id="otpEmailLabel"></strong>. Enter below:
+            </p>
+            <div class="otp-digit-row" id="regOtpRow">
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="0" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="1" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="2" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="3" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="4" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="5" />
+            </div>
+            <div class="otp-meta">
+              <span id="otpTimer" class="otp-timer"></span>
+              <button type="button" class="btn-resend" id="btnResend" onclick="sendOtp()">Resend OTP</button>
+            </div>
+            {% if otp_error %}
+              <p class="invalid-msg mt-2"><i class="bi bi-exclamation-circle me-1"></i>{{ otp_error }}</p>
+            {% endif %}
+          </div>
+          <input type="hidden" name="otp" id="otpHidden" />
+        </div>
       </div>
 
-      <!-- ── Student Details ── -->
-      <div class="section-divider">
-        <i class="bi bi-mortarboard me-1"></i> Student Details
-      </div>
-
-      <div class="row g-3 mb-3">
-        <div class="col-sm-6">
-          <label for="id_student_id" class="form-label">
-            <i class="bi bi-badge-id me-1"></i>{{ form.student_id.label }}
-          </label>
-          <input
-            type="text"
-            name="student_id"
-            id="id_student_id"
-            class="form-control {% if form.student_id.errors %}is-invalid{% endif %}"
-            placeholder="e.g. AU2021050123"
-            value="{{ form.student_id.value|default:'' }}"
-          />
-          {% if form.student_id.errors %}
-          <div class="invalid-feedback">{{ form.student_id.errors|join:", " }}</div>
-          {% endif %}
-          <div class="form-text">Use your official university Student ID.</div>
+      <!-- ══ SECTION 2: Student / Academic Details ══ -->
+      <div class="sec-head">
+        <div class="sec-icon"><i class="bi bi-mortarboard"></i></div>
+        <div>
+          <h6>Academic Details</h6>
+          <span>Your student ID, department and health info</span>
         </div>
-        <div class="col-sm-6">
-          <label for="id_department" class="form-label">
-            <i class="bi bi-building me-1"></i>{{ form.department.label }}
-          </label>
-          <select
-            name="department"
-            id="id_department"
-            class="form-select {% if form.department.errors %}is-invalid{% endif %}"
-          >
+      </div>
+      <div class="sec-body">
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label class="field-label"><i class="bi bi-badge-id"></i>Student ID</label>
+            <input type="text" name="student_id" id="id_student_id"
+                   class="field-input {% if form.student_id.errors %}is-invalid{% endif %}"
+                   placeholder="e.g. AU2021050123"
+                   value="{{ form.student_id.value|default:'' }}" />
+            {% if form.student_id.errors %}<p class="invalid-msg">{{ form.student_id.errors|join:", " }}</p>{% endif %}
+            <p class="field-hint">Your official university Student ID</p>
+          </div>
+          <div class="col-sm-6">
+            <label class="field-label"><i class="bi bi-telephone"></i>Phone</label>
+            <input type="tel" name="phone" id="id_phone"
+                   class="field-input {% if form.phone.errors %}is-invalid{% endif %}"
+                   placeholder="+91-XXXXX XXXXX"
+                   value="{{ form.phone.value|default:'' }}" />
+            {% if form.phone.errors %}<p class="invalid-msg">{{ form.phone.errors|join:", " }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="field-label"><i class="bi bi-building"></i>Department</label>
+          <!-- Search filter for department -->
+          <div class="dept-search-wrap">
+            <i class="bi bi-search dept-search-icon"></i>
+            <input type="text" id="deptSearch" class="dept-search" placeholder="Search department…" oninput="filterDept(this.value)" autocomplete="off" />
+          </div>
+          <select name="department" id="id_department"
+                  class="field-input dept-select {% if form.department.errors %}is-invalid{% endif %}">
             <option value="">— Select your department —</option>
             {% for value, label in form.fields.department.choices %}
               {% if value %}
-              <option value="{{ value }}" {% if form.department.value == value %}selected{% endif %}>{{ label }}</option>
+                <option value="{{ value }}" {% if form.department.value == value %}selected{% endif %}>{{ label }}</option>
               {% endif %}
             {% endfor %}
           </select>
-          {% if form.department.errors %}
-          <div class="invalid-feedback">{{ form.department.errors|join:", " }}</div>
-          {% endif %}
+          {% if form.department.errors %}<p class="invalid-msg">{{ form.department.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="field-label"><i class="bi bi-person-exclamation"></i>Emergency Contact</label>
+          <input type="tel" name="emergency_contact" id="id_emergency_contact"
+                 class="field-input {% if form.emergency_contact.errors %}is-invalid{% endif %}"
+                 placeholder="Guardian / emergency number"
+                 value="{{ form.emergency_contact.value|default:'' }}" />
+          {% if form.emergency_contact.errors %}<p class="invalid-msg">{{ form.emergency_contact.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        <!-- Blood Group visual picker -->
+        <div class="mb-1">
+          <label class="field-label mb-2"><i class="bi bi-droplet-half"></i>Blood Group</label>
+          {% if form.blood_group.errors %}<p class="invalid-msg mb-2">{{ form.blood_group.errors|join:", " }}</p>{% endif %}
+          <div class="blood-grid">
+            {% for value, label in form.fields.blood_group.choices %}
+              {% if value %}
+                <div>
+                  <input type="radio" name="blood_group" id="bg_{{ value }}" value="{{ value }}" class="blood-option"
+                         {% if form.blood_group.value == value %}checked{% endif %} />
+                  <label for="bg_{{ value }}" class="blood-label">
+                    {{ label }}<small>blood</small>
+                  </label>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
         </div>
       </div>
 
-      <div class="row g-3 mb-3">
-        <div class="col-sm-6">
-          <label for="id_phone" class="form-label">
-            <i class="bi bi-telephone me-1"></i>{{ form.phone.label }}
-          </label>
-          <input
-            type="tel"
-            name="phone"
-            id="id_phone"
-            class="form-control {% if form.phone.errors %}is-invalid{% endif %}"
-            placeholder="e.g. 01XXXXXXXXX"
-            value="{{ form.phone.value|default:'' }}"
-          />
-          {% if form.phone.errors %}
-          <div class="invalid-feedback">{{ form.phone.errors|join:", " }}</div>
-          {% endif %}
-        </div>
-        <div class="col-sm-6">
-          <label for="id_emergency_contact" class="form-label">
-            <i class="bi bi-exclamation-circle me-1"></i>{{ form.emergency_contact.label }}
-          </label>
-          <input
-            type="tel"
-            name="emergency_contact"
-            id="id_emergency_contact"
-            class="form-control {% if form.emergency_contact.errors %}is-invalid{% endif %}"
-            placeholder="Guardian/emergency contact"
-            value="{{ form.emergency_contact.value|default:'' }}"
-          />
-          {% if form.emergency_contact.errors %}
-          <div class="invalid-feedback">{{ form.emergency_contact.errors|join:", " }}</div>
-          {% endif %}
+      <!-- ══ SECTION 3: Address ══ -->
+      <div class="sec-head">
+        <div class="sec-icon"><i class="bi bi-geo-alt"></i></div>
+        <div>
+          <h6>Address</h6>
+          <span>Home and current campus address</span>
         </div>
       </div>
+      <div class="sec-body">
+        <div class="mb-3">
+          <label class="field-label"><i class="bi bi-house"></i>Home / Permanent Address</label>
+          <textarea name="home_address" id="id_home_address" rows="2"
+                    class="field-input {% if form.home_address.errors %}is-invalid{% endif %}"
+                    placeholder="Permanent / home address">{{ form.home_address.value|default:'' }}</textarea>
+          {% if form.home_address.errors %}<p class="invalid-msg">{{ form.home_address.errors|join:", " }}</p>{% endif %}
+        </div>
 
-      <div class="mb-3">
-        <label for="id_blood_group" class="form-label">
-          <i class="bi bi-droplet-half me-1"></i>{{ form.blood_group.label }}
-        </label>
-        <select
-          name="blood_group"
-          id="id_blood_group"
-          class="form-select {% if form.blood_group.errors %}is-invalid{% endif %}"
-        >
-          <option value="">— Select blood group —</option>
-          {% for value, label in form.fields.blood_group.choices %}
-            {% if value %}
-            <option value="{{ value }}" {% if form.blood_group.value == value %}selected{% endif %}>{{ label }}</option>
-            {% endif %}
-          {% endfor %}
-        </select>
-        {% if form.blood_group.errors %}
-        <div class="invalid-feedback">{{ form.blood_group.errors|join:", " }}</div>
-        {% endif %}
+        <div class="mb-4">
+          <label class="field-label"><i class="bi bi-building"></i>Present / Campus Address</label>
+          <textarea name="present_address" id="id_present_address" rows="2"
+                    class="field-input {% if form.present_address.errors %}is-invalid{% endif %}"
+                    placeholder="Current / on-campus address">{{ form.present_address.value|default:'' }}</textarea>
+          {% if form.present_address.errors %}<p class="invalid-msg">{{ form.present_address.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <i class="bi bi-person-check-fill"></i>Submit Registration
+        </button>
+
+        <div class="info-note mt-4">
+          <i class="bi bi-info-circle" style="color:var(--primary);"></i>
+          Your registration will be reviewed by our admin team.
+          Already have an account? <a href="{% url 'login' %}" style="color:var(--primary);font-weight:600;">Sign in here</a>
+        </div>
       </div>
 
-      <!-- ── Address ── -->
-      <div class="section-divider">
-        <i class="bi bi-geo-alt me-1"></i> Address
-      </div>
-
-      <div class="mb-3">
-        <label for="id_home_address" class="form-label">{{ form.home_address.label }}</label>
-        <textarea
-          name="home_address"
-          id="id_home_address"
-          rows="2"
-          class="form-control {% if form.home_address.errors %}is-invalid{% endif %}"
-          placeholder="Permanent / home address"
-        >{{ form.home_address.value|default:'' }}</textarea>
-        {% if form.home_address.errors %}
-        <div class="invalid-feedback">{{ form.home_address.errors|join:", " }}</div>
-        {% endif %}
-      </div>
-
-      <div class="mb-3">
-        <label for="id_present_address" class="form-label">{{ form.present_address.label }}</label>
-        <textarea
-          name="present_address"
-          id="id_present_address"
-          rows="2"
-          class="form-control {% if form.present_address.errors %}is-invalid{% endif %}"
-          placeholder="Current / on-campus address"
-        >{{ form.present_address.value|default:'' }}</textarea>
-        {% if form.present_address.errors %}
-        <div class="invalid-feedback">{{ form.present_address.errors|join:", " }}</div>
-        {% endif %}
-      </div>
-
-      <button type="submit" class="btn-register">
-        <i class="bi bi-person-check me-2"></i>Submit Registration
-      </button>
     </form>
-
-    <!-- Info note -->
-    <div class="mt-4 p-3 rounded-3" style="background:#f4f8fc; font-size:.8rem; color:#666; text-align:center;">
-      <i class="bi bi-info-circle text-primary me-1"></i>
-      Your registration will be reviewed by the admin team.
-      For assistance, contact <strong>health@au.edu</strong>
-    </div>
-
   </div>
 </div>
 
 <!-- ══════════ FOOTER ══════════ -->
 <footer>
-  &copy; 2026 AUdoc – Ahsanullah University Campus Health. All rights reserved.
+  &copy; 2026 AUdoc — Assam University Campus Health Portal. All rights reserved.
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  // ══ OTP boxes ════════════════════════════════════════════
+  const regOtpBoxes = document.querySelectorAll('#regOtpRow .otp-box');
+  regOtpBoxes.forEach((box, i) => {
+    box.addEventListener('input', function () {
+      const v = this.value.replace(/\D/, '');
+      this.value = v;
+      this.classList.toggle('filled', v !== '');
+      if (v && i < regOtpBoxes.length - 1) regOtpBoxes[i + 1].focus();
+      syncRegOtp();
+    });
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && !this.value && i > 0) {
+        regOtpBoxes[i - 1].focus();
+        regOtpBoxes[i - 1].value = '';
+        regOtpBoxes[i - 1].classList.remove('filled');
+        syncRegOtp();
+      }
+    });
+    box.addEventListener('paste', function (e) {
+      e.preventDefault();
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+      paste.split('').forEach((ch, j) => {
+        if (regOtpBoxes[j]) { regOtpBoxes[j].value = ch; regOtpBoxes[j].classList.add('filled'); }
+      });
+      syncRegOtp();
+      regOtpBoxes[Math.min(paste.length, 5)].focus();
+    });
+  });
+
+  function syncRegOtp() {
+    let val = '';
+    regOtpBoxes.forEach(b => val += b.value);
+    document.getElementById('otpHidden').value = val;
+  }
+
+  // ══ Email / OTP flow ═════════════════════════════════════
   let emailVerified = false;
   let timerInterval = null;
 
-  // ── Reset verification state when email is edited ────────────────
   function onEmailChange() {
     if (!emailVerified) return;
     emailVerified = false;
     document.getElementById('otpHidden').value = '';
     document.getElementById('verifiedBadge').style.display = 'none';
     document.getElementById('otpSection').style.display = 'none';
-    document.getElementById('btnVerify').textContent = '';
     document.getElementById('btnVerify').innerHTML = '<i class="bi bi-send me-1"></i>Verify';
     document.getElementById('btnVerify').disabled = false;
     clearInterval(timerInterval);
   }
 
-  // ── Send OTP via AJAX ─────────────────────────────────────────────
   async function sendOtp() {
     const email = document.getElementById('id_email').value.trim();
-    if (!email) {
-      alert('Please enter your email address first.');
-      return;
-    }
+    if (!email) { alert('Please enter your email address first.'); return; }
 
     const btn = document.getElementById('btnVerify');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Sending...';
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" style="width:12px;height:12px;"></span>Sending…';
 
     const formData = new FormData();
     formData.append('email', email);
@@ -590,8 +651,9 @@
       if (data.success) {
         document.getElementById('otpSection').style.display = 'block';
         document.getElementById('otpEmailLabel').textContent = email;
-        document.getElementById('otpInput').value = '';
-        document.getElementById('otpInput').focus();
+        regOtpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
+        document.getElementById('otpHidden').value = '';
+        regOtpBoxes[0].focus();
         btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend';
         btn.disabled = false;
         startTimer(600);
@@ -607,7 +669,6 @@
     }
   }
 
-  // ── 10-minute countdown ───────────────────────────────────────────
   function startTimer(seconds) {
     clearInterval(timerInterval);
     const el = document.getElementById('otpTimer');
@@ -620,6 +681,7 @@
       const m = String(Math.floor(remaining / 60)).padStart(2, '0');
       const s = String(remaining % 60).padStart(2, '0');
       el.textContent = 'Expires in ' + m + ':' + s;
+      el.className = 'otp-timer' + (remaining <= 60 ? ' urgent' : '');
       if (remaining <= 0) {
         clearInterval(timerInterval);
         el.textContent = 'OTP expired. Please resend.';
@@ -628,35 +690,69 @@
     }, 1000);
   }
 
-  // ── Sync OTP input to hidden field ───────────────────────────────
-  document.getElementById('otpInput').addEventListener('input', function () {
-    const val = this.value.replace(/\D/g, '').slice(0, 6);
-    this.value = val;
-    document.getElementById('otpHidden').value = val;
-  });
+  // ══ Dept search filter ═══════════════════════════════════
+  function filterDept(query) {
+    const sel = document.getElementById('id_department');
+    const q = query.toLowerCase();
+    Array.from(sel.options).forEach(opt => {
+      opt.style.display = (!opt.value || opt.text.toLowerCase().includes(q)) ? '' : 'none';
+    });
+  }
 
-  // ── Block form submit if email not verified ───────────────────────
+  // ══ Step progress highlight ══════════════════════════════
+  (function () {
+    const sections = [
+      document.querySelector('.sec-head:nth-of-type(1)'),
+    ];
+    const fields1 = ['id_first_name', 'id_last_name', 'id_email'];
+    const fields2 = ['id_student_id', 'id_department', 'id_phone', 'id_emergency_contact'];
+    const fields3 = ['id_home_address', 'id_present_address'];
+
+    function markStep(n) {
+      for (let i = 1; i <= 3; i++) {
+        const s = document.getElementById('step' + i);
+        s.classList.toggle('active', i === n);
+        s.classList.toggle('done',   i < n);
+      }
+      for (let i = 1; i <= 2; i++) {
+        document.getElementById('line' + i).classList.toggle('done', i < n);
+      }
+    }
+
+    [...fields1.map(id => document.getElementById(id)).filter(Boolean)].forEach(el => {
+      el.addEventListener('focus', () => markStep(1));
+    });
+    [...fields2.map(id => document.getElementById(id)).filter(Boolean),
+      document.getElementById('deptSearch')].filter(Boolean).forEach(el => {
+      el.addEventListener('focus', () => markStep(2));
+    });
+    document.querySelectorAll('.blood-option').forEach(el => {
+      el.addEventListener('change', () => markStep(2));
+    });
+    [...fields3.map(id => document.getElementById(id)).filter(Boolean)].forEach(el => {
+      el.addEventListener('focus', () => markStep(3));
+    });
+  })();
+
+  // ══ Block submit if OTP not entered ═════════════════════
   document.querySelector('form[method="post"]').addEventListener('submit', function (e) {
     const otp = document.getElementById('otpHidden').value.trim();
     if (!otp) {
       e.preventDefault();
-      if (document.getElementById('otpSection').style.display === 'none') {
-        document.getElementById('otpSection').style.display = 'block';
-      }
-      document.getElementById('otpInput').focus();
-      document.getElementById('otpInput').style.borderColor = '#dc3545';
-      setTimeout(() => document.getElementById('otpInput').style.borderColor = '', 2000);
-      alert('Please verify your email first.');
+      document.getElementById('otpSection').style.display = 'block';
+      regOtpBoxes[0].focus();
+      regOtpBoxes.forEach(b => { b.style.borderColor = '#e53e3e'; setTimeout(() => b.style.borderColor = '', 1800); });
+      alert('Please verify your email with the OTP first.');
     }
   });
 
-  // ── CSRF helper ───────────────────────────────────────────────────
+  // ══ CSRF helper ════════════════════════════════════════
   function getCsrf() {
     const el = document.querySelector('[name=csrfmiddlewaretoken]');
     return el ? el.value : '';
   }
 
-  // If OTP error returned from server, auto-show the OTP section
+  // ══ Auto-show OTP section on server OTP error ═══════════
   {% if otp_error %}
   document.getElementById('otpSection').style.display = 'block';
   document.getElementById('otpEmailLabel').textContent =

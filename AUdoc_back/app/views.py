@@ -1,17 +1,41 @@
+import json
+import os
 import random
 import time
+from datetime import date, timedelta
 
 from django.contrib import messages
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Case, When, Value, IntegerField, Sum
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
+from django.core.mail import EmailMultiAlternatives
+from django.db.models import Q, Case, When, Value, IntegerField
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, StudentRegistrationForm
-from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, StudentRegistration, BLOOD_GROUP_CHOICES
+from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm
+from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
+
+
+def about(request):
+    if request.method == "POST":
+        form = HelpDeskForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            feedback = HelpDesk.objects.create(
+                name=cd["name"],
+                stars=cd["stars"],
+                message=cd.get("message", ""),
+            )
+            return render(request, "app/about.html", {"submitted": True, "stars": feedback.stars})
+    else:
+        form = HelpDeskForm()
+    return render(request, "app/about.html", {"form": form, "submitted": False})
 
 
 def student_login(request):
@@ -45,9 +69,6 @@ def student_login(request):
 
 @require_POST
 def send_login_otp(request):
-    from django.contrib.auth.models import User
-    from django.core.mail import EmailMultiAlternatives
-
     student_id = request.POST.get("student_id", "").strip()
     if not student_id:
         return JsonResponse({"error": "Please enter your Student ID first."}, status=400)
@@ -140,7 +161,7 @@ def send_login_otp(request):
         <tr>
           <td style="background:#f4f8fc;padding:20px 40px;text-align:center;border-top:1px solid #e5edf5;">
             <p style="margin:0;font-size:.8rem;color:#999;">
-              &#169; 2026 <strong style="color:#1a5c96;">AUdoc</strong> &mdash; Ahsanullah University Campus Health<br/>
+              &#169; 2026 <strong style="color:#1a5c96;">AUdoc</strong> &mdash; Assam University Silchar Campus Health<br/>
               Academic Block C, Room 101 &nbsp;|&nbsp; health@au.edu
             </p>
           </td>
@@ -185,9 +206,7 @@ def send_otp(request):
         "expires": time.time() + 600,   # valid for 10 minutes
     }
 
-    from django.core.mail import EmailMultiAlternatives
     plain_text = (
-        "Hi there!\n\n"
         "Your AUdoc email verification code is: {otp}\n\n"
         "This code is valid for 10 minutes.\n\n"
         "If you did not request this, you can safely ignore this email.\n\n"
@@ -262,7 +281,7 @@ def send_otp(request):
         <tr>
           <td style="background:#f4f8fc;padding:20px 40px;text-align:center;border-top:1px solid #e5edf5;">
             <p style="margin:0;font-size:.8rem;color:#999;">
-              &#169; 2026 <strong style="color:#1a5c96;">AUdoc</strong> &mdash; Ahsanullah University Campus Health<br/>
+              &#169; 2026 <strong style="color:#1a5c96;">AUdoc</strong> &mdash; Assam University Silchar Campus Health<br/>
               Academic Block C, Room 101 &nbsp;|&nbsp; health@au.edu
             </p>
           </td>
@@ -334,57 +353,8 @@ def register(request):
 
 
 def home(request):
-    today = timezone.localdate()
-    first_of_month = today.replace(day=1)
-
-    # Top money donor this month (highest total donation amount)
-    top_money_donor = (
-        Donation.objects
-        .filter(donated_at__date__gte=first_of_month)
-        .values("name", "student_id")
-        .annotate(total=Sum("amount"))
-        .order_by("-total")
-        .first()
-    )
-
-    # Featured blood donor this month (most recently approved this month)
-    top_blood_donor = (
-        BloodDonation.objects
-        .filter(status="APPROVED", created_at__date__gte=first_of_month)
-        .order_by("-created_at")
-        .first()
-    )
-    # Fallback: most recently approved blood donor ever
-    if not top_blood_donor:
-        top_blood_donor = (
-            BloodDonation.objects
-            .filter(status="APPROVED")
-            .order_by("-created_at")
-            .first()
-        )
-
-    # Campus medical center departments
-    specialties = [
-        {"icon": "🩺", "name": "General Physician",          "count": 5},
-        {"icon": "🦷", "name": "Dental Care",                "count": 3},
-        {"icon": "👁️", "name": "Eye Care",                   "count": 2},
-        {"icon": "🧠", "name": "Mental Health & Counseling", "count": 4},
-        {"icon": "🦴", "name": "Orthopedics",                "count": 2},
-        {"icon": "🧴", "name": "Dermatology",                "count": 2},
-        {"icon": "🤰", "name": "Gynecology",                 "count": 2},
-        {"icon": "🏃", "name": "Physiotherapy",              "count": 3},
-    ]
-
-    # Campus doctors — pulled live from the database
     doctors = Doctor.objects.filter(is_available=True).order_by("specialized_in", "name")
-
-    return render(request, "app/home.html", {
-        "specialties":      specialties,
-        "doctors":          doctors,
-        "top_money_donor":  top_money_donor,
-        "top_blood_donor":  top_blood_donor,
-        "current_month":    today.strftime("%B %Y"),
-    })
+    return render(request, "app/home.html", {"doctors": doctors})
 
 
 @login_required
@@ -496,11 +466,11 @@ def donation(request):
 
 
 def blood_donors_list(request):
+    if not (request.user.is_authenticated and request.user.is_staff):
+        return redirect("home")
+
     blood_group_filter = request.GET.get("blood_group", "")
-
-    # Get all blood donors
     donors = BloodDonation.objects.filter(status="APPROVED")
-
     if blood_group_filter:
         donors = donors.filter(blood_group=blood_group_filter)
 
@@ -560,6 +530,7 @@ def blood_bank(request):
             )
 
     if request.method == "GET":
+        initial_request["required_date"] = timezone.localdate()
         form_donate = BloodDonationForm(initial=initial_donate)
         form_request = BloodRequestForm(initial=initial_request)
 
@@ -616,7 +587,7 @@ def blood_bank(request):
                 except Exception:
                     pass
 
-            BloodRequest.objects.create(
+            blood_req = BloodRequest.objects.create(
                 student_id=student_id,
                 requester_name=cd["requester_name"],
                 email=cd["email"],
@@ -631,9 +602,19 @@ def blood_bank(request):
                 notes=cd["notes"],
                 status="PENDING",
             )
+
+            # Notify all approved donors with matching blood group via email
+            # Exclude the requester themselves — no point asking someone to donate to themselves
+            matching_donors = BloodDonation.objects.filter(
+                blood_group=cd["blood_group"], status="APPROVED"
+            ).exclude(email=cd["email"])
+            for donor in matching_donors:
+                dr, _ = DonorResponse.objects.get_or_create(blood_request=blood_req, donor=donor)
+                _send_donor_request_email(request, blood_req, donor, dr.token)
+
             messages.success(
                 request,
-                "Your blood request has been submitted successfully! We will match it with our donors and contact you shortly.",
+                "Your blood request has been submitted! Matching donors have been notified by email.",
             )
             return redirect("blood_bank")
 
@@ -652,68 +633,1436 @@ def blood_bank(request):
     })
 
 
-def request_blood_from_donor(request, donor_id):
-    try:
-        donor = BloodDonation.objects.get(id=donor_id, status="APPROVED")
-    except BloodDonation.DoesNotExist:
-        messages.error(request, "Donor not found or is not available.")
-        return redirect("blood_donors_list")
+def _send_donor_request_email(request, blood_req, donor, token):
+    """Send a blood donation request notification email to a single donor."""
+    accept_url  = request.build_absolute_uri(
+        reverse("donor_respond", args=[str(token), "accept"])
+    )
+    decline_url = request.build_absolute_uri(
+        reverse("donor_respond", args=[str(token), "decline"])
+    )
 
-    form = BloodRequestForm(request.POST or None)
-
-    # Get initial data
-    initial = {
-        "blood_group": donor.blood_group,
+    urgency_colours = {
+        "URGENT": "#c41e3a",
+        "HIGH":   "#e67e22",
+        "MEDIUM": "#f39c12",
+        "LOW":    "#27ae60",
     }
-    if request.user.is_authenticated:
-        initial.update({
-            "requester_name": request.user.get_full_name(),
-            "email": request.user.email,
+    urgency_colour = urgency_colours.get(blood_req.urgency, "#1a5c96")
+
+    plain_text = (
+        f"Dear {donor.donor_name},\n\n"
+        f"A student at Assam University needs {blood_req.blood_group} blood.\n\n"
+        f"Requester : {blood_req.requester_name}\n"
+        f"Blood Type: {blood_req.blood_group}\n"
+        f"Units     : {blood_req.units_required}\n"
+        f"Urgency   : {blood_req.get_urgency_display()}\n"
+        f"Needed By : {blood_req.required_date}\n"
+        f"Hospital  : {blood_req.hospital_name}\n"
+        f"Contact   : {blood_req.hospital_contact}\n\n"
+        f"To ACCEPT  : {accept_url}\n"
+        f"To DECLINE : {decline_url}\n\n"
+        "Your contact details will only be shared with the requester after you accept.\n\n"
+        "-- AUdoc Campus Health"
+    )
+
+    html_body = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+</head>
+<body style="margin:0;padding:0;background:#fef0f0;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef0f0;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(196,30,58,.15);">
+
+        <tr>
+          <td style="background:linear-gradient(135deg,#c41e3a 0%,#8b0000 100%);padding:36px 40px;text-align:center;">
+            <div style="display:inline-block;background:rgba(255,255,255,.15);border-radius:14px;padding:12px 18px;margin-bottom:14px;">
+              <span style="font-size:2rem;">&#129656;</span>
+            </div>
+            <h1 style="margin:0;color:#ffffff;font-size:1.6rem;font-weight:700;">Blood Donation Request</h1>
+            <p style="margin:6px 0 0;color:#f5c6cb;font-size:.9rem;">AUdoc Campus Health – Assam University</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:36px 40px 28px;">
+            <p style="margin:0 0 6px;font-size:1.4rem;">&#128075; Dear {donor.donor_name},</p>
+            <p style="margin:0 0 24px;color:#555;font-size:.97rem;line-height:1.6;">
+              A fellow student urgently needs <strong style="color:#c41e3a;">{blood_req.blood_group}</strong> blood.
+              As a registered donor with the same blood type, you can make a real difference.
+            </p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;background:#fff5f5;border-radius:12px;overflow:hidden;border:1px solid #f5c6cb;">
+              <tr><td style="padding:20px 24px;">
+                <table width="100%" cellpadding="4" cellspacing="0">
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;width:38%;">Requester</td>
+                    <td style="font-size:.92rem;color:#333;font-weight:600;">{blood_req.requester_name}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;">Blood Type Needed</td>
+                    <td><span style="background:#c41e3a;color:#fff;padding:3px 12px;border-radius:20px;font-size:.85rem;font-weight:700;">{blood_req.blood_group}</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;">Units Required</td>
+                    <td style="font-size:.92rem;color:#333;font-weight:600;">{blood_req.units_required}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;">Urgency</td>
+                    <td><span style="background:{urgency_colour};color:#fff;padding:3px 12px;border-radius:20px;font-size:.85rem;font-weight:700;">{blood_req.get_urgency_display()}</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;">Date Needed By</td>
+                    <td style="font-size:.92rem;color:#333;font-weight:600;">{blood_req.required_date}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;">Hospital</td>
+                    <td style="font-size:.92rem;color:#333;font-weight:600;">{blood_req.hospital_name}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;">Hospital Contact</td>
+                    <td style="font-size:.92rem;color:#333;font-weight:600;">{blood_req.hospital_contact}</td>
+                  </tr>
+                </table>
+              </td></tr>
+            </table>
+
+            <p style="margin:0 0 20px;color:#555;font-size:.9rem;line-height:1.6;">
+              Please respond using one of the buttons below. Your personal contact details
+              will <strong>not</strong> be visible to anyone — they are kept private at all times.
+            </p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <tr>
+                <td align="center" style="padding-right:8px;">
+                  <a href="{accept_url}"
+                     style="display:inline-block;background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;text-decoration:none;padding:14px 32px;border-radius:50px;font-size:1rem;font-weight:700;letter-spacing:.3px;">
+                    &#10003;&nbsp; Accept Request
+                  </a>
+                </td>
+                <td align="center" style="padding-left:8px;">
+                  <a href="{decline_url}"
+                     style="display:inline-block;background:#f8f9fa;color:#555;text-decoration:none;padding:14px 32px;border-radius:50px;font-size:1rem;font-weight:700;border:2px solid #dee2e6;">
+                    &#10007;&nbsp; Decline
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="background:#e8f5e9;border-left:4px solid #27ae60;border-radius:0 10px 10px 0;padding:14px 16px;">
+                  <p style="margin:0;font-size:.85rem;color:#1b5e20;line-height:1.5;">
+                    &#128274; <strong>Privacy note:</strong> These links are unique to you.
+                    No other user can see your name, phone, or email. Only the health center
+                    administration has access to donor records.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background:#f4f8fc;padding:20px 40px;text-align:center;border-top:1px solid #e5edf5;">
+            <p style="margin:0;font-size:.8rem;color:#999;">
+              &#169; 2026 <strong style="color:#c41e3a;">AUdoc</strong> &mdash; Assam University Silchar Campus Health<br/>
+              Academic Block C, Room 101 &nbsp;|&nbsp; health@au.edu
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+    try:
+        msg = EmailMultiAlternatives(
+            subject=f"[AUdoc] Blood Request — {blood_req.blood_group} ({blood_req.get_urgency_display()})",
+            body=plain_text,
+            from_email=None,
+            to=[donor.email],
+        )
+        msg.attach_alternative(html_body, "text/html")
+        msg.send(fail_silently=True)
+    except Exception:
+        pass
+
+
+def donor_respond(request, token, action):
+    """Handle a donor's accept/decline response from the email link."""
+    try:
+        dr = DonorResponse.objects.select_related("blood_request", "donor").get(token=token)
+    except DonorResponse.DoesNotExist:
+        return render(request, "app/donor_response_confirm.html", {"error": True})
+
+    if dr.response != "PENDING":
+        return render(request, "app/donor_response_confirm.html", {
+            "already_responded": True,
+            "response": dr.response,
         })
-        try:
-            profile = request.user.student_profile
-            initial["phone"] = profile.phone
-        except Exception:
-            pass
 
-    if request.method == "GET":
-        form = BloodRequestForm(initial=initial)
+    if action == "accept":
+        dr.response = "ACCEPTED"
+        dr.blood_request.status = "APPROVED"
+        dr.blood_request.save(update_fields=["status"])
+    elif action == "decline":
+        dr.response = "DECLINED"
+    else:
+        return render(request, "app/donor_response_confirm.html", {"error": True})
 
-    if request.method == "POST" and form.is_valid():
-        cd = form.cleaned_data
+    dr.responded_at = timezone.now()
+    dr.save(update_fields=["response", "responded_at"])
 
-        # Resolve student_id if user is authenticated
-        student_id = ""
-        if request.user.is_authenticated:
+    return render(request, "app/donor_response_confirm.html", {
+        "action": action,
+        "blood_request": dr.blood_request,
+        "donor": dr.donor,
+    })
+
+
+def appointment_confirm(request, token, action):
+    """Handle appointment confirmation from email link."""
+    from .models import TodaysAppointment
+
+    try:
+        today_appt = TodaysAppointment.objects.select_related("appointment").get(confirmation_token=token)
+    except TodaysAppointment.DoesNotExist:
+        return render(request, "app/appointment_confirm.html", {"error": True})
+
+    # Check if already responded
+    if today_appt.status != "PENDING":
+        return render(request, "app/appointment_confirm.html", {
+            "already_responded": True,
+            "status": today_appt.status,
+            "appointment": today_appt.appointment,
+        })
+
+    # Check if expired
+    if today_appt.is_expired():
+        today_appt.status = "EXPIRED"
+        today_appt.save(update_fields=["status"])
+        return render(request, "app/appointment_confirm.html", {
+            "expired": True,
+            "appointment": today_appt.appointment,
+        })
+
+    # Process the action
+    if action == "accept":
+        today_appt.status = "CONFIRMED"
+        today_appt.responded_at = timezone.now()
+
+        # Assign FCFS queue position based on appointment booking time (created_at)
+        # Count how many confirmed appointments for the same date were booked earlier
+        earlier_confirmed = TodaysAppointment.objects.filter(
+            status="CONFIRMED",
+            appointment__appointment_date=today_appt.appointment.appointment_date,
+            appointment__created_at__lt=today_appt.appointment.created_at
+        ).count()
+
+        # Queue position = number of earlier bookings + 1
+        today_appt.queue_position = earlier_confirmed + 1
+
+        # Update the main appointment status
+        today_appt.appointment.status = "CONFIRMED"
+        today_appt.appointment.save(update_fields=["status"])
+
+    elif action == "decline":
+        today_appt.status = "DECLINED"
+        today_appt.responded_at = timezone.now()
+
+        # Update the main appointment status
+        today_appt.appointment.status = "CANCELLED"
+        today_appt.appointment.save(update_fields=["status"])
+    else:
+        return render(request, "app/appointment_confirm.html", {"error": True})
+
+    today_appt.save()
+
+    return render(request, "app/appointment_confirm.html", {
+        "action": action,
+        "appointment": today_appt.appointment,
+        "queue_position": today_appt.queue_position if action == "accept" else None,
+    })
+
+
+# ══════════════════════════════════════════════════════════════════
+#  CUSTOM ADMIN PANEL
+# ══════════════════════════════════════════════════════════════════
+
+def _admin_required(view_func):
+    """Decorator: must be authenticated + is_staff / is_superuser."""
+    from functools import wraps
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/accounts/login/')
+        if not (request.user.is_staff or request.user.is_superuser):
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def post_login_redirect(request):
+    """
+    Redirect target after Django's built-in login view.
+    Admins → custom admin panel.  Everyone else → home.
+    """
+    if not request.user.is_authenticated:
+        return redirect('/accounts/login/')
+    if request.user.is_staff or request.user.is_superuser:
+        return redirect('admin_dashboard')
+    return redirect('home')
+
+
+@_admin_required
+def admin_dashboard(request):
+    # Query data for the dashboard
+    todays_appointments = TodaysAppointment.objects.select_related(
+        'appointment', 'appointment__doctor'
+    ).filter(
+        appointment__appointment_date=date.today()
+    ).order_by('appointment__created_at')  # FCFS order
+
+    blood_donations = BloodDonation.objects.order_by('-created_at')
+    blood_requests = BloodRequest.objects.order_by('-created_at')
+    all_appointments = Appointment.objects.select_related('doctor').order_by('-created_at')
+    doctors = Doctor.objects.all().order_by('name')
+
+    context = {
+        # ── Main dashboard data for new template ──────────
+        'todays_appointments': todays_appointments,
+        'blood_donations': blood_donations,
+        'blood_requests': blood_requests,
+        'appointments': all_appointments,
+        'doctors': doctors,
+
+        # ── stat cards for dashboard ──────────────────────
+        'stat_pending_reg':       StudentRegistration.objects.filter(status='PENDING').count(),
+        'stat_pending_appts':     Appointment.objects.filter(status='PENDING').count(),
+        'stat_pending_blooddon':  BloodDonation.objects.filter(status='PENDING').count(),
+        'stat_pending_bloodreq':  BloodRequest.objects.filter(status='PENDING').count(),
+        'stat_active_doctors':    Doctor.objects.filter(is_available=True).count(),
+        'stat_feedback':          HelpDesk.objects.count(),
+        'stat_staff':             StaffProfile.objects.count(),
+        'stat_todays_pending':    TodaysAppointment.objects.filter(status='PENDING').count(),
+        'stat_todays_confirmed':  TodaysAppointment.objects.filter(status='CONFIRMED').count(),
+
+        # ── Legacy table data (preserved for compatibility) ──
+        'registrations':  StudentRegistration.objects.order_by('-registered_at'),
+        'blood_donations': BloodDonation.objects.order_by('-created_at'),
+        'donations':      Donation.objects.order_by('-donated_at'),
+        'feedback':       HelpDesk.objects.order_by('-submitted_at'),
+        'login_logs':     LoginLog.objects.order_by('-date', '-time')[:100],
+        'staff_members':  StaffProfile.objects.order_by('name'),
+
+        # ── misc ────────────────────────────────────────────
+        'active_tab':    request.GET.get('tab', 'dashboard'),
+        'dept_choices':  MEDICAL_DEPT_CHOICES,
+        'day_choices':   DAY_CHOICES,
+    }
+    return render(request, 'app/admin_panel.html', context)
+
+
+@_admin_required
+def admin_dashboard_stats(request):
+    """AJAX endpoint for real-time dashboard statistics"""
+    # Calculate statistics
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+
+    # Today's stats
+    todays_appointments = TodaysAppointment.objects.filter(appointment__appointment_date=today).count()
+    todays_confirmed = TodaysAppointment.objects.filter(appointment__appointment_date=today, status='CONFIRMED').count()
+    todays_pending = TodaysAppointment.objects.filter(appointment__appointment_date=today, status='PENDING').count()
+
+    # Yesterday's stats for comparison
+    yesterdays_appointments = TodaysAppointment.objects.filter(appointment__appointment_date=yesterday).count()
+
+    # Calculate percentage changes
+    def calc_percentage_change(current, previous):
+        if previous == 0:
+            return 100 if current > 0 else 0
+        return round(((current - previous) / previous) * 100, 1)
+
+    appt_change = calc_percentage_change(todays_appointments, yesterdays_appointments)
+
+    # Blood donations and requests
+    total_donors = BloodDonation.objects.count()
+    total_requests = BloodRequest.objects.count()
+    active_doctors = Doctor.objects.filter(is_available=True).count()
+
+    return JsonResponse({
+        'todays_appointments': {
+            'count': todays_appointments,
+            'change': appt_change
+        },
+        'blood_donors': {
+            'count': total_donors,
+            'change': 8  # Mock data - could be calculated based on weekly/monthly trends
+        },
+        'blood_requests': {
+            'count': total_requests,
+            'change': -3  # Mock data
+        },
+        'active_doctors': {
+            'count': active_doctors,
+            'change': 5  # Mock data
+        },
+        'queue_stats': {
+            'confirmed': todays_confirmed,
+            'pending': todays_pending,
+            'cancelled': todays_appointments - todays_confirmed - todays_pending
+        }
+    })
+
+
+@_admin_required
+def admin_chart_data(request):
+    """AJAX endpoint for chart data"""
+    from django.http import JsonResponse
+    from datetime import date, timedelta
+    from django.db.models import Count
+
+    chart_type = request.GET.get('type', 'appointments')
+
+    if chart_type == 'appointments':
+        # Get last 7 days appointment data
+        today = date.today()
+        dates = [today - timedelta(days=i) for i in range(6, -1, -1)]
+
+        appointment_data = []
+        for day in dates:
+            count = Appointment.objects.filter(appointment_date=day).count()
+            appointment_data.append(count)
+
+        return JsonResponse({
+            'labels': [day.strftime('%a') for day in dates],
+            'data': appointment_data
+        })
+
+    elif chart_type == 'blood_groups':
+        # Get blood group distribution
+        blood_groups = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-']
+        blood_data = []
+
+        for group in blood_groups:
+            count = BloodDonation.objects.filter(blood_group=group).count()
+            blood_data.append(count)
+
+        return JsonResponse({
+            'labels': blood_groups,
+            'data': blood_data
+        })
+
+    return JsonResponse({'error': 'Invalid chart type'})
+
+
+@_admin_required
+def admin_registration_action(request, pk):
+    reg = get_object_or_404(StudentRegistration, pk=pk)
+    action = request.GET.get('action')
+
+    if action == 'approve' and reg.status != 'APPROVED':
+        if User.objects.filter(username=reg.student_id).exists():
+            messages.warning(request, f"Student ID '{reg.student_id}' already has an account — skipped.")
+        else:
+            user = User.objects.create_user(
+                username=reg.student_id,
+                email=reg.email,
+                first_name=reg.first_name,
+                last_name=reg.last_name,
+            )
+            user.set_unusable_password()
+            user.save()
+
+            StudentProfile.objects.create(
+                user=user,
+                student_id=reg.student_id,
+                phone=reg.phone,
+                emergency_contact=reg.emergency_contact,
+                department=reg.department,
+                blood_group=reg.blood_group,
+                home_address=reg.home_address,
+                present_address=reg.present_address,
+            )
+            reg.status = 'APPROVED'
+            reg.save()
+
             try:
-                profile = request.user.student_profile
-                student_id = profile.student_id
+                subject = f"✅ Approved, {reg.first_name}! AUdoc just unlocked for you"
+                plain = (
+                    f"Hey {reg.first_name}! 👋\n\n"
+                    f"Great news: your AUdoc registration is APPROVED. 🎉\n"
+                    f"Our admin team reviewed your form and gave it a very confident head nod.\n\n"
+                    f"--- HOW TO LOG IN ---\n"
+                    f"1. 🌐 Visit: /accounts/login/\n"
+                    f"2. 🎓 Click the 'Student' tab\n"
+                    f"3. 🔑 Enter your Student ID: {reg.student_id}\n"
+                    f"4. 🚀 Hit Login (no password needed)\n\n"
+                    f"That is all. You are now officially in the AUdoc healthy-humans club.\n"
+                    f"Please celebrate responsibly (water is recommended). 😄\n\n"
+                    f"Stay healthy,\n"
+                    f"The AUdoc Team 🏥"
+                )
+                login_url = request.build_absolute_uri('/accounts/login/')
+                html_body = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                body {{ margin: 0; padding: 0; background-color: #e8f0fe; font-family: 'Segoe UI', Arial, sans-serif; }}
+                .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; box-shadow: 0 8px 32px rgba(26,92,150,.18); overflow: hidden; }}
+                .header {{ background: linear-gradient(135deg, #1a5c96 0%, #134a7a 100%); color: #ffffff; padding: 42px 20px; text-align: center; }}
+                .header h1 {{ margin: 10px 0; font-size: 28px; font-weight: bold; }}
+                .header .badge {{ background: rgba(255,255,255,0.22); color: #ffffff; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 10px; font-size: 14px; }}
+                .content {{ padding: 30px 25px; background: linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%); }}
+                .content p {{ color: #1f2a44; line-height: 1.6; margin: 0 0 15px 0; }}
+                .section-title {{ font-weight: bold; color: #1a5c96; margin-top: 20px; margin-bottom: 15px; font-size: 16px; }}
+                .login-box {{ background-color: #eef4ff; border: 2px solid #1a5c96; border-radius: 16px; padding: 20px; margin: 20px 0; }}
+                .step {{ margin: 12px 0; display: flex; align-items: flex-start; }}
+                .step-number {{ background-color: #1a5c96; color: #ffffff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; }}
+                .step-text {{ color: #1f2a44; flex: 1; }}
+                .student-id {{ background-color: #ddeaff; color: #134a7a; padding: 4px 10px; border-radius: 4px; font-family: monospace; font-weight: bold; }}
+                .footer {{ background-color: #f4f8fc; border-top: 1px solid #e5edf5; padding: 20px; text-align: center; }}
+                .footer p {{ margin: 5px 0; color: #51607a; font-size: 14px; }}
+                a {{ color: #1a5c96; text-decoration: none; font-weight: 600; }}
+                </style>
+                </head>
+                <body>
+                <div class="container">
+                    <div class="header">
+                        <div style="font-size: 32px; margin-bottom: 10px;">🎉</div>
+                        <h1>Congratulations, {name}!</h1>
+                        <div class="badge">✅ YOUR REGISTRATION IS APPROVED</div>
+                    </div>
+                    <div class="content">
+                        <p><strong>Big News! 🎉</strong></p>
+                        <p>Your registration has been approved. The admin team reviewed your application, did a dramatic nod, and stamped it with a glorious blue tick ✅. Welcome to the <strong style="color: #1a5c96;">AUdoc</strong> family!</p>
+                        <div class="login-box">
+                            <p class="section-title">🔒 How to log in (easy peasy)</p>
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-text">Go to the <a href="{login_url}">AUdoc Login Page</a> 🚀</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-text">Click the <strong>Student</strong> tab 🎓</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-text">Enter your Student ID: <span class="student-id">{sid}</span></div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">4</div>
+                                <div class="step-text">Hit <strong>Login</strong> — and boom, you're in. 👍 No password needed.</div>
+                            </div>
+                        </div>
+                        <p>Questions? Reach us at <a href="mailto:health@au.edu">health@au.edu</a> — we reply faster than campus gossip. 😊</p>
+                    </div>
+                    <div class="footer">
+                        <p><strong>Stay healthy out there, {name}! 💪</strong></p>
+                        <p style="color: #999;">© 2026 <strong style="color: #1a5c96;">AUdoc</strong> — Assam University Silchar Campus Health</p>
+                    </div>
+                </div>
+                </body>
+                </html>""".format(name=reg.first_name, sid=reg.student_id, login_url=login_url)
+                msg = EmailMultiAlternatives(subject, plain, None, [reg.email])
+                msg.attach_alternative(html_body, "text/html")
+                msg.send(fail_silently=True)
             except Exception:
                 pass
 
-        BloodRequest.objects.create(
+            messages.success(request, f"🎉 {reg.get_full_name()} is officially in! Account created & approval email fired off.")
+
+    elif action == 'reject':
+        reg.status = 'REJECTED'
+        reg.save()
+        messages.success(request, f"Registration for {reg.get_full_name()} has been rejected.")
+
+    return redirect(f"{reverse('admin_dashboard')}?tab=registrations")
+
+@_admin_required
+def admin_appointment_status(request, pk):
+    appt = get_object_or_404(Appointment, pk=pk)
+    new_status = request.GET.get('status')
+    if new_status in ('PENDING', 'CONFIRMED', 'COMPLETED', 'REJECTED', 'CANCELLED'):
+        appt.status = new_status
+        appt.save()
+        messages.success(request, f"Appointment #{pk} updated to {new_status}.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=appointments")
+
+
+@_admin_required
+def admin_blood_donation_status(request, pk):
+    don = get_object_or_404(BloodDonation, pk=pk)
+    new_status = request.GET.get('status')
+    if new_status in ('PENDING', 'APPROVED', 'COMPLETED', 'REJECTED'):
+        don.status = new_status
+        don.save()
+        messages.success(request, f"Blood donation #{pk} updated to {new_status}.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=blood-donations")
+
+
+@_admin_required
+def admin_blood_request_status(request, pk):
+    req = get_object_or_404(BloodRequest, pk=pk)
+    new_status = request.GET.get('status')
+    if new_status in ('PENDING', 'APPROVED', 'FULFILLED', 'REJECTED'):
+        req.status = new_status
+        req.save()
+        messages.success(request, f"Blood request #{pk} updated to {new_status}.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=blood-requests")
+
+
+@_admin_required
+def admin_donation_toggle_paid(request, pk):
+    don = get_object_or_404(Donation, pk=pk)
+    don.is_paid = not don.is_paid
+    don.save()
+    return redirect(f"{reverse('admin_dashboard')}?tab=donations")
+
+
+@_admin_required
+@require_POST
+def admin_doctor_save(request):
+    pk             = request.POST.get('pk')
+    name           = request.POST.get('name', '').strip()
+    email          = request.POST.get('email', '').strip()
+    phone          = request.POST.get('phone', '').strip()
+    specialized_in = request.POST.get('specialized_in', '').strip()
+    available_days = request.POST.get('available_days', '').strip()
+    available_time = request.POST.get('available_time', '').strip()
+    is_available   = request.POST.get('is_available') == 'on'
+
+    if not name:
+        messages.error(request, "Doctor name is required.")
+        return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
+
+    if pk:
+        doc = get_object_or_404(Doctor, pk=pk)
+        doc.name = name; doc.email = email; doc.phone = phone
+        doc.specialized_in = specialized_in
+        doc.available_days = available_days
+        doc.available_time = available_time
+        doc.is_available = is_available
+        photo = request.FILES.get('photo')
+        if photo:
+            doc.photo = photo
+        doc.save()
+        messages.success(request, f"Doctor '{name}' updated.")
+    else:
+        Doctor.objects.create(
+            name=name, email=email, phone=phone,
+            specialized_in=specialized_in,
+            available_days=available_days,
+            available_time=available_time,
+            is_available=is_available,
+            photo=request.FILES.get('photo'),
+        )
+        messages.success(request, f"Doctor '{name}' added.")
+
+    return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
+
+
+@_admin_required
+@require_POST
+def admin_doctor_delete(request, pk):
+    doc = get_object_or_404(Doctor, pk=pk)
+    name = doc.name
+    doc.delete()
+    messages.success(request, f"Doctor '{name}' deleted.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
+
+
+@_admin_required
+@require_POST
+def admin_staff_save(request):
+    pk          = request.POST.get('pk') or None
+    staff_id    = request.POST.get('staff_id', '').strip()
+    name        = request.POST.get('name', '').strip()
+    email       = request.POST.get('email', '').strip()
+    phone       = request.POST.get('phone', '').strip()
+    password    = request.POST.get('password', '').strip()
+    is_doctor   = request.POST.get('is_doctor') == 'on'
+
+    if not staff_id or not name:
+        messages.error(request, "Staff ID and Name are required.")
+        return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
+
+    if pk:
+        staff = get_object_or_404(StaffProfile, pk=pk)
+        staff.staff_id  = staff_id
+        staff.name      = name
+        staff.email     = email
+        staff.phone     = phone
+        staff.is_doctor = is_doctor
+        if password:
+            staff.password = make_password(password)
+        staff.save()
+        messages.success(request, f"Staff member '{name}' updated.")
+    else:
+        if not password:
+            messages.error(request, "Password is required when adding a new staff member.")
+            return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
+        StaffProfile.objects.create(
+            staff_id=staff_id, name=name, email=email,
+            phone=phone, password=make_password(password), is_doctor=is_doctor,
+        )
+        messages.success(request, f"Staff member '{name}' added.")
+
+    return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
+
+
+@_admin_required
+@require_POST
+def admin_staff_delete(request, pk):
+    staff = get_object_or_404(StaffProfile, pk=pk)
+    name = staff.name
+    staff.delete()
+    messages.success(request, f"Staff member '{name}' deleted.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
+
+
+@_admin_required
+def admin_clear_all_data(request):
+    """
+    DANGER ZONE: Irreversibly deletes all student-related data.
+    Keeps: Doctor records, staff/superuser User accounts.
+    """
+    if request.method == 'POST':
+        confirmation = request.POST.get('confirmation')
+        if confirmation == 'DELETE_ALL_STUDENT_DATA':
+            try:
+                # Count records before deletion for detailed feedback
+                counts = {
+                    'student_registrations': StudentRegistration.objects.count(),
+                    'student_profiles': StudentProfile.objects.count(),
+                    'appointments': Appointment.objects.count(),
+                    'todays_appointments': TodaysAppointment.objects.count(),
+                    'blood_donations': BloodDonation.objects.count(),
+                    'blood_requests': BloodRequest.objects.count(),
+                    'donor_responses': DonorResponse.objects.count(),
+                    'donations': Donation.objects.count(),
+                    'feedback': HelpDesk.objects.count(),
+                    'login_logs': LoginLog.objects.count(),
+                }
+
+                # Delete in FK-safe order
+                DonorResponse.objects.all().delete()
+                TodaysAppointment.objects.all().delete()
+                BloodRequest.objects.all().delete()
+                BloodDonation.objects.all().delete()
+                Appointment.objects.all().delete()
+                Donation.objects.all().delete()
+                HelpDesk.objects.all().delete()
+                LoginLog.objects.all().delete()
+                StudentRegistration.objects.all().delete()
+                StudentProfile.objects.all().delete()
+
+                # Remove only non-admin user accounts (student accounts)
+                from django.contrib.auth.models import User
+                student_users = User.objects.filter(is_staff=False, is_superuser=False)
+                student_count = student_users.count()
+                student_users.delete()
+
+                total_deleted = sum(counts.values()) + student_count
+
+                messages.success(
+                    request,
+                    f"🗑️ STUDENT DATA PURGED: {total_deleted:,} records permanently deleted! "
+                    f"Details: {counts['student_registrations']} registrations, "
+                    f"{counts['appointments']} appointments, {counts['blood_donations']} blood donations, "
+                    f"{counts['blood_requests']} blood requests, {student_count} user accounts, "
+                    f"{counts['feedback']} feedback entries, and {counts['login_logs']} login logs."
+                )
+
+            except Exception as e:
+                messages.error(request, f"❌ Critical error during data purge: {str(e)}")
+        else:
+            messages.error(request, "❌ Incorrect confirmation phrase. Data purge cancelled for safety.")
+
+    return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
+
+# ── AI Chatbot ────────────────────────────────────────────────────────────────
+
+@require_POST
+def chat_api(request):
+    """Stateless AI chat endpoint powered by Groq (free tier)."""
+    import urllib.request as _urllib
+    import urllib.error as _urlerr
+
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+    message = data.get("message", "").strip()
+    history = data.get("history", [])
+
+    if not message:
+        return JsonResponse({"error": "No message provided"}, status=400)
+
+    api_key = os.environ.get("GROQ_API_KEY") or getattr(settings, "GROQ_API_KEY", "")
+    if not api_key:
+        return JsonResponse({"error": "Chatbot not configured — add GROQ_API_KEY to .env"}, status=503)
+
+    system_prompt = (
+        "You are a friendly health assistant for AUdoc — the Assam University Silchar Campus Health Center portal. "
+        "Help students with health questions, appointment booking guidance, blood donation registration, "
+        "and navigating the portal services. Be concise, warm, and supportive. "
+        "Campus emergency contact: 0389-2330931. Clinic hours: Monday–Saturday, 9 AM–4 PM. "
+        "Available services: Appointment booking, Blood Bank, Donor Network, Monetary Donations, Help Desk. "
+        "For serious medical emergencies, always advise calling the emergency number immediately. "
+        "Keep responses under 150 words."
+    )
+
+    messages_payload = [{"role": "system", "content": system_prompt}]
+    for turn in history[-10:]:
+        if turn.get("role") in ("user", "assistant") and turn.get("content"):
+            messages_payload.append({"role": turn["role"], "content": turn["content"]})
+    messages_payload.append({"role": "user", "content": message})
+
+    payload = json.dumps({
+        "model": "llama-3.1-8b-instant",
+        "messages": messages_payload,
+        "max_tokens": 512,
+        "temperature": 0.7,
+    }).encode("utf-8")
+
+    req = _urllib.Request(
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+            "User-Agent": "AUdoc-HealthPortal/1.0",
+        },
+        method="POST",
+    )
+
+    try:
+        with _urllib.urlopen(req, timeout=30) as resp:
+            raw = resp.read().decode("utf-8")
+    except _urlerr.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        try:
+            err_msg = json.loads(body).get("error", {}).get("message", body[:200])
+        except Exception:
+            err_msg = body[:200]
+        if e.code == 401:
+            return JsonResponse({"error": "Invalid Groq API key — check your GROQ_API_KEY in .env."}, status=500)
+        if e.code == 429:
+            return JsonResponse({"error": "Groq rate limit reached. Please wait a moment and try again."}, status=500)
+        return JsonResponse({"error": f"API error {e.code}: {err_msg}"}, status=500)
+    except Exception as e:
+        return JsonResponse({"error": f"Could not reach AI service: {e}"}, status=500)
+
+    try:
+        reply = json.loads(raw)["choices"][0]["message"]["content"].strip()
+    except (KeyError, IndexError, json.JSONDecodeError):
+        reply = "I received a response but couldn't read it. Please try again."
+
+    return JsonResponse({"response": reply})
+
+
+# ── Flutter App REST API ───────────────────────────────────────────────────────
+
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import logout as auth_logout
+
+
+@csrf_exempt
+@require_POST
+def api_send_login_otp(request):
+    """API: Send login OTP for Flutter app."""
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    student_id = data.get("student_id", "").strip()
+    if not student_id:
+        return JsonResponse({"error": "Student ID is required"}, status=400)
+
+    try:
+        user = User.objects.get(username=student_id)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "No approved account found for this Student ID"}, status=400)
+
+    email = user.email
+    if not email:
+        return JsonResponse({"error": "No email on file. Please contact health@au.edu"}, status=400)
+
+    otp = str(random.randint(100000, 999999))
+    request.session["login_otp_data"] = {
+        "student_id": student_id,
+        "otp": otp,
+        "expires": time.time() + 600,
+    }
+
+    # Send OTP email
+    plain_text = f"Your AUdoc login code is: {otp}\nValid for 10 minutes."
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #1a5c96;">AUdoc Login Verification</h2>
+        <p>Hi {user.first_name or student_id}!</p>
+        <p>Your verification code is:</p>
+        <div style="background: #f0f7ff; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; color: #1a5c96; border-radius: 8px; letter-spacing: 4px;">
+            {otp}
+        </div>
+        <p style="color: #666; font-size: 12px; margin-top: 15px;">This code expires in 10 minutes.</p>
+    </div>
+    """
+    try:
+        msg = EmailMultiAlternatives(
+            subject="AUdoc Login Code",
+            body=plain_text,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[email],
+        )
+        msg.attach_alternative(html_body, "text/html")
+        msg.send()
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to send email: {str(e)}"}, status=500)
+
+    at = email.index("@")
+    masked_email = email[:2] + ("*" * max(at - 2, 1)) + email[at:]
+    return JsonResponse({
+        "success": True,
+        "message": f"OTP sent to {masked_email}",
+        "email": masked_email,
+    })
+
+
+@csrf_exempt
+@require_POST
+def api_student_login(request):
+    """API: Verify OTP and login for Flutter app."""
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    student_id = data.get("student_id", "").strip()
+    otp_entered = data.get("otp", "").strip()
+
+    if not student_id or not otp_entered:
+        return JsonResponse({"error": "Student ID and OTP are required"}, status=400)
+
+    otp_data = request.session.get("login_otp_data", {})
+
+    if otp_data.get("student_id") != student_id:
+        return JsonResponse({"error": "OTP was sent for a different Student ID"}, status=400)
+    if time.time() > otp_data.get("expires", 0):
+        return JsonResponse({"error": "OTP has expired. Please request a new one"}, status=400)
+    if otp_data.get("otp") != otp_entered:
+        return JsonResponse({"error": "Incorrect OTP"}, status=400)
+
+    del request.session["login_otp_data"]
+
+    user = authenticate(request, username=student_id)
+    if user is None:
+        return JsonResponse({"error": "Student ID not found or not approved"}, status=400)
+
+    request.session["otp_login_verified"] = True
+    login(request, user, backend="app.backends.StudentIDBackend")
+
+    # Build profile data for Flutter User model
+    try:
+        profile = StudentProfile.objects.get(user=user)
+        profile_data = {
+            "student_id": user.username,
+            "first_name": user.first_name or "",
+            "last_name": user.last_name or "",
+            "email": user.email,
+            "phone": profile.phone,
+            "blood_group": profile.blood_group,
+            "department": profile.department,
+            "home_address": profile.home_address,
+            "present_address": profile.present_address,
+            "emergency_contact": profile.emergency_contact,
+            "is_verified": profile.is_verified,
+        }
+    except StudentProfile.DoesNotExist:
+        profile_data = {
+            "student_id": user.username,
+            "first_name": user.first_name or "",
+            "last_name": user.last_name or "",
+            "email": user.email,
+            "phone": "",
+            "blood_group": "",
+            "department": "",
+            "home_address": "",
+            "present_address": "",
+            "emergency_contact": "",
+            "is_verified": True,
+        }
+
+    return JsonResponse({
+        "success": True,
+        "message": "Login successful",
+        "user": profile_data,
+    })
+
+
+@csrf_exempt
+@require_POST
+def api_send_register_otp(request):
+    """API: Send registration OTP for Flutter app."""
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    email = data.get("email", "").strip()
+    if not email:
+        return JsonResponse({"error": "Email is required"}, status=400)
+
+    # Check if email already exists
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({"error": "This email is already registered"}, status=400)
+
+    otp = str(random.randint(100000, 999999))
+    request.session["register_otp_data"] = {
+        "email": email,
+        "otp": otp,
+        "expires": time.time() + 600,
+    }
+
+    plain_text = f"Your AUdoc registration code is: {otp}\nValid for 10 minutes."
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #1a5c96;">AUdoc Registration</h2>
+        <p>Your verification code is:</p>
+        <div style="background: #f0f7ff; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; color: #1a5c96; border-radius: 8px; letter-spacing: 4px;">
+            {otp}
+        </div>
+        <p style="color: #666; font-size: 12px; margin-top: 15px;">This code expires in 10 minutes.</p>
+    </div>
+    """
+    try:
+        msg = EmailMultiAlternatives(
+            subject="AUdoc Registration Code",
+            body=plain_text,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[email],
+        )
+        msg.attach_alternative(html_body, "text/html")
+        msg.send()
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to send email: {str(e)}"}, status=500)
+
+    return JsonResponse({"success": True, "message": "OTP sent to your email"})
+
+
+@csrf_exempt
+@require_POST
+def api_register(request):
+    """API: Register new student for Flutter app."""
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    required_fields = [
+        "first_name",
+        "last_name",
+        "email",
+        "student_id",
+        "phone",
+        "emergency_contact",
+        "department",
+        "blood_group",
+        "home_address",
+        "present_address",
+        "otp",
+    ]
+    for field in required_fields:
+        if not data.get(field):
+            return JsonResponse({"error": f"{field} is required"}, status=400)
+
+    # Verify OTP
+    otp_data = request.session.get("register_otp_data", {})
+    if otp_data.get("email") != data.get("email"):
+        return JsonResponse({"error": "OTP was sent for a different email"}, status=400)
+    if time.time() > otp_data.get("expires", 0):
+        return JsonResponse({"error": "OTP has expired. Please request a new one"}, status=400)
+    if otp_data.get("otp") != data.get("otp"):
+        return JsonResponse({"error": "Incorrect OTP"}, status=400)
+
+    del request.session["register_otp_data"]
+
+    # Check if student ID already exists
+    if User.objects.filter(username=data["student_id"]).exists():
+        return JsonResponse({"error": "This Student ID is already registered"}, status=400)
+    if StudentRegistration.objects.filter(student_id=data["student_id"]).exists():
+        return JsonResponse({"error": "A registration with this Student ID is pending approval"}, status=400)
+
+    registration = StudentRegistration.objects.create(
+        student_id=data["student_id"],
+        first_name=data["first_name"],
+        last_name=data["last_name"],
+        email=data["email"],
+        phone=data["phone"],
+        emergency_contact=data["emergency_contact"],
+        blood_group=data["blood_group"],
+        department=data["department"],
+        home_address=data["home_address"],
+        present_address=data["present_address"],
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Registration submitted. Awaiting admin approval.",
+        "registration_id": registration.id,
+    })
+
+
+def api_doctors(request):
+    """API: Get list of doctors for Flutter app."""
+    doctors = Doctor.objects.filter(is_available=True).order_by("specialized_in", "name")
+    
+    doctor_list = []
+    for doc in doctors:
+        doctor_list.append({
+            "id": doc.id,
+            "name": doc.name,
+            "email": doc.email,
+            "phone": doc.phone,
+            "specialized_in": doc.specialized_in,
+            "specialized_in_display": doc.get_specialized_in_display(),
+            "available_days": doc.available_days_list,
+            "available_time": doc.available_time,
+            "is_available": doc.is_available,
+            "photo_url": doc.photo.url if doc.photo else None,
+        })
+
+    return JsonResponse(doctor_list, safe=False)
+
+
+@csrf_exempt
+def api_appointments(request):
+    """API: Get or create appointments for Flutter app."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
+    student_id = request.user.username
+
+    if request.method == "GET":
+        appointments = Appointment.objects.filter(student_id=student_id).select_related("doctor").order_by("-created_at")
+        apt_list = []
+        for apt in appointments:
+            queue_position = None
+            today_appt = apt.todays_appointments.filter(status="CONFIRMED").first()
+            if today_appt:
+                queue_position = today_appt.queue_position
+
+            apt_list.append({
+                "id": apt.id,
+                "student_id": apt.student_id,
+                "student_name": apt.student_name,
+                "phone": apt.phone,
+                "email": apt.email,
+                "student_department": apt.student_department,
+                "medical_department": apt.medical_department,
+                "medical_department_display": apt.get_medical_department_display(),
+                "doctor_id": apt.doctor_id,
+                "doctor_name": apt.doctor.name if apt.doctor else None,
+                "appointment_date": apt.appointment_date.isoformat() if apt.appointment_date else None,
+                "appointment_time": apt.appointment_time,
+                "problem_description": apt.problem_description,
+                "status": apt.status,
+                "created_at": apt.created_at.isoformat(),
+                "queue_position": queue_position,
+            })
+
+        return JsonResponse(apt_list, safe=False)
+
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        required = ["student_name", "phone", "email", "medical_department", "appointment_date", "appointment_time", "problem_description"]
+        for field in required:
+            if data.get(field) in [None, ""]:
+                return JsonResponse({"error": f"{field} is required"}, status=400)
+
+        try:
+            apt_date = date.fromisoformat(data["appointment_date"])
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
+
+        if apt_date < date.today():
+            return JsonResponse({"error": "Cannot book appointments in the past"}, status=400)
+
+        doctor = None
+        doctor_id = data.get("doctor_id")
+        if doctor_id is not None:
+            try:
+                doctor = Doctor.objects.get(id=doctor_id, is_available=True)
+            except Doctor.DoesNotExist:
+                return JsonResponse({"error": "Doctor not found"}, status=404)
+
+        student_department = data.get("student_department")
+        if not student_department:
+            try:
+                student_department = request.user.student_profile.department
+            except StudentProfile.DoesNotExist:
+                return JsonResponse({"error": "student_department is required"}, status=400)
+
+        # Check for existing appointment
+        existing = Appointment.objects.filter(
             student_id=student_id,
-            requester_name=cd["requester_name"],
-            email=cd["email"],
-            phone=cd["phone"],
-            blood_group=cd["blood_group"],
-            units_required=cd["units_required"],
-            reason=cd["reason"],
-            urgency=cd["urgency"],
-            required_date=cd["required_date"],
-            hospital_name=cd["hospital_name"],
-            hospital_contact=cd["hospital_contact"],
-            requested_donor=donor,
-            notes=cd["notes"],
+            doctor=doctor,
+            appointment_date=apt_date,
+            appointment_time=data["appointment_time"],
+        ).exclude(status="CANCELLED").first()
+
+        if existing:
+            return JsonResponse({"error": "You already have an appointment at this time"}, status=400)
+
+        # Create appointment
+        appointment = Appointment.objects.create(
+            student_id=student_id,
+            student_name=data["student_name"],
+            phone=data["phone"],
+            email=data["email"],
+            student_department=student_department,
+            medical_department=data["medical_department"],
+            doctor=doctor,
+            appointment_date=apt_date,
+            appointment_time=data["appointment_time"],
+            problem_description=data["problem_description"],
             status="PENDING",
         )
-        messages.success(
-            request,
-            f"Your blood request has been sent to {donor.donor_name}! They will contact you at {cd['phone']} soon.",
-        )
-        return redirect("blood_donors_list")
 
-    return render(request, "app/request_blood_from_donor.html", {
-        "form": form,
-        "donor": donor,
-    })
+        return JsonResponse({
+            "success": True,
+            "message": "Appointment booked successfully",
+            "appointment": {
+                "id": appointment.id,
+                "doctor_name": doctor.name if doctor else None,
+                "appointment_date": apt_date.isoformat(),
+                "appointment_time": appointment.appointment_time,
+                "status": appointment.status,
+            }
+        })
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+def api_blood_donations(request):
+    """API: Get or create blood donations for Flutter app."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
+    student_id = request.user.username
+    user_email = request.user.email
+
+    if request.method == "GET":
+        donation = BloodDonation.objects.filter(Q(student_id=student_id) | Q(email=user_email)).order_by("-created_at").first()
+
+        if not donation:
+            return JsonResponse(None, safe=False)
+
+        return JsonResponse({
+            "id": donation.id,
+            "student_id": donation.student_id,
+            "donor_name": donation.donor_name,
+            "email": donation.email,
+            "phone": donation.phone,
+            "blood_group": donation.blood_group,
+            "date_of_birth": donation.date_of_birth.isoformat(),
+            "weight": donation.weight,
+            "previous_donation": donation.previous_donation,
+            "health_condition": donation.health_condition,
+            "message": donation.message,
+            "status": donation.status,
+            "created_at": donation.created_at.isoformat(),
+        })
+
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        required = ["donor_name", "email", "phone", "blood_group", "date_of_birth", "weight"]
+        for field in required:
+            if data.get(field) in [None, ""]:
+                return JsonResponse({"error": f"{field} is required"}, status=400)
+
+        existing = BloodDonation.objects.filter(Q(student_id=student_id) | Q(email=data.get("email", ""))).first()
+        if existing:
+            return JsonResponse({"error": "You are already registered as a blood donor"}, status=400)
+
+        try:
+            dob = date.fromisoformat(data["date_of_birth"])
+        except ValueError:
+            return JsonResponse({"error": "Invalid date_of_birth format. Use YYYY-MM-DD"}, status=400)
+
+        # Create new donor registration
+        donation = BloodDonation.objects.create(
+            student_id=data.get("student_id") or student_id,
+            donor_name=data["donor_name"],
+            email=data["email"],
+            phone=data["phone"],
+            blood_group=data["blood_group"],
+            date_of_birth=dob,
+            weight=int(data["weight"]),
+            previous_donation=bool(data.get("previous_donation", False)),
+            health_condition=data.get("health_condition", ""),
+            message=data.get("message", ""),
+        )
+
+        return JsonResponse({
+            "success": True,
+            "message": "Registered as blood donor",
+            "donation_id": donation.id,
+        })
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+def api_blood_requests(request):
+    """API: Get or create blood requests for Flutter app."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
+    student_id = request.user.username
+
+    if request.method == "GET":
+        requests_list = BloodRequest.objects.filter(student_id=student_id).order_by("-created_at")
+
+        req_list = []
+        for req in requests_list:
+            req_list.append({
+                "id": req.id,
+                "student_id": req.student_id,
+                "requester_name": req.requester_name,
+                "email": req.email,
+                "phone": req.phone,
+                "blood_group": req.blood_group,
+                "units_required": req.units_required,
+                "reason": req.reason,
+                "urgency": req.urgency,
+                "required_date": req.required_date.isoformat(),
+                "hospital_name": req.hospital_name,
+                "hospital_contact": req.hospital_contact,
+                "notes": req.notes,
+                "status": req.status,
+                "created_at": req.created_at.isoformat(),
+            })
+
+        return JsonResponse(req_list, safe=False)
+
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        required = [
+            "requester_name",
+            "email",
+            "phone",
+            "blood_group",
+            "units_required",
+            "reason",
+            "required_date",
+            "hospital_name",
+            "hospital_contact",
+        ]
+        for field in required:
+            if data.get(field) in [None, ""]:
+                return JsonResponse({"error": f"{field} is required"}, status=400)
+
+        try:
+            required_date = date.fromisoformat(data["required_date"])
+        except ValueError:
+            return JsonResponse({"error": "Invalid required_date format. Use YYYY-MM-DD"}, status=400)
+
+        blood_request = BloodRequest.objects.create(
+            student_id=data.get("student_id") or student_id,
+            requester_name=data["requester_name"],
+            email=data["email"],
+            phone=data["phone"],
+            blood_group=data["blood_group"],
+            units_required=int(data["units_required"]),
+            urgency=data.get("urgency", "MEDIUM"),
+            hospital_name=data["hospital_name"],
+            hospital_contact=data["hospital_contact"],
+            reason=data["reason"],
+            required_date=required_date,
+            notes=data.get("notes", ""),
+        )
+
+        return JsonResponse({
+            "success": True,
+            "message": "Blood request submitted",
+            "request_id": blood_request.id,
+        })
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+def api_profile(request):
+    """API: Get user profile for Flutter app."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
+    user = request.user
+
+    try:
+        profile = StudentProfile.objects.get(user=user)
+        profile_data = {
+            "student_id": user.username,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "phone": profile.phone,
+            "blood_group": profile.blood_group,
+            "department": profile.department,
+            "home_address": profile.home_address,
+            "present_address": profile.present_address,
+            "emergency_contact": profile.emergency_contact,
+            "is_verified": profile.is_verified,
+        }
+    except StudentProfile.DoesNotExist:
+        profile_data = {
+            "student_id": user.username,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "phone": "",
+            "blood_group": "",
+            "department": "",
+            "home_address": "",
+            "present_address": "",
+            "emergency_contact": "",
+            "is_verified": True,
+        }
+
+    return JsonResponse(profile_data)
+
+
+@csrf_exempt
+@require_POST
+def api_logout(request):
+    """API: Logout user for Flutter app."""
+    auth_logout(request)
+    return JsonResponse({"success": True, "message": "Logged out successfully"})
+

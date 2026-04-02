@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About – AUdoc Campus Health Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:      #4a7c59;
+      --primary-dark: #2e5c3a;
+      --accent:       #e8f5ec;
+      --green:        #1d8348;
+      --green-light:  #d5f0e2;
+
+      /* Override Bootstrap primary to match green palette */
+      --bs-primary:          #4a7c59;
+      --bs-primary-rgb:      74, 124, 89;
+      --bs-link-color:       #4a7c59;
+      --bs-link-hover-color: #2e5c3a;
+    }
+
+    body { font-family: 'Segoe UI', sans-serif; color: #333; background: #faf9f4; }
+
+    /* ── Topbar ── */
+    .topbar {
+      background: var(--primary-dark);
+      color: #c8e6d0;
+      font-size: .82rem;
+      padding: 6px 0;
+    }
+    .topbar a { color: #c8e6d0; text-decoration: none; }
+    .topbar a:hover { color: #fff; }
+
+    /* ── Navbar ── */
+    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
+    .navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
+    .nav-link { color: #555 !important; font-weight: 500; }
+    .nav-link:hover,
+    .nav-link.active { color: var(--primary) !important; }
+
+    /* ── Page Hero ── */
+    .page-hero {
+      background: linear-gradient(135deg, #eef7f1 0%, #d4edda 100%);
+      padding: 72px 0 60px;
+    }
+    .page-hero h1 { font-size: 2.4rem; font-weight: 700; color: #0d2a1a; line-height: 1.25; }
+    .page-hero p  { font-size: 1.05rem; color: #555; }
+
+    /* ── Sections ── */
+    section { padding: 72px 0; }
+    .section-title { font-size: 1.8rem; font-weight: 700; color: #0d2a1a; }
+    .section-sub  { color: #777; font-size: 1rem; }
+
+    /* ── Cards ── */
+    .about-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 32px 28px;
+      box-shadow: 0 2px 16px rgba(74,124,89,.08);
+      height: 100%;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .about-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(74,124,89,.15); }
+    .about-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 18px; flex-shrink: 0;
+    }
+
+    /* ── Developer card ── */
+    .dev-card {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 8px 40px rgba(74,124,89,.14);
+      overflow: hidden;
+    }
+    .dev-card-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      padding: 40px 36px 80px;
+      position: relative;
+    }
+    .dev-avatar {
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      background: linear-gradient(135deg, #b8d4c0, #8ab89e);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.2rem; color: #fff;
+      position: absolute;
+      bottom: -50px; left: 36px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.18);
+    }
+    .dev-card-body {
+      padding: 68px 36px 36px;
+    }
+    .dev-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .78rem; font-weight: 600;
+      padding: 4px 12px; border-radius: 50px;
+    }
+    .contact-item {
+      display: flex; align-items: center; gap-12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #edf4ef;
+      font-size: .92rem;
+    }
+    .contact-item:last-child { border-bottom: none; }
+    .contact-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      background: var(--accent); color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0; margin-right: 14px;
+    }
+
+    /* ── Fun quote block ── */
+    .fun-quote {
+      background: linear-gradient(135deg, #fff8e1, #fff3cd);
+      border-left: 5px solid #f59e0b;
+      border-radius: 0 12px 12px 0;
+      padding: 18px 22px;
+      font-style: italic;
+      color: #555;
+    }
+    .fun-quote .author { font-style: normal; font-weight: 600; color: #856404; font-size: .88rem; margin-top: 8px; }
+
+    /* ── Tech stack pill ── */
+    .tech-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #eef5f0; color: #444;
+      font-size: .82rem; font-weight: 600;
+      padding: 5px 14px; border-radius: 50px;
+      margin: 4px;
+      transition: background .2s, color .2s;
+    }
+    .tech-pill:hover { background: var(--accent); color: var(--primary); }
+
+    /* ── Timeline ── */
+    .timeline-item {
+      display: flex; gap: 20px; padding: 0 0 32px;
+    }
+    .timeline-dot {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--accent); color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0; margin-top: 2px;
+    }
+    .timeline-line {
+      border-left: 2px dashed #c0e0ca;
+      margin-left: 19px; padding-left: 38px;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; border-radius: 20px;
+    }
+
+    /* ── Footer ── */
+    footer { background: #0d2418; color: #9abea8; padding: 52px 0 24px; }
+    footer h6 { color: #fff; font-weight: 600; margin-bottom: 14px; }
+    footer a  { color: #9abea8; text-decoration: none; display: block; margin-bottom: 8px; font-size: .88rem; }
+    footer a:hover { color: #fff; }
+    footer .divider { border-color: #1e4a2e; margin: 24px 0 18px; }
+    .office-hours-row { display: flex; justify-content: space-between; font-size: .85rem; padding: 4px 0; border-bottom: 1px solid #1e4a2e; }
+    .office-hours-row:last-child { border-bottom: none; }
+
+    /* ── Navbar sliding pill indicator ── */
+    .navbar-nav { position: relative; }
+    .nav-pill-indicator {
+      position: absolute;
+      background: var(--accent);
+      border-radius: 8px;
+      transition: left   0.32s cubic-bezier(.4,0,.2,1),
+                  top    0.32s cubic-bezier(.4,0,.2,1),
+                  width  0.32s cubic-bezier(.4,0,.2,1),
+                  height 0.32s cubic-bezier(.4,0,.2,1),
+                  opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .navbar-nav .nav-link { position: relative; z-index: 1; }
+
+    /* ── Scroll-reveal ── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    /* ── Scroll-to-top ── */
+    #scroll-top {
+      position: fixed; bottom: 30px; right: 102px;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--primary); color: #fff; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; box-shadow: 0 4px 16px rgba(74,124,89,.3);
+      opacity: 0; visibility: hidden; z-index: 998;
+      transition: opacity .3s, visibility .3s, transform .3s;
+    }
+    #scroll-top.show { opacity: 1; visibility: visible; }
+    #scroll-top:hover { transform: translateY(-3px); }
+    /* ── Page fade-in ── */
+    @keyframes pagein { from { opacity:0; } to { opacity:1; } }
+    body { animation: pagein .4s ease; }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed; bottom: 30px; right: 30px;
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, #c41e3a 0%, #a01730 100%);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; box-shadow: 0 6px 20px rgba(196,30,58,.4);
+      text-decoration: none; transition: transform .3s, box-shadow .3s; z-index: 999;
+    }
+    .fab:hover { transform: scale(1.1); box-shadow: 0 8px 28px rgba(196,30,58,.5); color: #fff; }
+    .fab-label {
+      position: absolute; bottom: 75px; right: 0;
+      background: #fff; padding: 8px 14px; border-radius: 20px;
+      font-size: .85rem; font-weight: 600; color: #c41e3a;
+      white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      opacity: 0; visibility: hidden;
+      transition: opacity .3s, visibility .3s; pointer-events: none;
+    }
+    .fab:hover .fab-label { opacity: 1; visibility: visible; }
+
+    /* ── Help Desk / Feedback ── */
+    .form-card {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 8px 40px rgba(74,124,89,.12);
+      padding: 40px 38px;
+    }
+    .star-row { display: flex; gap: 10px; justify-content: center; }
+    .star-btn {
+      font-size: 2.6rem; color: #ddd; background: none; border: none;
+      padding: 0 2px; cursor: pointer; transition: color .15s, transform .15s; line-height: 1;
+    }
+    .star-btn:hover, .star-btn.hovered, .star-btn.selected { color: #f59e0b; transform: scale(1.15); }
+    .star-label { text-align: center; font-size: .88rem; font-weight: 600; color: #888; margin-top: 8px; min-height: 20px; transition: color .2s; }
+    #stars-error { font-size: .82rem; color: #dc3545; display: none; margin-top: 4px; text-align: center; }
+    .form-label { font-weight: 600; font-size: .9rem; color: #444; }
+    .form-control, .form-select {
+      border-radius: 10px; border: 1.5px solid #d5e8d9;
+      font-size: .92rem; padding: .55rem .9rem;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(74,124,89,.12);
+    }
+    .success-card {
+      background: #fff; border-radius: 22px;
+      box-shadow: 0 8px 40px rgba(74,124,89,.12);
+      padding: 60px 40px; text-align: center;
+    }
+    .success-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--green-light); color: var(--green);
+      font-size: 2.4rem; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .char-counter { font-size: .78rem; color: #999; text-align: right; margin-top: 4px; }
+    .char-counter.warn { color: #f59e0b; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<div class="topbar d-none d-md-block">
+  <div class="container d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-4">
+      <span><i class="bi bi-geo-alt me-1"></i>AUS Health Center, Academic Block C, Room 101</span>
+      <span><i class="bi bi-clock me-1"></i>Mon – Sat: 9:00 AM – 5:00 PM</span>
+    </div>
+    <div class="d-flex gap-3">
+      <span><i class="bi bi-telephone me-1"></i>+880-XXX-XXXXXX</span>
+      <span><i class="bi bi-envelope me-1"></i>health@au.edu</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+      <div style="width:38px;height:38px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-hospital-fill text-white" style="font-size:1.1rem;"></i>
+      </div>
+      <div>
+        <div class="brand-name">AUdoc</div>
+        <span class="brand-sub">Campus Health Portal</span>
+      </div>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'appointment' %}">Appointments</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'blood_bank' %}">Blood Bank</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'donation' %}">Donation</a></li>
+        <li class="nav-item"><a class="nav-link active" href="{% url 'about' %}">About</a></li>
+      </ul>
+      <div class="d-flex gap-2 align-items-center">
+        {% if user.is_authenticated %}
+          <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-person-circle me-1"></i>
+            <strong>{{ user.get_full_name|default:user.username }}</strong>
+          </span>
+          <form method="post" action="{% url 'logout' %}" class="d-inline m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm px-3 rounded-pill">
+              <i class="bi bi-box-arrow-right me-1"></i>Logout
+            </button>
+          </form>
+        {% else %}
+          <a href="/accounts/login/" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+          </a>
+          <a href="{% url 'register' %}" class="btn btn-primary btn-sm px-3 rounded-pill">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ PAGE HERO ══════════ -->
+<div class="page-hero">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-3 d-inline-block">
+          <i class="bi bi-info-circle me-1"></i> About AUdoc
+        </span>
+        <h1>The Story Behind<br><span style="color:var(--primary)">Your Campus Doctor,<br>Now Online.</span></h1>
+        <p class="mt-3 mb-0">
+          Because walking to Block C in the middle of a monsoon just to book an appointment
+          felt a bit too dramatic — even for us.
+        </p>
+      </div>
+      <div class="col-lg-5 text-center">
+        <div style="font-size:7rem;line-height:1;">🏥</div>
+        <p class="text-muted mt-2" style="font-size:.9rem;">
+          (That's the fanciest we could draw the health center)
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ WHAT IS AUDOC ══════════ -->
+<section>
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">The Origin Story</span>
+      <h2 class="section-title">What Exactly is AUdoc?</h2>
+      <p class="section-sub">No, it's not a new Pokémon. It's better.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+      <div class="col-md-4 reveal">
+        <div class="about-card text-center">
+          <div class="about-icon mx-auto" style="background:#e8f5ec;color:var(--primary);">
+            <i class="bi bi-calendar-check-fill"></i>
+          </div>
+          <h5 class="fw-bold mb-2" style="color:#0d2a1a;">Book Appointments</h5>
+          <p class="text-muted" style="font-size:.9rem;line-height:1.7;">
+            Gone are the days of showing up at the health center only to find the doctor's at lunch
+            and a queue of 30 students ahead of you. Book your slot online. Like a civilised human.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4 reveal">
+        <div class="about-card text-center">
+          <div class="about-icon mx-auto" style="background:#ffe8eb;color:#c41e3a;">
+            <i class="bi bi-droplet-fill"></i>
+          </div>
+          <h5 class="fw-bold mb-2" style="color:#0d2a1a;">Blood Bank</h5>
+          <p class="text-muted" style="font-size:.9rem;line-height:1.7;">
+            Campus blood bank that connects students who need blood with those brave enough to donate.
+            Real heroes wear no capes — they just roll up a sleeve.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4 reveal">
+        <div class="about-card text-center">
+          <div class="about-icon mx-auto" style="background:#d5f0e2;color:var(--green);">
+            <i class="bi bi-gift-fill"></i>
+          </div>
+          <h5 class="fw-bold mb-2" style="color:#0d2a1a;">Support &amp; Donations</h5>
+          <p class="text-muted" style="font-size:.9rem;line-height:1.7;">
+            Help keep the health center running. Donate voluntarily and feel like a philanthropist
+            while also getting bragging rights at the next batch meet.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="fun-quote">
+      "AUdoc was built on two things: genuine care for student health, and a deep personal frustration
+      with paper registers. We fixed the second one. The first one was always there."
+      <div class="author">— The Developer, probably at 2 AM</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HOW IT CAME TO BE ══════════ -->
+<section style="background:#eef7f1;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">The Journey</span>
+      <h2 class="section-title">How It All Started</h2>
+      <p class="section-sub">A perfectly normal story involving a student, a laptop, and far too much chai.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="timeline-line">
+
+          <div class="timeline-item reveal">
+            <div class="timeline-dot" style="background:#e8f5ec;color:var(--primary);">
+              <i class="bi bi-lightbulb-fill"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">The Idea Strikes</h6>
+              <p class="text-muted mb-0" style="font-size:.9rem;">
+                A student (the developer) notices that campus health services are managed manually.
+                Queues, paper slips, and zero digital presence. The thought: <em>"Someone should fix this."</em>
+                The follow-up thought: <em>"It might as well be me."</em>
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item reveal">
+            <div class="timeline-dot" style="background:#ffe8eb;color:#c41e3a;">
+              <i class="bi bi-code-slash"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">The Coding Begins</h6>
+              <p class="text-muted mb-0" style="font-size:.9rem;">
+                Django is chosen. Migrations are written. Stack Overflow is visited approximately 847 times.
+                The first working page causes an embarrassingly long victory dance.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item reveal">
+            <div class="timeline-dot" style="background:#d5f0e2;color:var(--green);">
+              <i class="bi bi-droplet-half"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Blood Bank Module Added</h6>
+              <p class="text-muted mb-0" style="font-size:.9rem;">
+                Realising the campus also needs a blood donor directory, a full blood bank feature
+                gets built — complete with email notifications to donors. Fancy.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item reveal" style="padding-bottom:0;">
+            <div class="timeline-dot" style="background:#fff3cd;color:#856404;">
+              <i class="bi bi-rocket-takeoff-fill"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">AUdoc Goes Live</h6>
+              <p class="text-muted mb-0" style="font-size:.9rem;">
+                The portal launches for Assam University Silchar students. Paper registers officially
+                declared a menace. Bug reports welcomed. (Gently.)
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ TECH STACK ══════════ -->
+<section>
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Under the Hood</span>
+      <h2 class="section-title">Built With</h2>
+      <p class="section-sub">No magic. Just these tools, some patience, and caffeine.</p>
+    </div>
+    <div class="text-center">
+      <span class="tech-pill"><i class="bi bi-filetype-py" style="color:#3572A5;"></i> Python</span>
+      <span class="tech-pill"><i class="bi bi-grid-fill" style="color:#0C4B33;"></i> Django</span>
+      <span class="tech-pill"><i class="bi bi-bootstrap-fill" style="color:#7952B3;"></i> Bootstrap 5</span>
+      <span class="tech-pill"><i class="bi bi-database-fill" style="color:#003B57;"></i> SQLite</span>
+      <span class="tech-pill"><i class="bi bi-envelope-at-fill" style="color:#EA4335;"></i> SMTP Email</span>
+      <span class="tech-pill"><i class="bi bi-filetype-html" style="color:#E34C26;"></i> HTML / CSS</span>
+      <span class="tech-pill"><i class="bi bi-filetype-js" style="color:#F7DF1E;"></i> Vanilla JS</span>
+      <span class="tech-pill"><i class="bi bi-git" style="color:#F05032;"></i> Git</span>
+    </div>
+    <p class="text-center text-muted mt-4" style="font-size:.88rem;">
+      No React. No Node. No 47 microservices. Sometimes a hammer is exactly what you need.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════ THE DEVELOPER ══════════ -->
+<section style="background:#eef7f1;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">The Mastermind</span>
+      <h2 class="section-title">Meet the Developer</h2>
+      <p class="section-sub">One person. One laptop. An unreasonable amount of ambition.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-7 reveal">
+        <div class="dev-card">
+          <div class="dev-card-header">
+            <div class="text-white">
+              <h4 class="fw-bold mb-1 opacity-75" style="font-size:1rem;letter-spacing:2px;text-transform:uppercase;">Developer</h4>
+            </div>
+            <div class="dev-avatar">
+              <i class="bi bi-person-circle"></i>
+            </div>
+          </div>
+
+          <div class="dev-card-body">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              <h3 class="fw-bold mb-0" style="color:#0d2a1a;">Sayan Kumar Roy</h3>
+              <span class="dev-badge" style="background:#e8f5ec;color:var(--primary);">
+                <i class="bi bi-code-square"></i> voidnova
+              </span>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <span class="dev-badge" style="background:#d5f0e2;color:var(--green);">
+                <i class="bi bi-mortarboard-fill"></i> Computer Science
+              </span>
+              <span class="dev-badge" style="background:#fff3cd;color:#856404;">
+                <i class="bi bi-building"></i> Assam University Silchar
+              </span>
+              <span class="dev-badge" style="background:#ffe8eb;color:#c41e3a;">
+                <i class="bi bi-heart-fill"></i> Full-Stack Enthusiast
+              </span>
+            </div>
+
+            <p class="text-muted mb-4" style="font-size:.95rem;line-height:1.8;">
+              A Computer Science student who thought <em>"I should build this"</em> and then actually did.
+              Sayan handles everything from database models to front-end design — wearing every hat,
+              including the one that says <strong>"please don't break in production."</strong>
+              When not building AUdoc, probably debugging something from the night before.
+            </p>
+
+            <!-- Contact Info -->
+            <h6 class="fw-bold mb-3" style="color:#0d2a1a;">Get in Touch</h6>
+
+            <div class="contact-item d-flex align-items-center">
+              <div class="contact-icon"><i class="bi bi-envelope-fill"></i></div>
+              <div>
+                <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Email</div>
+                <a href="mailto:sayankumarr02@gmail.com" style="color:var(--primary);font-weight:500;text-decoration:none;">
+                  sayankumarr02@gmail.com
+                </a>
+              </div>
+            </div>
+
+            <div class="contact-item d-flex align-items-center">
+              <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
+              <div>
+                <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Phone</div>
+                <a href="tel:+916900577470" style="color:var(--primary);font-weight:500;text-decoration:none;">
+                  +91 6900577470
+                </a>
+              </div>
+            </div>
+
+            <div class="contact-item d-flex align-items-center">
+              <div class="contact-icon"><i class="bi bi-buildings-fill"></i></div>
+              <div>
+                <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Department</div>
+                <span style="font-weight:500;color:#333;">Computer Science, Assam University Silchar</span>
+              </div>
+            </div>
+
+            <div class="contact-item d-flex align-items-center">
+              <div class="contact-icon"><i class="bi bi-github"></i></div>
+              <div>
+                <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">GitHub</div>
+                <a href="https://github.com/voidnova-code" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:500;text-decoration:none;">
+                  github.com/voidnova-code
+                </a>
+              </div>
+            </div>
+
+            <div class="mt-4 p-3 rounded-3" style="background:#eef7f1;border:1px solid #c8e6d0;">
+              <i class="bi bi-chat-quote-fill me-2" style="color:var(--primary);"></i>
+              <em style="font-size:.9rem;color:#555;">
+                "I built this so no student has to stand in a queue just to see a doctor.
+                If it saves even one soggy walk in the rain, it was worth every sleepless night."
+              </em>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ DISCLAIMER (fun) ══════════ -->
+<section>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 reveal">
+        <div class="p-4 rounded-4" style="background:#fff8e1;border:1.5px dashed #f59e0b;">
+          <h5 class="fw-bold mb-3" style="color:#856404;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>A Note of Transparency
+          </h5>
+          <ul class="mb-0 text-muted" style="font-size:.92rem;line-height:2;">
+            <li>AUdoc is a student-built project — not sanctioned by any government, ministry, or secret society.</li>
+            <li>It is run with the best of intentions and the budget of a college student (read: zero).</li>
+            <li>Bugs may exist. If you find one, consider it a free Easter egg and also please report it.</li>
+            <li>The developer is a human being who also has exams, so response times may vary.</li>
+            <li>Using AUdoc does not replace actual medical advice. Please still visit a real doctor.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HELP DESK / FEEDBACK ══════════ -->
+<section id="feedback" style="background:#eef7f1;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">
+        <i class="bi bi-headset me-1"></i> Help Desk
+      </span>
+      <h2 class="section-title">We're All Ears.</h2>
+      <p class="section-sub">Rate your experience and leave a message. We read every single one — even the ones that hurt a little.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+
+        {% if submitted %}
+        <!-- ── SUCCESS STATE ── -->
+        <div class="success-card">
+          {% if stars >= 3 %}
+            <div class="success-icon"><i class="bi bi-check-lg"></i></div>
+            <h2 class="fw-bold mb-2" style="color:#0d2a1a;">Thank You!</h2>
+            <p class="text-muted mb-4">
+              Your feedback means a lot to the AUdoc team. We're glad you took a moment to share your experience,
+              and we'll keep working to make campus health services even better.
+            </p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+              <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-house-fill me-2"></i>Back to Home
+              </a>
+              <a href="{% url 'about' %}#feedback" class="btn btn-outline-primary rounded-pill px-4">
+                <i class="bi bi-arrow-clockwise me-2"></i>Submit Another
+              </a>
+            </div>
+          {% else %}
+            <div class="success-icon" style="background:#fff5f7;color:#c41e3a;">
+              <i class="bi bi-chat-heart-fill"></i>
+            </div>
+            <h2 class="fw-bold mb-2" style="color:#0d2a1a;">Feedback Received</h2>
+            <p class="text-muted mb-4">
+              We're genuinely sorry your experience wasn't what it should have been.
+              Your feedback has been recorded and our team takes it very seriously.
+              We'll work hard to do better.
+            </p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+              <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-house-fill me-2"></i>Back to Home
+              </a>
+              <a href="{% url 'about' %}#feedback" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-clockwise me-2"></i>Submit Again
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
+        {% else %}
+        <!-- ── FORM ── -->
+        <div class="form-card reveal">
+          <h4 class="fw-bold mb-1" style="color:#0d2a1a;">Leave Your Feedback</h4>
+          <p class="text-muted mb-4" style="font-size:.9rem;">
+            All feedback is anonymous to other users and visible only to the AUdoc team.
+          </p>
+
+          <form method="post" id="helpDeskForm" novalidate>
+            {% csrf_token %}
+
+            <!-- Star Rating -->
+            <div class="mb-4">
+              <label class="form-label d-block text-center mb-3">
+                How would you rate AUdoc? <span class="text-danger">*</span>
+              </label>
+              <div class="star-row" id="starRow">
+                <button type="button" class="star-btn" data-val="1" title="1 star">&#9733;</button>
+                <button type="button" class="star-btn" data-val="2" title="2 stars">&#9733;</button>
+                <button type="button" class="star-btn" data-val="3" title="3 stars">&#9733;</button>
+                <button type="button" class="star-btn" data-val="4" title="4 stars">&#9733;</button>
+                <button type="button" class="star-btn" data-val="5" title="5 stars">&#9733;</button>
+              </div>
+              <div class="star-label" id="starLabel">Click a star to rate us</div>
+              <div id="stars-error">Please select a star rating before submitting.</div>
+              <input type="hidden" name="stars" id="starsInput" value="" />
+            </div>
+
+            <!-- Name -->
+            <div class="mb-3">
+              <label class="form-label" for="id_name">Your Name <span class="text-danger">*</span></label>
+              <input type="text" name="name" id="id_name" class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                     placeholder="Enter your full name"
+                     value="{{ form.name.value|default:'' }}" required />
+              {% if form.name.errors %}
+                <div class="invalid-feedback">{{ form.name.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Message -->
+            <div class="mb-4">
+              <label class="form-label" for="id_message">Message <span class="text-muted fw-normal">(optional)</span></label>
+              <textarea name="message" id="id_message" rows="4"
+                        class="form-control {% if form.message.errors %}is-invalid{% endif %}"
+                        maxlength="500"
+                        placeholder="Share your experience, a suggestion, or anything on your mind…">{{ form.message.value|default:'' }}</textarea>
+              <div class="char-counter" id="msgCounter">0 / 500</div>
+              {% if form.message.errors %}
+                <div class="invalid-feedback">{{ form.message.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Non-field errors -->
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger rounded-3 py-2" style="font-size:.88rem;">
+                {{ form.non_field_errors|join:" " }}
+              </div>
+            {% endif %}
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-semibold" style="font-size:1rem;">
+              <i class="bi bi-send-fill me-2"></i>Submit Feedback
+            </button>
+          </form>
+        </div>
+
+        <!-- Side note -->
+        <div class="mt-4 p-3 rounded-3 text-center" style="background:#eef7f1;border:1px solid #c8e6d0;font-size:.85rem;color:#666;">
+          <i class="bi bi-shield-check me-1 text-primary"></i>
+          Your feedback is private and never shared publicly. The portal team reviews all submissions.
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ CTA ══════════ -->
+<section style="padding-top:0;padding-bottom:72px;">
+  <div class="container">
+    <div class="cta-section text-center p-5 reveal">
+      <i class="bi bi-heart-pulse-fill fs-1 mb-3 d-block opacity-75"></i>
+      <h2 class="fw-bold mb-3">Ready to Use AUdoc?</h2>
+      <p class="mb-4 opacity-75">
+        Book an appointment, register as a blood donor, or just poke around.
+        Your campus health services, finally on a screen near you.
+      </p>
+      <a href="{% url 'home' %}" class="btn btn-light btn-lg rounded-pill fw-semibold px-5 me-2">
+        <i class="bi bi-house-fill me-2"></i>Go to Home
+      </a>
+      <a href="{% url 'appointment' %}" class="btn btn-outline-light btn-lg rounded-pill px-5">
+        <i class="bi bi-calendar-plus me-2"></i>Book Appointment
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div style="width:34px;height:34px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-hospital-fill text-white"></i>
+          </div>
+          <div>
+            <div class="text-white fw-bold" style="line-height:1.1;">AUdoc</div>
+            <div style="font-size:.72rem;color:#9abea8;">Campus Health Portal</div>
+          </div>
+        </div>
+        <p style="font-size:.88rem;line-height:1.7;">
+          The official health and medical service for Assam University Silchar students.
+          We provide accessible, confidential, and quality healthcare on campus.
+        </p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6>Quick Links</h6>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'appointment' %}">Book Appointment</a>
+        <a href="{% url 'blood_bank' %}">Blood Bank</a>
+        <a href="{% url 'donation' %}">Donation</a>
+        <a href="{% url 'about' %}">About</a>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6>Services</h6>
+        <a href="{% url 'appointment' %}">OPD Appointment</a>
+        <a href="{% url 'blood_bank' %}">Blood Donation</a>
+        <a href="{% url 'blood_bank' %}?tab=request">Blood Request</a>
+        <a href="{% url 'donation' %}">Support Us</a>
+      </div>
+      <div class="col-lg-4">
+        <h6>Clinic Hours</h6>
+        <div class="office-hours-row"><span>Monday – Friday</span><span class="text-white">9:00 AM – 5:00 PM</span></div>
+        <div class="office-hours-row"><span>Saturday</span><span class="text-white">9:00 AM – 1:00 PM</span></div>
+        <div class="office-hours-row"><span>Sunday</span><span class="text-danger">Closed</span></div>
+        <div class="office-hours-row"><span>Lunch Break</span><span class="text-warning">1:00 PM – 2:00 PM</span></div>
+        <div class="office-hours-row"><span>Public Holidays</span><span class="text-danger">Closed</span></div>
+        <div class="mt-3" style="font-size:.85rem;">
+          <i class="bi bi-geo-alt me-1"></i> Block C, Room 101, AU Main Campus<br>
+          <i class="bi bi-envelope me-1 mt-1"></i> health@au.edu
+        </div>
+      </div>
+    </div>
+    <hr class="divider" />
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <small>&copy; 2026 AUdoc – Assam University Silchar Campus Health. All rights reserved.</small>
+      <small>Built with <i class="bi bi-heart-fill text-danger"></i> by <strong class="text-white">Sayan Kumar Roy (voidnova)</strong></small>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function () {
+    const nav = document.querySelector('.navbar-nav');
+    if (!nav) return;
+    const pill = document.createElement('div');
+    pill.className = 'nav-pill-indicator';
+    pill.style.opacity = '0';
+    nav.appendChild(pill);
+    function moveTo(el) {
+      const nr = nav.getBoundingClientRect();
+      const er = el.getBoundingClientRect();
+      pill.style.left    = (er.left   - nr.left) + 'px';
+      pill.style.top     = (er.top    - nr.top)  + 'px';
+      pill.style.width   = er.width  + 'px';
+      pill.style.height  = er.height + 'px';
+      pill.style.opacity = '1';
+    }
+    const links = nav.querySelectorAll('.nav-link');
+    const active = nav.querySelector('.nav-link.active');
+    if (active) moveTo(active);
+    links.forEach(link => { link.addEventListener('mouseenter', () => moveTo(link)); });
+    nav.addEventListener('mouseleave', () => {
+      const cur = nav.querySelector('.nav-link.active');
+      if (cur) moveTo(cur); else pill.style.opacity = '0';
+    });
+  })();
+</script>
+
+<!-- ══════════ SCROLL TO TOP ══════════ -->
+<button id="scroll-top" aria-label="Back to top"><i class="bi bi-chevron-up"></i></button>
+
+<script>
+  // ── Scroll-reveal ──────────────────────────────────────────
+  (function () {
+    const els = document.querySelectorAll('.reveal');
+    if (!els.length) return;
+    const seen = new Set();
+    els.forEach(el => {
+      const p = el.parentElement;
+      if (p && !seen.has(p)) {
+        seen.add(p);
+        Array.from(p.querySelectorAll(':scope > .reveal')).forEach((s, i) => {
+          s.style.transitionDelay = (i * 0.1) + 's';
+        });
+      }
+    });
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    els.forEach(el => io.observe(el));
+  })();
+
+  // ── Scroll-to-top ──────────────────────────────────────────
+  (function () {
+    const btn = document.getElementById('scroll-top');
+    if (!btn) return;
+    window.addEventListener('scroll', () => btn.classList.toggle('show', window.scrollY > 320));
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  })();
+</script>
+
+<!-- ══════════ FLOATING ACTION BUTTON ══════════ -->
+<a href="{% url 'blood_bank' %}" class="fab" title="Blood Bank">
+  <span class="fab-label">Blood Bank</span>
+  <i class="bi bi-droplet-fill"></i>
+</a>
+
+<script>
+  // ── Star rating widget ──────────────────────────────────────
+  (function () {
+    const stars  = document.querySelectorAll('.star-btn');
+    const input  = document.getElementById('starsInput');
+    const label  = document.getElementById('starLabel');
+    const errEl  = document.getElementById('stars-error');
+    if (!stars.length) return;
+
+    const labels = ['', 'Terrible 😣', 'Poor 😕', 'Okay 😐', 'Good 😊', 'Excellent 🤩'];
+    let selected = 0;
+
+    function paint(upTo) {
+      stars.forEach((s, i) => {
+        s.classList.toggle('hovered', i < upTo);
+        s.classList.toggle('selected', i < selected);
+      });
+    }
+
+    function setSelected(val) {
+      selected = val;
+      input.value = val;
+      label.textContent = labels[val];
+      label.style.color = val < 3 ? '#dc3545' : '#1d8348';
+      errEl.style.display = 'none';
+      paint(val);
+    }
+
+    stars.forEach((s, i) => {
+      s.addEventListener('mouseenter', () => paint(i + 1));
+      s.addEventListener('mouseleave', () => paint(selected));
+      s.addEventListener('click',      () => setSelected(i + 1));
+    });
+
+    document.getElementById('helpDeskForm')?.addEventListener('submit', function (e) {
+      if (!input.value) {
+        e.preventDefault();
+        errEl.style.display = 'block';
+        errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  })();
+
+  // ── Character counter ──────────────────────────────────────
+  (function () {
+    const ta = document.getElementById('id_message');
+    const counter = document.getElementById('msgCounter');
+    if (!ta || !counter) return;
+    function update() {
+      const len = ta.value.length;
+      counter.textContent = len + ' / 500';
+      counter.classList.toggle('warn', len > 400);
+    }
+    ta.addEventListener('input', update);
+    update();
+  })();
+</script>
+</body>
+</html>
