@@ -546,27 +546,7 @@
               {% endfor %}
             </div>
 
-            <div class="col-sm-6">
-              <label class="form-label" for="id_appointment_time">
-                Preferred Time Slot <span class="text-danger">*</span>
-              </label>
-              <select
-                name="appointment_time"
-                id="id_appointment_time"
-                class="form-select{% if form.appointment_time.errors %} is-invalid{% endif %}"
-                required
-              >
-                {% for val, label in form.fields.appointment_time.choices %}
-                  <option value="{{ val }}"
-                    {% if form.appointment_time.value == val %}selected{% endif %}>
-                    {{ label }}
-                  </option>
-                {% endfor %}
-              </select>
-              {% for err in form.appointment_time.errors %}
-                <div class="invalid-feedback">{{ err }}</div>
-              {% endfor %}
-            </div>
+
 
             <div class="col-12">
               <label class="form-label" for="id_doctor">

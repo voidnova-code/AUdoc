@@ -259,7 +259,7 @@
         <h5 class="fw-bold mb-1" style="color:#0d2a1a;">Make a Donation</h5>
         <p class="text-muted small mb-4">All donations go directly to the AUdoc Campus Health Fund.</p>
 
-        <form method="post" novalidate>
+        <form id="donationForm" method="post" novalidate>
           {% csrf_token %}
 
           <!-- Non-field errors -->
@@ -328,11 +328,12 @@
           <!-- ── Submit ── -->
           <button type="submit" id="donateBtn" class="btn btn-primary btn-lg w-100 rounded-pill fw-semibold">
             <span class="btn-spinner"></span>
-            <span class="btn-text"><i class="bi bi-heart-fill me-2"></i>Donate Now</span>
+            <span class="btn-text"><i class="bi bi-shield-lock-fill me-2"></i>Pay with Razorpay</span>
           </button>
           <p class="text-muted small text-center mt-3 mb-0">
             <i class="bi bi-lock me-1"></i>Your information is kept secure and confidential.
           </p>
+          <div id="paymentMessage" class="alert d-none mt-3 mb-0" role="alert"></div>
 
         </form>
       </div>
@@ -406,6 +407,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
   (function () {
     const presetSel       = document.getElementById('id_preset_amount');
@@ -511,11 +513,112 @@
 
   // ── Form submit loading state ──────────────────────────────
   (function () {
-    const form = document.querySelector('form[novalidate]');
-    const btn  = document.getElementById('donateBtn');
-    if (!form || !btn) return;
-    form.addEventListener('submit', function () {
-      btn.classList.add('btn-loading');
+    const form = document.getElementById('donationForm');
+    const btn = document.getElementById('donateBtn');
+    const messageBox = document.getElementById('paymentMessage');
+    const razorpayKeyId = "{{ razorpay_key_id|default:''|escapejs }}";
+    if (!form || !btn || !messageBox) return;
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        btn.classList.add('btn-loading');
+      } else {
+        btn.classList.remove('btn-loading');
+      }
+    }
+
+    function showMessage(text, type) {
+      messageBox.className = `alert alert-${type} mt-3 mb-0`;
+      messageBox.textContent = text;
+    }
+
+    function getCsrfToken() {
+      const tokenField = form.querySelector('input[name="csrfmiddlewaretoken"]');
+      return tokenField ? tokenField.value : '';
+    }
+
+    async function postForm(url, formData) {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': getCsrfToken(),
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+      }
+      return data;
+    }
+
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      messageBox.classList.add('d-none');
+
+      if (!razorpayKeyId) {
+        showMessage('Payment gateway is not configured. Please contact support.', 'danger');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const orderData = await postForm("{% url 'donation_create_order' %}", new FormData(form));
+
+        const options = {
+          key: orderData.key_id,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: "AUdoc Campus Health",
+          description: orderData.description,
+          order_id: orderData.order_id,
+          prefill: {
+            name: orderData.donor_name || "",
+            email: orderData.donor_email || ""
+          },
+          theme: { color: "#4a7c59" },
+          handler: async function (response) {
+            try {
+              const verifyData = new FormData();
+              verifyData.append('donation_id', String(orderData.donation_id));
+              verifyData.append('razorpay_payment_id', response.razorpay_payment_id);
+              verifyData.append('razorpay_order_id', response.razorpay_order_id);
+              verifyData.append('razorpay_signature', response.razorpay_signature);
+              await postForm("{% url 'donation_verify_payment' %}", verifyData);
+              showMessage('Thank you! Your donation payment was successful.', 'success');
+              form.reset();
+              document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
+              const customWrap = document.getElementById('custom-amount-wrap');
+              const customInput = document.getElementById('id_custom_amount');
+              if (customWrap) customWrap.style.display = 'none';
+              if (customInput) customInput.required = false;
+            } catch (err) {
+              showMessage(err.message || 'Payment verification failed.', 'danger');
+            } finally {
+              setLoading(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setLoading(false);
+            }
+          }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+          const reason = response.error && response.error.description
+            ? response.error.description
+            : 'Payment failed. Please try again.';
+          showMessage(reason, 'danger');
+          setLoading(false);
+        });
+        rzp.open();
+      } catch (err) {
+        showMessage(err.message || 'Unable to initialize payment.', 'danger');
+        setLoading(false);
+      }
     });
   })();
 </script>

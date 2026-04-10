@@ -50,9 +50,7 @@ SECRET_KEY = _default_secret
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in ("true", "1", "yes")
 
-# ══════════════════════════════════════════════════════════════════════════════
-#  SECURITY: Allowed hosts - MUST be configured for production
-# ══════════════════════════════════════════════════════════════════════════════
+
 _allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
 if _allowed_hosts_env:
     ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(",") if h.strip()]
@@ -63,12 +61,14 @@ else:
     ALLOWED_HOSTS = [
         "localhost",
         "127.0.0.1",
+        "*",
         # Add your production domain here or via DJANGO_ALLOWED_HOSTS env var
     ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "https://churlish-xerically-karren.ngrok-free.dev"
 ]
 # Add additional trusted origins from environment
 _csrf_origins_env = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
@@ -307,3 +307,9 @@ if not _logs_dir.exists():
         _logs_dir.mkdir(parents=True, exist_ok=True)
     except (OSError, IOError):
         pass  # Running in read-only environment
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  Razorpay Settings
+# ══════════════════════════════════════════════════════════════════════════════
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")#rzp_test_SbnRGp05usSC2r
+RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")#27kYY9l2X1PIKSkirTDAklpZ

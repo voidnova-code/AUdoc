@@ -201,11 +201,11 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 @admin.register(Donation)
 class DonationAdmin(admin.ModelAdmin):
-    list_display  = ("student_id", "name", "email", "amount", "is_paid", "donated_at")
+    list_display  = ("student_id", "name", "email", "amount", "is_paid", "razorpay_order_id", "donated_at")
     list_filter   = ("is_paid", "donated_at")
-    search_fields = ("student_id", "name", "email")
+    search_fields = ("student_id", "name", "email", "razorpay_order_id", "razorpay_payment_id")
     ordering      = ("-donated_at",)
-    readonly_fields = ("donated_at",)
+    readonly_fields = ("donated_at", "razorpay_order_id", "razorpay_payment_id", "razorpay_signature")
     list_editable = ("is_paid",)
     date_hierarchy  = "donated_at"
     fieldsets = (
@@ -213,7 +213,7 @@ class DonationAdmin(admin.ModelAdmin):
             "fields": ("student_id", "name", "email"),
         }),
         ("Donation Details", {
-            "fields": ("amount", "is_paid", "donated_at"),
+            "fields": ("amount", "is_paid", "razorpay_order_id", "razorpay_payment_id", "razorpay_signature", "donated_at"),
         }),
     )
 

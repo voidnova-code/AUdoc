@@ -316,6 +316,9 @@ class Donation(models.Model):
         max_digits=10, decimal_places=2, verbose_name="Amount (BDT)"
     )
     is_paid    = models.BooleanField(default=False, verbose_name="Paid")
+    razorpay_order_id   = models.CharField(max_length=120, blank=True, verbose_name="Razorpay Order ID")
+    razorpay_payment_id = models.CharField(max_length=120, blank=True, verbose_name="Razorpay Payment ID")
+    razorpay_signature  = models.CharField(max_length=255, blank=True, verbose_name="Razorpay Signature")
     donated_at = models.DateTimeField(auto_now_add=True, verbose_name="Submitted At")
 
     class Meta:

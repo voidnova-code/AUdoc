@@ -1,7 +1,9 @@
 import json
 import os
 import time
+import razorpay
 from datetime import date, timedelta
+from decimal import Decimal
 
 from django.contrib import messages
 from django.conf import settings
@@ -462,36 +464,122 @@ def appointment(request):
 
 
 def donation(request):
-    form = DonationForm(request.POST or None)
+    form = DonationForm()
+    return render(
+        request,
+        "app/donation.html",
+        {
+            "form": form,
+            "razorpay_key_id": settings.RAZORPAY_KEY_ID,
+        },
+    )
 
-    if request.method == "POST" and form.is_valid():
-        cd = form.cleaned_data
 
-        # Resolve donor identity from logged-in user if available
-        student_id, name, email = "", "", ""
-        if request.user.is_authenticated:
-            try:
-                profile = request.user.student_profile
-                student_id = profile.student_id
-            except Exception:
-                pass
-            name  = request.user.get_full_name()
-            email = request.user.email
-
-        Donation.objects.create(
-            student_id=student_id,
-            name=name,
-            email=email,
-            amount=cd["amount"],
-            is_paid=False,
+@require_POST
+def donation_create_order(request):
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        return JsonResponse(
+            {"error": "Payment gateway is not configured. Please contact support."},
+            status=500,
         )
-        messages.success(
-            request,
-            "Thank you for your generous donation! We will process your payment shortly.",
-        )
-        return redirect("donation")
 
-    return render(request, "app/donation.html", {"form": form})
+    form = DonationForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({"error": form.errors.as_text()}, status=400)
+
+    cd = form.cleaned_data
+    amount = cd["amount"]
+
+    student_id, name, email = "", "", ""
+    if request.user.is_authenticated:
+        try:
+            profile = request.user.student_profile
+            student_id = profile.student_id
+        except Exception:
+            pass
+        name = request.user.get_full_name()
+        email = request.user.email
+
+    razorpay_client = razorpay.Client(
+        auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+    )
+    amount_paise = int((amount * Decimal("100")).quantize(Decimal("1")))
+    order_payload = {
+        "amount": amount_paise,
+        "currency": "INR",
+        "payment_capture": 1,
+    }
+    razorpay_order = razorpay_client.order.create(data=order_payload)
+
+    donation_obj = Donation.objects.create(
+        student_id=student_id,
+        name=name,
+        email=email,
+        amount=amount,
+        is_paid=False,
+        razorpay_order_id=razorpay_order["id"],
+    )
+
+    return JsonResponse(
+        {
+            "order_id": razorpay_order["id"],
+            "amount": amount_paise,
+            "currency": "INR",
+            "key_id": settings.RAZORPAY_KEY_ID,
+            "donation_id": donation_obj.id,
+            "donor_name": name,
+            "donor_email": email,
+            "description": "AUdoc Campus Health Donation",
+        }
+    )
+
+
+@require_POST
+def donation_verify_payment(request):
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        return JsonResponse(
+            {"error": "Payment gateway is not configured. Please contact support."},
+            status=500,
+        )
+
+    donation_id = request.POST.get("donation_id", "").strip()
+    razorpay_payment_id = request.POST.get("razorpay_payment_id", "").strip()
+    razorpay_order_id = request.POST.get("razorpay_order_id", "").strip()
+    razorpay_signature = request.POST.get("razorpay_signature", "").strip()
+
+    if not all([donation_id, razorpay_payment_id, razorpay_order_id, razorpay_signature]):
+        return JsonResponse({"error": "Missing payment verification data."}, status=400)
+
+    try:
+        donation_obj = Donation.objects.get(pk=int(donation_id))
+    except (Donation.DoesNotExist, ValueError):
+        return JsonResponse({"error": "Donation record not found."}, status=404)
+
+    if donation_obj.razorpay_order_id != razorpay_order_id:
+        return JsonResponse({"error": "Order ID mismatch."}, status=400)
+
+    razorpay_client = razorpay.Client(
+        auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+    )
+    try:
+        razorpay_client.utility.verify_payment_signature(
+            {
+                "razorpay_order_id": razorpay_order_id,
+                "razorpay_payment_id": razorpay_payment_id,
+                "razorpay_signature": razorpay_signature,
+            }
+        )
+    except razorpay.errors.SignatureVerificationError:
+        return JsonResponse({"error": "Payment signature verification failed."}, status=400)
+
+    donation_obj.razorpay_payment_id = razorpay_payment_id
+    donation_obj.razorpay_signature = razorpay_signature
+    donation_obj.is_paid = True
+    donation_obj.save(
+        update_fields=["razorpay_payment_id", "razorpay_signature", "is_paid"]
+    )
+
+    return JsonResponse({"success": True, "message": "Payment successful."})
 
 
 def blood_donors_list(request):
