@@ -340,4 +340,3 @@ APPOINTMENT_REMINDER_2H = True   # Send 2-hour SMS reminder (optional - requires
 # No-Show Settings
 NO_SHOW_THRESHOLD = 3  # Mark as restricted after N no-shows
 NO_SHOW_RESTRICTION_DAYS = 30  # Restrict for N days
-
