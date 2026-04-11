@@ -2,12 +2,13 @@ import json
 import os
 import time
 import razorpay
-from datetime import date, timedelta
+import logging
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 from django.contrib import messages
 from django.conf import settings
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
@@ -18,9 +19,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm
-from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
+from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
 from .security import (
     generate_secure_otp,
     constant_time_compare,
@@ -34,6 +36,8 @@ from .security import (
     validate_student_id,
     validate_email_format,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def about(request):
@@ -390,7 +394,8 @@ def home(request):
 
 @login_required
 def appointment(request):
-    today = timezone.localdate()
+    today = timezone.localtime()
+    today_date = today.date()
 
     # Resolve the student_id for this user
     student_id = None
@@ -412,27 +417,40 @@ def appointment(request):
     if student_id:
         Appointment.objects.filter(
             student_id=student_id,
-            appointment_date__lt=today,
+            appointment_date__lt=today_date,
             status__in=["PENDING", "CONFIRMED"],
         ).update(status="COMPLETED")
+
+    # Check if student is restricted from booking due to no-shows
+    restriction_info = {"is_restricted": False}
+    if student_id:
+        from app.no_show_helper import is_student_restricted_from_booking
+        restriction_info = is_student_restricted_from_booking(student_id)
 
     # Split this user's appointments into upcoming and history
     base_qs = Appointment.objects.filter(student_id=student_id) if student_id else Appointment.objects.none()
     upcoming_appointments = (
         base_qs
-        .filter(appointment_date__gte=today)
+        .filter(appointment_date__gte=today_date)
         .exclude(status__in=["REJECTED", "CANCELLED", "COMPLETED"])
         .order_by("appointment_date", "appointment_time")
     )
     history_appointments = (
         base_qs
-        .filter(Q(appointment_date__lt=today) | Q(status__in=["REJECTED", "CANCELLED", "COMPLETED"]))
+        .filter(Q(appointment_date__lt=today_date) | Q(status__in=["REJECTED", "CANCELLED", "COMPLETED"]))
         .order_by("-appointment_date", "-appointment_time")
     )
 
     form = AppointmentForm(request.POST or None, initial=initial)
 
     if request.method == "POST" and form.is_valid():
+        # Check restriction again before creating
+        if student_id:
+            restriction_check = is_student_restricted_from_booking(student_id)
+            if restriction_check["is_restricted"]:
+                messages.error(request, restriction_check["reason"])
+                return redirect("appointment")
+
         cd = form.cleaned_data
         Appointment.objects.create(
             student_id=cd["student_id"],
@@ -457,9 +475,12 @@ def appointment(request):
     return render(request, "app/appointment.html", {
         "form": form,
         "doctors": doctors,
-        "today_str": today.isoformat(),
+        "today_str": today_date.isoformat(),
         "upcoming_appointments": upcoming_appointments,
         "history_appointments": history_appointments,
+        "is_restricted": restriction_info["is_restricted"],
+        "restriction_reason": restriction_info.get("reason", ""),
+        "total_no_shows": restriction_info.get("total_no_shows", 0),
     })
 
 
@@ -1313,10 +1334,23 @@ def admin_registration_action(request, pk):
 def admin_appointment_status(request, pk):
     appt = get_object_or_404(Appointment, pk=pk)
     new_status = request.POST.get('status')
-    if new_status in ('PENDING', 'CONFIRMED', 'COMPLETED', 'REJECTED', 'CANCELLED'):
+    if new_status in ('PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW', 'REJECTED', 'CANCELLED'):
         appt.status = new_status
-        appt.save()
-        messages.success(request, f"Appointment #{pk} updated to {new_status}.")
+        
+        # Handle no-show marking
+        if new_status == 'NO_SHOW':
+            from app.no_show_helper import mark_appointment_as_no_show
+            mark_appointment_as_no_show(pk, reason="Marked by admin")
+            messages.success(request, f"Appointment #{pk} marked as NO_SHOW. Student restrictions updated if applicable.")
+        # Handle completion
+        elif new_status == 'COMPLETED':
+            from app.no_show_helper import mark_appointment_as_completed
+            mark_appointment_as_completed(pk)
+            messages.success(request, f"Appointment #{pk} marked as COMPLETED.")
+        else:
+            appt.save()
+            messages.success(request, f"Appointment #{pk} updated to {new_status}.")
+    
     return redirect(f"{reverse('admin_dashboard')}?tab=appointments")
 
 
@@ -1452,6 +1486,16 @@ def admin_staff_delete(request, pk):
     staff.delete()
     messages.success(request, f"Staff member '{name}' deleted.")
     return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
+
+
+@_admin_required
+@require_POST
+def admin_blood_request_delete(request, pk):
+    blood_request = get_object_or_404(BloodRequest, pk=pk)
+    requester_name = blood_request.requester_name
+    blood_request.delete()
+    messages.success(request, f"Blood request from '{requester_name}' deleted.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=blood-requests")
 
 
 @_admin_required
@@ -2234,4 +2278,182 @@ def api_logout(request):
     auth_logout(request)
     return JsonResponse({"success": True, "message": "Logged out successfully"})
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  APPOINTMENT SLOT FILTERING (AJAX) - Dynamic slot availability
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@require_http_methods(["GET"])
+def api_appointment_slots(request):
+    """
+    AJAX endpoint to get available appointment slots based on doctor and date.
+    
+    Query parameters:
+        - doctor_id: ID of doctor (optional, for filtering)
+        - appointment_date: Date in YYYY-MM-DD format (required)
+    
+    Returns:
+        JSON: {
+            'success': bool,
+            'slots': [('09:00 AM', '09:00 AM'), ...],
+            'doctor_available': bool,
+            'message': str
+        }
+    """
+    try:
+        from app.doctor_availability import get_available_time_slots, is_doctor_available_on_date
+        
+        appointment_date_str = request.GET.get('appointment_date')
+        doctor_id = request.GET.get('doctor_id')
+        
+        if not appointment_date_str:
+            return JsonResponse({
+                'success': False,
+                'message': 'appointment_date is required'
+            }, status=400)
+        
+        try:
+            appointment_date = datetime.strptime(appointment_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid date format. Use YYYY-MM-DD'
+            }, status=400)
+        
+        # If doctor_id is provided, get slots for that doctor
+        if doctor_id:
+            try:
+                doctor = Doctor.objects.get(id=doctor_id)
+                
+                # Check if doctor is available on this date
+                if not is_doctor_available_on_date(doctor_id, appointment_date):
+                    return JsonResponse({
+                        'success': True,
+                        'slots': [],
+                        'doctor_available': False,
+                        'message': f'{doctor.name} is not available on {appointment_date_str}'
+                    })
+                
+                slots = get_available_time_slots(doctor_id, appointment_date)
+                
+                return JsonResponse({
+                    'success': True,
+                    'slots': slots,
+                    'doctor_available': True,
+                    'message': f'Found {len(slots)} available slots'
+                })
+            
+            except Doctor.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Doctor not found'
+                }, status=404)
+        
+        # Otherwise return default time slots (all available)
+        return JsonResponse({
+            'success': True,
+            'slots': list(TIME_SLOT_CHOICES),
+            'doctor_available': True,
+            'message': 'All time slots available'
+        })
+    
+    except Exception as e:
+        logger.error(f"Error in api_appointment_slots: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def api_doctor_availability(request):
+    """
+    AJAX endpoint to check doctor availability and get next available date.
+    
+    Query parameters:
+        - doctor_id: ID of doctor (required)
+        - start_date: Start date for search in YYYY-MM-DD format (optional)
+    
+    Returns:
+        JSON: {
+            'success': bool,
+            'doctor': {'id', 'name', 'specialized_in', ...},
+            'is_available_today': bool,
+            'next_available_date': YYYY-MM-DD or None,
+            'leaves': [...],
+            'message': str
+        }
+    """
+    try:
+        from app.doctor_availability import (
+            is_doctor_available_on_date,
+            get_doctor_next_available_date
+        )
+        
+        doctor_id = request.GET.get('doctor_id')
+        start_date_str = request.GET.get('start_date')
+        
+        if not doctor_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'doctor_id is required'
+            }, status=400)
+        
+        try:
+            doctor = Doctor.objects.get(id=doctor_id)
+        except Doctor.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Doctor not found'
+            }, status=404)
+        
+        # Parse start_date if provided
+        start_date = None
+        if start_date_str:
+            try:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid start_date format. Use YYYY-MM-DD'
+                }, status=400)
+        else:
+            start_date = date.today()
+        
+        # Check today's availability
+        is_available_today = is_doctor_available_on_date(doctor_id, start_date)
+        
+        # Get next available date
+        next_available = get_doctor_next_available_date(doctor_id, start_date)
+        
+        # Get active leaves
+        leaves = DoctorLeave.objects.filter(
+            doctor_id=doctor_id,
+            is_active=True,
+            leave_date_from__gte=start_date
+        ).order_by('leave_date_from').values('leave_date_from', 'leave_date_to', 'leave_type', 'reason')
+        
+        return JsonResponse({
+            'success': True,
+            'doctor': {
+                'id': doctor.id,
+                'name': doctor.name,
+                'email': doctor.email,
+                'specialized_in': doctor.get_specialized_in_display(),
+                'available_days': doctor.available_days,
+                'available_time': doctor.available_time,
+                'is_available': doctor.is_available,
+            },
+            'is_available_today': is_available_today,
+            'next_available_date': next_available.isoformat() if next_available else None,
+            'leaves': list(leaves),
+            'message': 'Doctor availability retrieved'
+        })
+    
+    except Exception as e:
+        logger.error(f"Error in api_doctor_availability: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
 

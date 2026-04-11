@@ -159,13 +159,17 @@ class Doctor(models.Model):
     available_days  = models.CharField(
         max_length=200,
         verbose_name="Available Days",
-        help_text="Hold Ctrl / Cmd to select multiple days",
+        help_text="Hold Ctrl / Cmd to select multiple days (e.g., 'Monday, Tuesday, Wednesday, Thursday, Friday')",
     )
     available_time  = models.CharField(
         max_length=100,
         verbose_name="Available Time",
         help_text='e.g. "9:00 AM – 5:00 PM"',
     )
+    working_hours_start = models.TimeField(null=True, blank=True, verbose_name="Working Hours Start")
+    working_hours_end = models.TimeField(null=True, blank=True, verbose_name="Working Hours End")
+    lunch_break_start = models.TimeField(null=True, blank=True, verbose_name="Lunch Break Start")
+    lunch_break_end = models.TimeField(null=True, blank=True, verbose_name="Lunch Break End")
     is_available    = models.BooleanField(default=True, verbose_name="Available")
     photo           = models.ImageField(
         upload_to='doctors/',
@@ -208,6 +212,7 @@ class Appointment(models.Model):
         ("PENDING",   "Pending"),
         ("CONFIRMED", "Confirmed"),
         ("COMPLETED", "Completed"),
+        ("NO_SHOW",   "No-Show"),
         ("REJECTED",  "Rejected"),
         ("CANCELLED", "Cancelled"),
     ]
@@ -250,6 +255,14 @@ class Appointment(models.Model):
         verbose_name="Status",
     )
     created_at          = models.DateTimeField(auto_now_add=True, verbose_name="Submitted At")
+    # Reminder tracking fields
+    reminder_24h_sent   = models.BooleanField(default=False, verbose_name="24-Hour Reminder Sent")
+    reminder_2h_sent    = models.BooleanField(default=False, verbose_name="2-Hour Reminder Sent")
+    reminder_24h_sent_at = models.DateTimeField(null=True, blank=True, verbose_name="24H Reminder Sent At")
+    reminder_2h_sent_at = models.DateTimeField(null=True, blank=True, verbose_name="2H Reminder Sent At")
+    # No-show tracking
+    was_no_show         = models.BooleanField(default=False, verbose_name="No-Show")
+    actual_completion_date = models.DateTimeField(null=True, blank=True, verbose_name="Actual Completion Time")
 
     class Meta:
         ordering = ["-created_at"]
@@ -584,3 +597,70 @@ class TodaysAppointment(models.Model):
         """Check if the confirmation window has expired"""
         from django.utils import timezone
         return timezone.now() > self.response_deadline and self.status == "PENDING"
+
+
+class DoctorLeave(models.Model):
+    """Model to track doctor leaves and unavailable periods"""
+    LEAVE_TYPE_CHOICES = [
+        ("PERSONAL", "Personal Leave"),
+        ("MEDICAL", "Medical Leave"),
+        ("CONFERENCE", "Conference/Training"),
+        ("EMERGENCY", "Emergency"),
+        ("OTHER", "Other"),
+    ]
+
+    doctor = models.ForeignKey(
+        "Doctor",
+        on_delete=models.CASCADE,
+        related_name="leaves",
+        verbose_name="Doctor",
+    )
+    leave_date_from = models.DateField(verbose_name="Leave From")
+    leave_date_to = models.DateField(verbose_name="Leave Till")
+    leave_type = models.CharField(
+        max_length=20,
+        choices=LEAVE_TYPE_CHOICES,
+        default="PERSONAL",
+        verbose_name="Leave Type",
+    )
+    reason = models.TextField(blank=True, verbose_name="Reason")
+    is_active = models.BooleanField(default=True, verbose_name="Active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-leave_date_from"]
+        verbose_name = "Doctor Leave"
+        verbose_name_plural = "Doctor Leaves"
+
+    def __str__(self):
+        return f"{self.doctor.name} - {self.leave_date_from} to {self.leave_date_to} ({self.get_leave_type_display()})"
+
+
+class StudentNoShowRecord(models.Model):
+    """Track no-show appointments for each student"""
+    from app.models import StudentProfile
+
+    student = models.OneToOneField(
+        "StudentProfile",
+        on_delete=models.CASCADE,
+        related_name="no_show_record",
+        verbose_name="Student",
+    )
+    total_no_shows = models.PositiveIntegerField(default=0, verbose_name="Total No-Shows")
+    last_no_show_date = models.DateTimeField(null=True, blank=True, verbose_name="Last No-Show Date")
+    is_restricted = models.BooleanField(default=False, verbose_name="Restricted from Booking")
+    restriction_until = models.DateField(null=True, blank=True, verbose_name="Restriction Until")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Student No-Show Record"
+        verbose_name_plural = "Student No-Show Records"
+
+    def __str__(self):
+        return f"{self.student.student_id} - {self.total_no_shows} no-shows"
+
+
+# Update Appointment model to add no-show tracking fields
+# Add these fields to the Appointment model STATUS_CHOICES

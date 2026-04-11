@@ -311,5 +311,33 @@ if not _logs_dir.exists():
 # ══════════════════════════════════════════════════════════════════════════════
 #  Razorpay Settings
 # ══════════════════════════════════════════════════════════════════════════════
-RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")#rzp_test_SbnRGp05usSC2r
-RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")#27kYY9l2X1PIKSkirTDAklpZ
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  SMS & Notification Settings
+# ══════════════════════════════════════════════════════════════════════════════
+# SMS is OPTIONAL - use email-only for FREE (recommended for students!)
+# To enable SMS, set SMS_PROVIDER to "twilio" or "nexmo" and add credentials
+
+# SMS Provider: 'disabled' (free - default), 'twilio', or 'nexmo'
+SMS_PROVIDER = os.environ.get("SMS_PROVIDER", "disabled")
+
+# Twilio Configuration for SMS reminders
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
+TWILIO_PHONE_NUMBER = os.environ.get("TWILIO_PHONE_NUMBER", "")
+
+# Alternative: Nexmo/Vonage SMS
+NEXMO_API_KEY = os.environ.get("NEXMO_API_KEY", "")
+NEXMO_API_SECRET = os.environ.get("NEXMO_API_SECRET", "")
+NEXMO_PHONE_NUMBER = os.environ.get("NEXMO_PHONE_NUMBER", "")
+
+# Appointment Reminder Settings (hours before appointment)
+APPOINTMENT_REMINDER_24H = True  # Send 24-hour email reminder (FREE)
+APPOINTMENT_REMINDER_2H = True   # Send 2-hour SMS reminder (optional - requires SMS setup)
+
+# No-Show Settings
+NO_SHOW_THRESHOLD = 3  # Mark as restricted after N no-shows
+NO_SHOW_RESTRICTION_DAYS = 30  # Restrict for N days
+

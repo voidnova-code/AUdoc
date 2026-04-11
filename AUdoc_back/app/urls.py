@@ -12,7 +12,7 @@ urlpatterns = [
     path("donation/create-order/", views.donation_create_order, name="donation_create_order"),
     path("donation/verify-payment/", views.donation_verify_payment, name="donation_verify_payment"),
     path("blood-bank/", views.blood_bank, name="blood_bank"),
-    path("blood-donors/", views.blood_donors_list, name="blood_donors_list"),
+    #path("blood-donors/", views.blood_donors_list, name="blood_donors_list"),
     path("blood/respond/<uuid:token>/<str:action>/", views.donor_respond, name="donor_respond"),
     path("appointment/confirm/<uuid:token>/<str:action>/", views.appointment_confirm, name="appointment_confirm"),
     path("about/", views.about, name="about"),
@@ -28,6 +28,7 @@ urlpatterns = [
     path("manage/appointment/<int:pk>/status/", views.admin_appointment_status, name="admin_appointment_status"),
     path("manage/blood-donation/<int:pk>/status/", views.admin_blood_donation_status, name="admin_blood_donation_status"),
     path("manage/blood-request/<int:pk>/status/", views.admin_blood_request_status, name="admin_blood_request_status"),
+    path("manage/blood-request/<int:pk>/delete/", views.admin_blood_request_delete, name="admin_blood_request_delete"),
     path("manage/donation/<int:pk>/toggle-paid/", views.admin_donation_toggle_paid, name="admin_donation_toggle_paid"),
     path("manage/doctor/save/", views.admin_doctor_save, name="admin_doctor_save"),
     path("manage/doctor/<int:pk>/delete/", views.admin_doctor_delete, name="admin_doctor_delete"),
@@ -49,4 +50,8 @@ urlpatterns = [
     path("api/blood-requests/", views.api_blood_requests, name="api_blood_requests"),
     path("api/profile/", views.api_profile, name="api_profile"),
     path("api/logout/", views.api_logout, name="api_logout"),
+    
+    # ── Appointment Slot Filtering (AJAX) ────────────────────────
+    path("api/appointment-slots/", views.api_appointment_slots, name="api_appointment_slots"),
+    path("api/doctor-availability/", views.api_doctor_availability, name="api_doctor_availability"),
 ]

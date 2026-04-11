@@ -5,3 +5,4 @@ sqlparse==0.5.5
 tzdata==2025.3
 argon2-cffi==23.1.0
 razorpay==1.4.2
+schedule==1.2.0

@@ -3,7 +3,11 @@ from django import forms
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
-from .models import BloodRequest, BloodDonation, DonorResponse, HelpDesk, LoginLog, Doctor, Appointment, Donation, StudentProfile, StaffProfile, StudentRegistration, TodaysAppointment
+from .models import (
+    BloodRequest, BloodDonation, DonorResponse, HelpDesk, LoginLog, 
+    Doctor, Appointment, Donation, StudentProfile, StaffProfile, 
+    StudentRegistration, TodaysAppointment, DoctorLeave, StudentNoShowRecord
+)
 
 
 # ── Staff admin form with password hashing ──────────────────────────────────
@@ -129,8 +133,8 @@ class StudentRegistrationAdmin(admin.ModelAdmin):
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
     list_display = (
-        "student_id", "get_full_name", "get_email",
-        "phone", "emergency_contact", "department", "blood_group",
+        "id", "student_id", "get_full_name", "get_email",
+        "phone", "emergency_contact", "department",
     )
     list_filter      = ("department", "blood_group", "is_verified")
     search_fields    = (
@@ -138,10 +142,10 @@ class StudentProfileAdmin(admin.ModelAdmin):
         "user__email", "phone", "emergency_contact",
     )
     ordering         = ("user__first_name", "user__last_name")
-    readonly_fields  = ()
+    readonly_fields  = ("id",)
     fieldsets = (
-        ("Account", {
-            "fields": ("user", "is_verified", "student_id"),
+        ("Account & ID", {
+            "fields": ("id", "user", "student_id", "is_verified"),
         }),
         ("Personal Information", {
             "fields": ("phone", "emergency_contact", "department", "blood_group"),
@@ -164,12 +168,31 @@ class StudentProfileAdmin(admin.ModelAdmin):
 class DoctorAdmin(admin.ModelAdmin):
     list_display = (
         "id", "name", "email", "phone",
-        "specialized_in", "available_days", "available_time", "is_available",
+        "specialized_in", "is_available",
     )
     list_filter  = ("specialized_in", "is_available")
     search_fields = ("name", "email", "phone")
     ordering     = ("name",)
     list_editable = ("is_available",)
+    readonly_fields = ("id",)  # Make ID readonly and visible
+    fieldsets = (
+        ("Doctor Information", {
+            "fields": ("id", "name", "email", "phone", "specialized_in"),
+        }),
+        ("Photo (Optional)", {
+            "fields": ("photo",),
+            "classes": ("collapse",),
+            "description": "Upload a doctor profile photo (optional)",
+        }),
+        ("Availability", {
+            "fields": ("available_days", "available_time", "is_available"),
+            "description": "Enter days as comma-separated (e.g., 'Monday, Tuesday, Wednesday')",
+        }),
+        ("Working Hours (Optional - for advanced scheduling)", {
+            "fields": ("working_hours_start", "working_hours_end", "lunch_break_start", "lunch_break_end"),
+            "classes": ("collapse",),
+        }),
+    )
 
 
 @admin.register(Appointment)
@@ -177,12 +200,12 @@ class AppointmentAdmin(admin.ModelAdmin):
     list_display = (
         "student_id", "student_name", "phone", "email",
         "medical_department", "doctor", "appointment_date", "appointment_time",
-        "status", "created_at",
+        "status", "was_no_show", "created_at",
     )
-    list_filter  = ("status", "medical_department", "student_department", "appointment_date")
+    list_filter  = ("status", "was_no_show", "medical_department", "student_department", "appointment_date")
     search_fields = ("student_id", "student_name", "email", "phone")
     ordering     = ("-appointment_date", "-appointment_time")
-    readonly_fields = ("created_at",)
+    readonly_fields = ("created_at", "reminder_24h_sent_at", "reminder_2h_sent_at", "actual_completion_date")
     list_editable = ("status",)
     date_hierarchy  = "appointment_date"
     fieldsets = (
@@ -193,7 +216,11 @@ class AppointmentAdmin(admin.ModelAdmin):
             "fields": ("medical_department", "doctor", "appointment_date", "appointment_time"),
         }),
         ("Problem & Status", {
-            "fields": ("problem_description", "status", "created_at"),
+            "fields": ("problem_description", "status", "was_no_show", "actual_completion_date", "created_at"),
+        }),
+        ("Reminders Sent", {
+            "fields": ("reminder_24h_sent", "reminder_24h_sent_at", "reminder_2h_sent", "reminder_2h_sent_at"),
+            "classes": ("collapse",),
         }),
     )
 
@@ -201,16 +228,16 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 @admin.register(Donation)
 class DonationAdmin(admin.ModelAdmin):
-    list_display  = ("student_id", "name", "email", "amount", "is_paid", "razorpay_order_id", "donated_at")
+    list_display  = ("id", "student_id", "name", "email", "amount", "is_paid", "razorpay_order_id", "donated_at")
     list_filter   = ("is_paid", "donated_at")
     search_fields = ("student_id", "name", "email", "razorpay_order_id", "razorpay_payment_id")
     ordering      = ("-donated_at",)
-    readonly_fields = ("donated_at", "razorpay_order_id", "razorpay_payment_id", "razorpay_signature")
+    readonly_fields = ("id", "donated_at", "razorpay_order_id", "razorpay_payment_id", "razorpay_signature")
     list_editable = ("is_paid",)
     date_hierarchy  = "donated_at"
     fieldsets = (
-        ("Donor Information", {
-            "fields": ("student_id", "name", "email"),
+        ("ID & Donor Information", {
+            "fields": ("id", "student_id", "name", "email"),
         }),
         ("Donation Details", {
             "fields": ("amount", "is_paid", "razorpay_order_id", "razorpay_payment_id", "razorpay_signature", "donated_at"),
@@ -221,14 +248,13 @@ class DonationAdmin(admin.ModelAdmin):
 @admin.register(BloodDonation)
 class BloodDonationAdmin(admin.ModelAdmin):
     list_display = (
-        "student_id", "donor_name", "blood_group", "phone", "email",
-        "date_of_birth", "weight", "previous_donation", "health_condition",
-        "status", "created_at",
+        "id", "student_id", "donor_name", "blood_group", "phone", "email",
+        "date_of_birth", "weight", "status", "created_at",
     )
     list_filter  = ("status", "blood_group", "previous_donation", "created_at")
     search_fields = ("student_id", "donor_name", "email", "phone")
     ordering     = ("-created_at",)
-    readonly_fields = ("created_at",)
+    readonly_fields = ("id", "created_at")
     list_editable = ("status",)
     date_hierarchy  = "created_at"
     fieldsets = (
@@ -382,4 +408,63 @@ class TodaysAppointmentAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         # Prevent manual creation - should be created automatically
         return False
+
+
+@admin.register(DoctorLeave)
+class DoctorLeaveAdmin(admin.ModelAdmin):
+    list_display = (
+        "doctor", "leave_date_from", "leave_date_to", "leave_type", "is_active", "created_at",
+    )
+    list_filter = ("is_active", "leave_type", "leave_date_from")
+    search_fields = ("doctor__name", "reason")
+    ordering = ("-leave_date_from",)
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "leave_date_from"
+    fieldsets = (
+        ("Doctor Leave Details", {
+            "fields": ("doctor", "leave_date_from", "leave_date_to", "leave_type", "is_active"),
+        }),
+        ("Leave Information", {
+            "fields": ("reason",),
+        }),
+        ("System", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",),
+        }),
+    )
+
+
+@admin.register(StudentNoShowRecord)
+class StudentNoShowRecordAdmin(admin.ModelAdmin):
+    list_display = (
+        "get_student_id", "get_student_name", "total_no_shows", 
+        "last_no_show_date", "is_restricted", "restriction_until",
+    )
+    list_filter = ("is_restricted", "last_no_show_date")
+    search_fields = ("student__student_id", "student__user__first_name", "student__user__last_name")
+    ordering = ("-total_no_shows",)
+    readonly_fields = ("created_at", "updated_at")
+    fieldsets = (
+        ("Student Information", {
+            "fields": ("student",),
+        }),
+        ("No-Show Statistics", {
+            "fields": ("total_no_shows", "last_no_show_date"),
+        }),
+        ("Booking Restriction", {
+            "fields": ("is_restricted", "restriction_until"),
+        }),
+        ("System", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",),
+        }),
+    )
+
+    @admin.display(description="Student ID", ordering="student__student_id")
+    def get_student_id(self, obj):
+        return obj.student.student_id
+
+    @admin.display(description="Student Name", ordering="student__user__first_name")
+    def get_student_name(self, obj):
+        return obj.student.user.get_full_name() or obj.student.student_id
 
