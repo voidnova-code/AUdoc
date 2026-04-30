@@ -6,6 +6,8 @@ tzdata==2025.3
 argon2-cffi==23.1.0
 razorpay
 schedule==1.2.0
-setuptools 
-Pillow  
+setuptools
+Pillow
 gunicorn
+psycopg2-binary
+dj-database-url
