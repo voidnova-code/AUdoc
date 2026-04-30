@@ -45,12 +45,16 @@ def send_email_async(email_msg):
     """Send email in background thread to prevent blocking on SMTP timeout."""
     def _send():
         try:
+            logger.info(f"🔄 [Async] Sending email in background thread...")
             email_msg.send(fail_silently=False)
+            logger.info(f"✅ [Async] Email sent successfully")
         except Exception as e:
-            logger.error(f"Failed to send email: {str(e)}")
+            logger.error(f"❌ [Async] Failed to send email: {str(e)}")
 
     thread = threading.Thread(target=_send, daemon=True)
     thread.start()
+    logger.info(f"🧵 [Async] Email thread started (daemon)")
+
 
 
 def about(request):
