@@ -209,13 +209,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # ── Email Configuration ──────────────────────────────────────────────────────
-# Use Resend API (simplest email service for Render)
-# Get key: https://resend.com/api-keys
-EMAIL_BACKEND = "app.resend_backend.ResendBackend"
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-# Use Resend's default test domain (for testing)
-# To use your own domain: verify it at https://resend.com/domains
-DEFAULT_FROM_EMAIL = "onboarding@resend.dev"
+# Use SendGrid API
+# Get key: https://app.sendgrid.com/settings/api_keys
+EMAIL_BACKEND = "app.sendgrid_backend.SendGridBackend"
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
+DEFAULT_FROM_EMAIL = "sayankumarr02@gmail.com"
 
 # ── Groq AI (Chatbot — free tier) ───────────────────────────────────────────
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
