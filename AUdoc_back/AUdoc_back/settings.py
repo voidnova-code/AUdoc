@@ -211,7 +211,7 @@ AUTHENTICATION_BACKENDS = [
 # ── Email Configuration ──────────────────────────────────────────────────────
 # Use Resend API (simplest email service for Render)
 # Get key: https://resend.com/api-keys
-EMAIL_BACKEND = "django_resend.backend.ResendBackend"
+EMAIL_BACKEND = "app.resend_backend.ResendBackend"
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 DEFAULT_FROM_EMAIL = "noreply@audoc.onrender.com"
 
