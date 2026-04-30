@@ -61,14 +61,14 @@ else:
     ALLOWED_HOSTS = [
         "localhost",
         "127.0.0.1",
-        "*",
-        # Add your production domain here or via DJANGO_ALLOWED_HOSTS env var
+        "audoc.onrender.com"
     ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "https://churlish-xerically-karren.ngrok-free.dev"
+    "https://churlish-xerically-karren.ngrok-free.dev",
+    "https://audoc.onrender.com"
 ]
 # Add additional trusted origins from environment
 _csrf_origins_env = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
