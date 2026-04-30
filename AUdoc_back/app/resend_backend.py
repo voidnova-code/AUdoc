@@ -2,7 +2,6 @@
 import os
 import logging
 from django.core.mail.backends.base import BaseEmailBackend
-from resend import Emails
 
 
 logger = logging.getLogger(__name__)
@@ -26,6 +25,8 @@ class ResendBackend(BaseEmailBackend):
                 raise ValueError("RESEND_API_KEY is not set")
             return 0
 
+        from resend.emails._emails import Emails as EmailsClass
+
         sent_count = 0
         for message in email_messages:
             try:
@@ -42,7 +43,7 @@ class ResendBackend(BaseEmailBackend):
                             html_content = content
                             break
 
-                # Build email params
+                # Build email params as dict
                 params = {
                     "from": message.from_email,
                     "to": message.to,
@@ -54,12 +55,12 @@ class ResendBackend(BaseEmailBackend):
                 else:
                     params["text"] = text_content
 
-                # Send via Resend
-                response = Emails.send(api_key=self.api_key, **params)
+                # Send via Resend (API key read from RESEND_API_KEY env var)
+                response = EmailsClass.send(params)
                 logger.info(f"✅ Email sent successfully: {response}")
                 sent_count += 1
             except Exception as e:
-                logger.error(f"❌ Failed to send email: {str(e)}")
+                logger.error(f"❌ Failed to send email: {str(e)}", exc_info=True)
                 if not self.fail_silently:
                     raise
 

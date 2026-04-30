@@ -213,7 +213,9 @@ AUTHENTICATION_BACKENDS = [
 # Get key: https://resend.com/api-keys
 EMAIL_BACKEND = "app.resend_backend.ResendBackend"
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-DEFAULT_FROM_EMAIL = "noreply@audoc.onrender.com"
+# Use Resend's default test domain (for testing)
+# To use your own domain: verify it at https://resend.com/domains
+DEFAULT_FROM_EMAIL = "onboarding@resend.dev"
 
 # ── Groq AI (Chatbot — free tier) ───────────────────────────────────────────
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")

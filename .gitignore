@@ -24,6 +24,7 @@ env/
 # Django secret stuff (NEVER commit these!)
 .env
 *.env
+.md
 
 # Django database – local only, not for sharing
 AUdoc_back/db.sqlite3
