@@ -3,6 +3,7 @@ import os
 import time
 import razorpay
 import logging
+import threading
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
@@ -38,6 +39,18 @@ from .security import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def send_email_async(email_msg):
+    """Send email in background thread to prevent blocking on SMTP timeout."""
+    def _send():
+        try:
+            email_msg.send(fail_silently=False)
+        except Exception as e:
+            logger.error(f"Failed to send email: {str(e)}")
+
+    thread = threading.Thread(target=_send, daemon=True)
+    thread.start()
 
 
 def about(request):
@@ -209,13 +222,13 @@ def send_login_otp(request):
 
     try:
         msg = EmailMultiAlternatives(
-            subject="\U0001f510 Your AUdoc Login Verification Code",
+            subject="🔐 Your AUdoc Login Verification Code",
             body=plain_text,
             from_email=None,
             to=[email],
         )
         msg.attach_alternative(html_body, "text/html")
-        msg.send(fail_silently=False)
+        send_email_async(msg)
         at      = email.index("@")
         masked  = email[:2] + ("*" * (at - 2)) + email[at:]
         return JsonResponse({"success": True, "email": masked})
@@ -336,7 +349,7 @@ def send_otp(request):
             to=[email],
         )
         msg.attach_alternative(html_body, "text/html")
-        msg.send(fail_silently=False)
+        send_email_async(msg)
         return JsonResponse({"success": True})
     except Exception as e:
         return JsonResponse({"error": "Could not send email: " + str(e)}, status=500)
@@ -927,7 +940,7 @@ def _send_donor_request_email(request, blood_req, donor, token):
             to=[donor.email],
         )
         msg.attach_alternative(html_body, "text/html")
-        msg.send(fail_silently=True)
+        send_email_async(msg)
     except Exception:
         pass
 
@@ -1315,7 +1328,7 @@ def admin_registration_action(request, pk):
                 </html>""".format(name=reg.first_name, sid=reg.student_id, login_url=login_url)
                 msg = EmailMultiAlternatives(subject, plain, None, [reg.email])
                 msg.attach_alternative(html_body, "text/html")
-                msg.send(fail_silently=True)
+                send_email_async(msg)
             except Exception:
                 pass
 
@@ -1703,7 +1716,7 @@ def api_send_login_otp(request):
             to=[email],
         )
         msg.attach_alternative(html_body, "text/html")
-        msg.send()
+        send_email_async(msg)
     except Exception as e:
         log_security_event("api_email_send_failed", request, {"error": str(e)}, level="error")
         return JsonResponse({"error": "Failed to send email. Please try again later."}, status=500)
@@ -1843,7 +1856,7 @@ def api_send_register_otp(request):
             to=[email],
         )
         msg.attach_alternative(html_body, "text/html")
-        msg.send()
+        send_email_async(msg)
     except Exception as e:
         log_security_event("api_register_email_failed", request, {"error": str(e)}, level="error")
         return JsonResponse({"error": "Failed to send email. Please try again later."}, status=500)
