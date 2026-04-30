@@ -8,3 +8,4 @@ razorpay
 schedule==1.2.0
 setuptools 
 Pillow  
+gunicorn
