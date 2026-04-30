@@ -11,3 +11,4 @@ Pillow
 gunicorn
 psycopg2-binary
 dj-database-url
+resend==0.16.0

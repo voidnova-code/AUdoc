@@ -1,0 +1,212 @@
+"""
+SETUP INSTRUCTIONS FOR NEW FEATURES (SMS REMINDERS, DOCTOR AVAILABILITY, NO-SHOW TRACKING)
+
+This document outlines the steps needed to fully implement the three new features:
+1. SMS + Email Reminders (24h and 2h)
+2. Doctor Availability Calendar
+3. No-Show Tracking & Restrictions
+
+STEP 1: CREATE DATABASE MIGRATIONS
+================================
+
+Run these commands in your project directory:
+
+  python manage.py makemigrations
+  python manage.py migrate
+
+This will create the database tables for:
+- DoctorLeave (doctor leave/availability tracking)
+- StudentNoShowRecord (no-show statistics per student)
+- Update Appointment model with reminder and no-show fields
+- Update Doctor model with working hours fields
+
+
+STEP 2: INSTALL SMS DEPENDENCIES
+================================
+
+Choose ONE of the SMS providers below:
+
+Option A: Twilio (Recommended)
+  pip install twilio
+
+Option B: Nexmo/Vonage
+  pip install vonage
+
+
+STEP 3: CONFIGURE ENVIRONMENT VARIABLES
+=======================================
+
+Add these to your .env file:
+
+# SMS Configuration (choose one provider)
+SMS_PROVIDER=twilio  # or "nexmo"
+
+# If using Twilio:
+TWILIO_ACCOUNT_SID=your_account_sid_here
+TWILIO_AUTH_TOKEN=your_auth_token_here
+TWILIO_PHONE_NUMBER=+1234567890  # Your Twilio phone number
+
+# If using Nexmo:
+NEXMO_API_KEY=your_api_key_here
+NEXMO_API_SECRET=your_api_secret_here
+NEXMO_PHONE_NUMBER=YourNexmoSender  # 11 chars max
+
+# Appointment Reminder Settings (optional)
+APPOINTMENT_REMINDER_24H=True
+APPOINTMENT_REMINDER_2H=True
+NO_SHOW_THRESHOLD=3  # Restrict after 3 no-shows
+NO_SHOW_RESTRICTION_DAYS=30  # Restrict for 30 days
+
+
+STEP 4: SET UP CRON JOBS FOR AUTOMATED REMINDERS
+================================================
+
+Add these cron jobs (or use Windows Task Scheduler on Windows):
+
+# Send 24-hour email reminders at 8 PM daily
+0 20 * * * cd /path/to/AUdoc_back && python manage.py send_appointment_reminders --type 24h
+
+# Send 2-hour SMS reminders every hour
+0 * * * * cd /path/to/AUdoc_back && python manage.py send_appointment_reminders --type 2h
+
+# Or run all reminders at once (less efficient):
+0 */2 * * * cd /path/to/AUdoc_back && python manage.py send_appointment_reminders --type all
+
+
+STEP 5: TEST THE FEATURES
+==========================
+
+1. Test SMS Setup:
+   python manage.py shell
+   >>> from app.sms_service import send_appointment_reminder
+   >>> send_appointment_reminder("+919999999999", "Test User", "Dec 15", "2:00 PM", 24)
+
+2. Test Reminder Command:
+   python manage.py send_appointment_reminders --type 24h
+   python manage.py send_appointment_reminders --type 2h
+
+3. Test Doctor Availability:
+   - Go to admin panel
+   - Add a doctor with working hours and leaves
+   - Verify slots are filtered correctly in appointment form
+
+4. Test No-Show Tracking:
+   - Create a test appointment
+   - Mark it as NO_SHOW via admin
+   - Verify StudentNoShowRecord is created
+   - Try booking again - should be restricted after 3 no-shows
+
+
+STEP 6: ADMIN INTERFACE USAGE
+=============================
+
+Doctor Management:
+  - Django Admin > Doctors
+  - Edit a doctor
+  - Fill in "Working Hours" section (optional - can use defaults)
+  - Set "Available Days" (e.g., "Monday, Tuesday, Wednesday, Thursday, Friday")
+
+Doctor Leaves:
+  - Django Admin > Doctor Leaves
+  - Create a new leave entry
+  - Select doctor, date range, and leave type
+  - Mark as active
+
+No-Show Records:
+  - Django Admin > Student No-Show Records
+  - View student no-show statistics
+  - Manually lift restrictions if needed
+
+Appointment Status:
+  - Django Admin > Appointments
+  - Change status to "NO_SHOW" to mark attendance
+  - This automatically updates StudentNoShowRecord
+
+
+BACKEND FILES ADDED
+===================
+
+1. app/sms_service.py
+   - SMS service classes for Twilio and Nexmo
+   - get_sms_service() factory function
+   - send_appointment_reminder() helper
+
+2. app/management/commands/send_appointment_reminders.py
+   - Sends 24-hour email reminders
+   - Sends 2-hour SMS reminders
+   - Handles reminder tracking in database
+
+3. app/doctor_availability.py
+   - is_doctor_available_on_date()
+   - get_available_time_slots()
+   - get_available_doctors()
+   - get_doctor_next_available_date()
+
+4. app/no_show_helper.py
+   - mark_appointment_as_no_show()
+   - mark_appointment_as_completed()
+   - is_student_restricted_from_booking()
+   - get_student_no_show_statistics()
+
+
+MODEL CHANGES
+=============
+
+Appointment Model (New Fields):
+  - reminder_24h_sent (Boolean)
+  - reminder_2h_sent (Boolean)
+  - reminder_24h_sent_at (DateTime)
+  - reminder_2h_sent_at (DateTime)
+  - was_no_show (Boolean)
+  - actual_completion_date (DateTime)
+  - status updated to include "NO_SHOW"
+
+Doctor Model (New Fields):
+  - working_hours_start (TimeField)
+  - working_hours_end (TimeField)
+  - lunch_break_start (TimeField)
+  - lunch_break_end (TimeField)
+
+New Models:
+  - DoctorLeave
+  - StudentNoShowRecord
+
+
+TROUBLESHOOTING
+===============
+
+1. "SMS not sending":
+   - Check credentials in .env
+   - Verify phone numbers are in correct format (+country_code)
+   - Check SMS provider account balance/limits
+
+2. "Reminders not being sent":
+   - Check cron jobs are running: grep CRON /var/log/syslog
+   - Test manually: python manage.py send_appointment_reminders --type 24h
+   - Check logs: tail -f logs/security.log
+
+3. "Doctor availability not filtering slots":
+   - Verify DoctorLeave records are created correctly
+   - Check available_days format: "Monday, Tuesday, ..."
+   - Ensure working_hours are set
+
+4. "No-show restriction not working":
+   - Verify NO_SHOW_THRESHOLD and NO_SHOW_RESTRICTION_DAYS settings
+   - Check StudentNoShowRecord is created after marking NO_SHOW
+   - Test with: python manage.py shell
+     >>> from app.no_show_helper import is_student_restricted_from_booking
+     >>> is_student_restricted_from_booking("ST001")
+
+
+NEXT STEPS
+==========
+
+1. Run migrations
+2. Install SMS dependencies
+3. Configure environment variables
+4. Set up cron jobs
+5. Test all features via admin panel
+6. Monitor logs for any issues
+7. Consider adding SMS templates/customization
+8. Add frontend UI for viewing doctor availability on appointment booking form
+"""

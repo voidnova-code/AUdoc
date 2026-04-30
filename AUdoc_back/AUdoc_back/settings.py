@@ -209,15 +209,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # ── Email Configuration ──────────────────────────────────────────────────────
-# For Gmail: enable 2-Step Verification and generate an App Password at
-# https://myaccount.google.com/apppasswords  (use "Mail" + "Windows Computer")
-EMAIL_BACKEND       = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST          = "smtp.gmail.com"
-EMAIL_PORT          = 587
-EMAIL_USE_TLS       = True
-EMAIL_HOST_USER     = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-DEFAULT_FROM_EMAIL  = f"AUSdoc Campus Health <{EMAIL_HOST_USER}>"
+# Use Resend API (simplest email service for Render)
+# Get key: https://resend.com/api-keys
+EMAIL_BACKEND = "django_resend.backend.ResendBackend"
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+DEFAULT_FROM_EMAIL = "noreply@audoc.onrender.com"
 
 # ── Groq AI (Chatbot — free tier) ───────────────────────────────────────────
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
