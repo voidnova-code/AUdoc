@@ -213,11 +213,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # ── Email Configuration ──────────────────────────────────────────────────────
-# Use SendGrid API
-# Get key: https://app.sendgrid.com/settings/api_keys
-EMAIL_BACKEND = "app.sendgrid_backend.SendGridBackend"
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
-DEFAULT_FROM_EMAIL = "sayankumarr02@gmail.com"
+# Use Resend Email Service (free tier available)
+# Get key: https://resend.com/api-keys
+EMAIL_BACKEND = "django_resend.backend.ResendBackend"
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "sayankumarr02@gmail.com")
 
 # ── Groq AI (Chatbot — free tier) ───────────────────────────────────────────
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
