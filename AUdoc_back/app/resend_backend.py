@@ -15,24 +15,23 @@ class ResendBackend(BaseEmailBackend):
         self.api_key = os.environ.get("RESEND_API_KEY", "")
 
         if not self.api_key:
-            logger.error("❌ RESEND_API_KEY is not set in environment variables")
+            logger.error("RESEND_API_KEY is not set in environment variables")
 
     def send_messages(self, email_messages):
         """Send one or more EmailMessage objects and return the number sent."""
         if not self.api_key:
-            logger.error("❌ Resend API key not configured - missing RESEND_API_KEY")
+            logger.error("Resend API key not configured - missing RESEND_API_KEY")
             if not self.fail_silently:
                 raise ValueError("RESEND_API_KEY is not set")
             return 0
 
-        from resend import Resend
+        import resend
+        resend.api_key = self.api_key
 
-        client = Resend(api_key=self.api_key)
         sent_count = 0
-
         for message in email_messages:
             try:
-                logger.info(f"📧 Sending email to {message.to} - Subject: {message.subject}")
+                logger.info(f"Sending email to {message.to} - Subject: {message.subject}")
 
                 # Determine if HTML or plain text
                 html_content = None
@@ -58,11 +57,11 @@ class ResendBackend(BaseEmailBackend):
                     email_params["text"] = text_content
 
                 # Send via Resend
-                response = client.emails.send(email_params)
-                logger.info(f"✅ Email sent successfully: {response}")
+                response = resend.Emails.send(email_params)
+                logger.info(f"Email sent successfully: {response}")
                 sent_count += 1
             except Exception as e:
-                logger.error(f"❌ Failed to send email: {str(e)}", exc_info=True)
+                logger.error(f"Failed to send email: {str(e)}", exc_info=True)
                 if not self.fail_silently:
                     raise
 
