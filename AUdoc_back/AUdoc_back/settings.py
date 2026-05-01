@@ -62,7 +62,7 @@ else:
         "localhost",
         "127.0.0.1",
         "audoc.onrender.com",
-        "voiddoc.me"
+        "voiddoc.me",
         "www.voiddoc.me"
     ]
 
@@ -71,8 +71,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "https://churlish-xerically-karren.ngrok-free.dev",
     "https://audoc.onrender.com",
-    'https://voiddoc.me', 
-    'https://www.voiddoc.me'
+    "https://voiddoc.me", 
+    "https://www.voiddoc.me"
 ]
 # Add additional trusted origins from environment
 _csrf_origins_env = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
