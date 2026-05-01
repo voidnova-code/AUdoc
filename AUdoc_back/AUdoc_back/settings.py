@@ -215,7 +215,7 @@ AUTHENTICATION_BACKENDS = [
 # ── Email Configuration ──────────────────────────────────────────────────────
 # Use Resend Email Service (free tier available)
 # Get key: https://resend.com/api-keys
-EMAIL_BACKEND = "django_resend.backend.ResendBackend"
+EMAIL_BACKEND = "app.resend_backend.ResendBackend"
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "sayankumarr02@gmail.com")
 

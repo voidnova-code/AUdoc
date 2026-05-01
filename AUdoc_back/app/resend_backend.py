@@ -25,9 +25,11 @@ class ResendBackend(BaseEmailBackend):
                 raise ValueError("RESEND_API_KEY is not set")
             return 0
 
-        from resend.emails._emails import Emails as EmailsClass
+        from resend import Resend
 
+        client = Resend(api_key=self.api_key)
         sent_count = 0
+
         for message in email_messages:
             try:
                 logger.info(f"📧 Sending email to {message.to} - Subject: {message.subject}")
@@ -43,20 +45,20 @@ class ResendBackend(BaseEmailBackend):
                             html_content = content
                             break
 
-                # Build email params as dict
-                params = {
+                # Build email params
+                email_params = {
                     "from": message.from_email,
                     "to": message.to,
                     "subject": message.subject,
                 }
 
                 if html_content:
-                    params["html"] = html_content
+                    email_params["html"] = html_content
                 else:
-                    params["text"] = text_content
+                    email_params["text"] = text_content
 
-                # Send via Resend (API key read from RESEND_API_KEY env var)
-                response = EmailsClass.send(params)
+                # Send via Resend
+                response = client.emails.send(email_params)
                 logger.info(f"✅ Email sent successfully: {response}")
                 sent_count += 1
             except Exception as e:
