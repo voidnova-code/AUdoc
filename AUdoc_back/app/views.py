@@ -2499,6 +2499,11 @@ def add_doctor(request):
             is_available=is_available,
         )
 
+        # Handle photo upload if provided
+        if 'photo' in request.FILES:
+            doctor.photo = request.FILES['photo']
+            doctor.save(update_fields=['photo'])
+
         staff_id = f"DOCTOR-{doctor.id:03d}"
         if StaffProfile.objects.filter(email=email).exists():
             return JsonResponse({
