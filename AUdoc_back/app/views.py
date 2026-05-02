@@ -2466,6 +2466,8 @@ def api_doctor_availability(request):
             'leaves': list(leaves),
             'message': 'Doctor availability retrieved'
         })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
 @_admin_required
