@@ -400,3 +400,4 @@ SOCIALACCOUNT_PROVIDERS = {
 # Redirect URLs after Google OAuth
 LOGIN_REDIRECT_URL = "/post-login/"
 SOCIALACCOUNT_AUTO_SIGNUP = False  # Require manual approval
+SOCIALACCOUNT_LOGIN_ON_GET = True   # Skip intermediate page, go directly to Google
