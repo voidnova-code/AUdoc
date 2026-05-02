@@ -21,7 +21,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from allauth.socialaccount.signals import pre_social_login
 
 from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm
 from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
@@ -40,30 +39,6 @@ from .security import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def validate_google_student_login(sender, request, sociallogin, **kwargs):
-    """Validate that Google user is an approved student before allowing login."""
-    email = sociallogin.account.extra_data.get("email", "")
-    google_id = sociallogin.account.extra_data.get("sub", "")
-
-    if not email:
-        raise Exception("Google email not provided")
-
-    try:
-        user = User.objects.get(email=email)
-        profile = user.student_profile
-        if not profile.is_verified:
-            raise Exception("Your student account has not been approved yet. Please wait for admin approval.")
-        profile.oauth_id = google_id
-        profile.oauth_provider = "google"
-        profile.save()
-        log_security_event("google_login_success", request, {"email": email}, level="info")
-    except (User.DoesNotExist, StudentProfile.DoesNotExist):
-        raise Exception("Your email is not registered as a student. Please register first and wait for approval.")
-
-
-pre_social_login.connect(validate_google_student_login)
 
 
 def send_email_async(email_msg):

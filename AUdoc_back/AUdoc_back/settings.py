@@ -381,6 +381,9 @@ SITE_ID = 1
 
 AUTHENTICATION_BACKENDS.append("allauth.account.auth_backends.AuthenticationBackend")
 
+# Custom social account adapter for Google OAuth validation
+SOCIALACCOUNT_ADAPTER = "app.socialauth.GoogleStudentSocialAccountAdapter"
+
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": [
