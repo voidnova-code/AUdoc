@@ -2479,15 +2479,23 @@ def add_doctor(request):
         email = sanitize_string(request.POST.get('email', ''), max_length=254)
         phone = sanitize_string(request.POST.get('phone', ''), max_length=20)
         specialized_in = sanitize_string(request.POST.get('specialized_in', ''), max_length=20)
-        available_days = sanitize_string(request.POST.get('available_days', ''), max_length=200)
         available_time = sanitize_string(request.POST.get('available_time', ''), max_length=100)
-        is_available = request.POST.get('is_available', 'true').lower() == 'true'
 
-        if not all([name, email, phone, specialized_in, available_days, available_time]):
+        if not all([name, email, phone, specialized_in, available_time]):
             return JsonResponse({'success': False, 'message': 'All fields are required'}, status=400)
+
+        # Get selected days from checkboxes
+        days = request.POST.getlist('available_days')
+        if not days:
+            return JsonResponse({'success': False, 'message': 'Please select at least one available day'}, status=400)
+
+        available_days = ', '.join(days)
 
         if Doctor.objects.filter(email=email).exists():
             return JsonResponse({'success': False, 'message': 'Doctor with this email already exists'}, status=400)
+
+        # is_available is True if checkbox is present in POST, False otherwise
+        is_available = 'is_available' in request.POST
 
         doctor = Doctor.objects.create(
             name=name,
