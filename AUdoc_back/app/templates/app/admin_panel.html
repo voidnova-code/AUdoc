@@ -1142,8 +1142,11 @@
       <!-- Other tabs would continue here... -->
       <div id="doctors" class="tab-content">
         <div class="card">
-          <div class="card-header">
-            <h5 class="card-title">Doctors Management</h5>
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h5 class="card-title" style="margin: 0;">Doctors Management</h5>
+            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+              <i class="bi bi-plus-circle"></i> Add Doctor
+            </button>
           </div>
           <div class="card-body">
             <div class="table-responsive">
@@ -1201,8 +1204,11 @@
 
       <div id="staff-members" class="tab-content">
         <div class="card">
-          <div class="card-header">
-            <h5 class="card-title">Staff Members</h5>
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h5 class="card-title" style="margin: 0;">Staff Members</h5>
+            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+              <i class="bi bi-plus-circle"></i> Add Staff
+            </button>
           </div>
           <div class="card-body">
             <div class="table-responsive">
@@ -2552,6 +2558,173 @@
       if (e.ctrlKey && e.key === 'd') {
         e.preventDefault();
         testDangerZone();
+      }
+    });
+  </script>
+
+  <!-- Add Doctor Modal -->
+  <div class="modal fade" id="addDoctorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New Doctor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="addDoctorForm">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Doctor Name *</label>
+              <input type="text" class="form-control" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email *</label>
+              <input type="email" class="form-control" name="email" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone *</label>
+              <input type="text" class="form-control" name="phone" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Specialization *</label>
+              <select class="form-control" name="specialized_in" required>
+                <option value="">Select Specialization</option>
+                {% for value, label in dept_choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Available Days *</label>
+              <input type="text" class="form-control" name="available_days" placeholder="e.g. Monday, Tuesday, Wednesday, Thursday, Friday" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Available Time *</label>
+              <input type="text" class="form-control" name="available_time" placeholder="e.g. 9:00 AM – 5:00 PM" required>
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="isAvailable" name="is_available" checked>
+                <label class="form-check-label" for="isAvailable">
+                  Is Available
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-plus-circle"></i> Add Doctor
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Staff Modal -->
+  <div class="modal fade" id="addStaffModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New Staff Member</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="addStaffForm">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Staff ID *</label>
+              <input type="text" class="form-control" name="staff_id" placeholder="e.g. STAFF-001" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Name *</label>
+              <input type="text" class="form-control" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email *</label>
+              <input type="email" class="form-control" name="email" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone *</label>
+              <input type="text" class="form-control" name="phone" required>
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="isDoctor" name="is_doctor">
+                <label class="form-check-label" for="isDoctor">
+                  Is Doctor
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-plus-circle"></i> Add Staff
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Handle Add Doctor Form
+    document.getElementById('addDoctorForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      try {
+        const response = await fetch('{% url "add_doctor" %}', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                          document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('✅ ' + data.message);
+          document.getElementById('addDoctorForm').reset();
+          bootstrap.Modal.getInstance(document.getElementById('addDoctorModal')).hide();
+          location.reload();
+        } else {
+          alert('❌ ' + data.message);
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    });
+
+    // Handle Add Staff Form
+    document.getElementById('addStaffForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      try {
+        const response = await fetch('{% url "add_staff_member" %}', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                          document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('✅ ' + data.message);
+          document.getElementById('addStaffForm').reset();
+          bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
+          location.reload();
+        } else {
+          alert('❌ ' + data.message);
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
       }
     });
   </script>

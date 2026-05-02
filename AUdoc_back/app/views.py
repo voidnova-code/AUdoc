@@ -2466,7 +2466,102 @@ def api_doctor_availability(request):
             'leaves': list(leaves),
             'message': 'Doctor availability retrieved'
         })
-    
+
+
+@_admin_required
+@require_POST
+def add_doctor(request):
+    """API endpoint to create a new doctor and auto-create staff record."""
+    try:
+        name = sanitize_string(request.POST.get('name', ''), max_length=150)
+        email = sanitize_string(request.POST.get('email', ''), max_length=254)
+        phone = sanitize_string(request.POST.get('phone', ''), max_length=20)
+        specialized_in = sanitize_string(request.POST.get('specialized_in', ''), max_length=20)
+        available_days = sanitize_string(request.POST.get('available_days', ''), max_length=200)
+        available_time = sanitize_string(request.POST.get('available_time', ''), max_length=100)
+        is_available = request.POST.get('is_available', 'true').lower() == 'true'
+
+        if not all([name, email, phone, specialized_in, available_days, available_time]):
+            return JsonResponse({'success': False, 'message': 'All fields are required'}, status=400)
+
+        if Doctor.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'message': 'Doctor with this email already exists'}, status=400)
+
+        doctor = Doctor.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            specialized_in=specialized_in,
+            available_days=available_days,
+            available_time=available_time,
+            is_available=is_available,
+        )
+
+        staff_id = f"DOCTOR-{doctor.id:03d}"
+        if StaffProfile.objects.filter(email=email).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'Staff member with this email already exists'
+            }, status=400)
+
+        StaffProfile.objects.create(
+            staff_id=staff_id,
+            name=name,
+            email=email,
+            phone=phone,
+            password=make_password('doctor123'),
+            is_doctor=True,
+        )
+
+        log_security_event("doctor_added", request, {"email": email, "name": name}, level="info")
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Doctor "{name}" and staff profile created successfully',
+            'doctor_id': doctor.id
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@_admin_required
+@require_POST
+def add_staff_member(request):
+    """API endpoint to create a new staff member."""
+    try:
+        staff_id = sanitize_string(request.POST.get('staff_id', ''), max_length=50)
+        name = sanitize_string(request.POST.get('name', ''), max_length=150)
+        email = sanitize_string(request.POST.get('email', ''), max_length=254)
+        phone = sanitize_string(request.POST.get('phone', ''), max_length=20)
+        is_doctor = request.POST.get('is_doctor', 'false').lower() == 'true'
+
+        if not all([staff_id, name, email, phone]):
+            return JsonResponse({'success': False, 'message': 'All fields are required'}, status=400)
+
+        if StaffProfile.objects.filter(staff_id=staff_id).exists():
+            return JsonResponse({'success': False, 'message': 'Staff ID already exists'}, status=400)
+
+        if StaffProfile.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'message': 'Email already exists'}, status=400)
+
+        StaffProfile.objects.create(
+            staff_id=staff_id,
+            name=name,
+            email=email,
+            phone=phone,
+            password=make_password('staff123'),
+            is_doctor=is_doctor,
+        )
+
+        log_security_event("staff_added", request, {"email": email, "staff_id": staff_id}, level="info")
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Staff member "{name}" created successfully',
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
     except Exception as e:
         logger.error(f"Error in api_doctor_availability: {str(e)}")
         return JsonResponse({

@@ -32,9 +32,11 @@ urlpatterns = [
     path("manage/donation/<int:pk>/toggle-paid/", views.admin_donation_toggle_paid, name="admin_donation_toggle_paid"),
     path("manage/doctor/save/", views.admin_doctor_save, name="admin_doctor_save"),
     path("manage/doctor/<int:pk>/delete/", views.admin_doctor_delete, name="admin_doctor_delete"),
+    path("manage/doctor/add/", views.add_doctor, name="add_doctor"),
     path("manage/clear-all-data/", views.admin_clear_all_data, name="admin_clear_all_data"),
     path("manage/staff/save/", views.admin_staff_save, name="admin_staff_save"),
     path("manage/staff/<int:pk>/delete/", views.admin_staff_delete, name="admin_staff_delete"),
+    path("manage/staff/add/", views.add_staff_member, name="add_staff_member"),
 
     # ── AI Chatbot ───────────────────────────────────────────────
     path("chat/", views.chat_api, name="chat_api"),
