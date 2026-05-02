@@ -89,6 +89,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     "app",
 ]
 
@@ -206,9 +211,11 @@ LOGIN_URL           = "/accounts/login/"
 
 # ── Authentication backends ───────────────────────────────────────────────────
 # StudentIDBackend first: lets students log in with Student ID (no password).
-# ModelBackend second: lets staff/admin log in with username + password.
+# GoogleStudentBackend: lets approved students log in with Google OAuth.
+# ModelBackend last: lets staff/admin log in with username + password.
 AUTHENTICATION_BACKENDS = [
     "app.backends.StudentIDBackend",
+    "app.backends.GoogleStudentBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
@@ -365,3 +372,30 @@ APPOINTMENT_REMINDER_2H = True   # Send 2-hour SMS reminder (optional - requires
 # No-Show Settings
 NO_SHOW_THRESHOLD = 3  # Mark as restricted after N no-shows
 NO_SHOW_RESTRICTION_DAYS = 30  # Restrict for N days
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  django-allauth OAuth Configuration
+# ══════════════════════════════════════════════════════════════════════════════
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS.append("allauth.account.auth_backends.AuthenticationBackend")
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+        "APP": {
+            "client_id": os.environ.get("GOOGLE_OAUTH_CLIENT_ID", ""),
+            "secret": os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", ""),
+        },
+    }
+}
+
+# Redirect URLs after Google OAuth
+LOGIN_REDIRECT_URL = "/post-login/"
+SOCIALACCOUNT_AUTO_SIGNUP = False  # Require manual approval

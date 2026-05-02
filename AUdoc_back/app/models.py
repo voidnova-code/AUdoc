@@ -116,6 +116,21 @@ class StudentProfile(models.Model):
         choices=BLOOD_GROUP_CHOICES,
         verbose_name="Blood Group",
     )
+    oauth_provider    = models.CharField(
+        max_length=20,
+        choices=[("password", "Password"), ("google", "Google")],
+        default="password",
+        verbose_name="OAuth Provider",
+        help_text="Login method used",
+    )
+    oauth_id          = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="OAuth ID",
+        help_text="Google unique ID (sub claim) for OAuth logins",
+    )
 
     class Meta:
         ordering = ["user__username"]

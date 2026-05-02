@@ -11,4 +11,5 @@ Pillow
 gunicorn
 psycopg2-binary
 dj-database-url
-resend
+sendgrid
+django-allauth==65.16.1
