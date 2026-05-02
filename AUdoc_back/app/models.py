@@ -1,4 +1,6 @@
 import uuid
+import secrets
+import string
 
 from django.db import models
 from django.conf import settings
@@ -163,6 +165,10 @@ class StaffProfile(models.Model):
 
 
 class Doctor(models.Model):
+    doctor_id       = models.CharField(
+        max_length=20, unique=True, editable=False, verbose_name="Doctor ID",
+        help_text='Auto-generated ID (e.g., DOC4yt253)',
+    )
     name            = models.CharField(max_length=150, verbose_name="Doctor Name")
     email           = models.EmailField(unique=True)
     phone           = models.CharField(max_length=20, verbose_name="Phone No.")
@@ -198,6 +204,15 @@ class Doctor(models.Model):
         if self.available_days:
             return [d.strip() for d in self.available_days.split(',') if d.strip()]
         return []
+
+    def save(self, *args, **kwargs):
+        if not self.doctor_id:
+            while True:
+                random_suffix = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
+                self.doctor_id = f"DOC{random_suffix}"
+                if not Doctor.objects.filter(doctor_id=self.doctor_id).exists():
+                    break
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["name"]

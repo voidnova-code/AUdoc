@@ -167,17 +167,17 @@ class StudentProfileAdmin(admin.ModelAdmin):
 @admin.register(Doctor)
 class DoctorAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "name", "email", "phone",
+        "doctor_id", "name", "email", "phone",
         "specialized_in", "is_available",
     )
     list_filter  = ("specialized_in", "is_available")
-    search_fields = ("name", "email", "phone")
+    search_fields = ("doctor_id", "name", "email", "phone")
     ordering     = ("name",)
     list_editable = ("is_available",)
-    readonly_fields = ("id",)  # Make ID readonly and visible
+    readonly_fields = ("doctor_id",)
     fieldsets = (
         ("Doctor Information", {
-            "fields": ("id", "name", "email", "phone", "specialized_in"),
+            "fields": ("doctor_id", "name", "email", "phone", "specialized_in"),
         }),
         ("Photo (Optional)", {
             "fields": ("photo",),
