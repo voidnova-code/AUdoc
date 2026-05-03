@@ -164,9 +164,17 @@ class StaffProfile(models.Model):
         return f"{self.name} ({self.staff_id}) — {role}"
 
 
+def generate_default_doctor_id():
+    import secrets
+    import string
+    random_suffix = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
+    return f"DOC{random_suffix}"
+
+
 class Doctor(models.Model):
     doctor_id       = models.CharField(
         max_length=20, unique=True, editable=False, verbose_name="Doctor ID",
+        default=generate_default_doctor_id,
         help_text='Auto-generated ID (e.g., DOC4yt253)',
     )
     name            = models.CharField(max_length=150, verbose_name="Doctor Name")
