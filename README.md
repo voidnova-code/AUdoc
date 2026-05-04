@@ -14,7 +14,7 @@
 # 🏥 AUdoc — Campus Healthcare Portal
 
 ### *Because "I Googled my symptoms" is NOT a treatment plan.*
-### *(And because Sayan got tired of students calling the health center like it's 1995)*
+### *(And because voidnova got tired of students calling the health center like it's 1995)*
 
 **The official campus health management system for Assam University Silchar — built by someone who actually cares**
 
@@ -39,7 +39,7 @@
 
 Welcome to the 21st century. 🚀
 
-AUdoc is a full-stack **campus healthcare management system** built for **Assam University Silchar** by someone (Sayan) who realized that making students call the health center on a landline was objectively criminal.
+AUdoc is a full-stack **campus healthcare management system** built for **Assam University Silchar** by someone (voidnova) who realized that making students call the health center on a landline was objectively criminal.
 
 **Features that'll make you wonder why we didn't have this sooner:**
 - 📅 Book doctor appointments without a phone call
@@ -49,7 +49,7 @@ AUdoc is a full-stack **campus healthcare management system** built for **Assam 
 - 📊 Check your appointment history without asking a human
 
 > *"A student needed to book a doctor appointment. The existing system was... a phone call. In 2025.*  
-> *No further questions. Sayan took this personally."* — Internal memo, circa 2024
+> *No further questions. voidnova took this personally."* — Internal memo, circa 2024
 
 The system has two layers working together:
 - 🐍 **Django Web Backend** — Fully functional, actually works, no "brb coffee break" 
@@ -61,7 +61,7 @@ The system has two layers working together:
 
 ### For Students 🎓 *(AKA: People Who Don't Want to Call Anyone)*
 
-| Feature | What it does | Status | Sayan's Note |
+| Feature | What it does | Status | voidnova's Note |
 |---------|-------------|--------|--------------|
 | 🔐 **Passwordless Login** | Student ID + OTP to email. No forgotten passwords. Ever. | ✅ Live | Finally, no more "I forgot my password" emails |
 | 📋 **Self Registration** | Sign up, verify email via OTP, get approved by admin | ✅ Live | Rejected students cry less this way |
@@ -70,16 +70,16 @@ The system has two layers working together:
 | 🎫 **FCFS Queue System** | First Come, First Serve queue assignment | ✅ Live | Fairness is underrated, apparently |
 | 🩸 **Blood Bank** | Donate blood, request blood, or target a specific donor | ✅ Live | Be a hero (we'll even bribe you... I mean thank you) |
 | 💬 **AI Chatbot** | Get instant answers about campus health services | ✅ Live | It won't tell you that you're dying (looking at you, WebMD) |
-| 💸 **Donations** | Support the health center financially | ✅ Live | Even ₹10 counts! (Sayan accepts UPI too) |
+| 💸 **Donations** | Support the health center financially | ✅ Live | Even ₹10 counts! (voidnova accepts UPI too) |
 | 📊 **Appointment History** | Track all past visits | ✅ Live | Proof that you actually went to the doctor |
 | ⭐ **Help Desk Feedback** | Rate your experience | ✅ Live | Roast us gently, please |
-| 📱 **Mobile App** | Cross-platform app (basically everywhere) | 🚧 In Progress | *Sayan is sleeping more these days* |
+| 📱 **Mobile App** | Cross-platform app (basically everywhere) | 🚧 In Progress | *voidnova is sleeping more these days* |
 
 ### The 8 Medical Specialties 🩺
 
 `General` · `Dental` · `Eye Care` · `Mental Health` · `Orthopedics` · `Dermatology` · `Gynecology` · `Physiotherapy`
 
-*(Yes, Mental Health is on the list. We know Sayan needs it after all-nighters.)*
+*(Yes, Mental Health is on the list. We know voidnova needs it after all-nighters.)*
 
 ### For Admins ⚙️ *(AKA: The Brave Souls Managing Everything)*
 
@@ -88,7 +88,7 @@ The system has two layers working together:
 | 🎨 **Modern Admin Panel** | Glass-morphism UI with dark/light mode | Your eyes won't melt at 3 AM |
 | 📊 **Interactive Dashboard** | Real-time stats, charts, and indicators | Look important in meetings |
 | 📈 **Live Charts** | Appointment & blood group trends | Impress non-technical people |
-| ⚡ **Quick Actions** | Priority buttons with keyboard shortcuts | Sayan doesn't believe in mice |
+| ⚡ **Quick Actions** | Priority buttons with keyboard shortcuts | voidnova doesn't believe in mice |
 | 🎫 **FCFS Queue View** | Today's appointments in order | No chaos (that comes later) |
 | ✅ **Registration Workflow** | Approve/reject with one click | Your approval email is instant, so they can't say "I didn't see it" |
 | 👨‍⚕️ **Doctor Management** | Manage docs, specialties, availability | Control the chaos |
@@ -104,7 +104,7 @@ The system has two layers working together:
 ## 🔐 How the Auth Flow Works
 
 ```
-  Student                     System                     Admin (Sayan)
+  Student                     System                     Admin (voidnova)
     │                            │                          │
     │──── Enter Student ID ─────>│                          │
     │<─── OTP sent to email ─────│                          │ ← This is why your inbox is flooded
@@ -114,8 +114,8 @@ The system has two layers working together:
     │   (First time? Register!)  │                          │
     │──── Fill reg form ────────>│                          │
     │     + email OTP verify     │                          │
-    │                            │──── Pending queue ──────>│ ← Sayan reads this
-    │                            │<─── Approve/Reject ───────│ ← Sayan approves this
+    │                            │──── Pending queue ──────>│ ← voidnova reads this
+    │                            │<─── Approve/Reject ───────│ ← voidnova approves this
     │<─── Welcome email! ────────│  (auto-provisions account)│
 ```
 
@@ -127,17 +127,17 @@ The system has two layers working together:
 
 ## 🔒 Security *(Because We're Not Monsters)*
 
-AUdoc takes security seriously. The application has been hardened against common web vulnerabilities because Sayan doesn't want to wake up at 3 AM to a data breach notification.
+AUdoc takes security seriously. The application has been hardened against common web vulnerabilities because voidnova doesn't want to wake up at 3 AM to a data breach notification.
 
 ### Security Features
 
-| Feature | Protection Against | Status | Sayan's Confidence Level |
+| Feature | Protection Against | Status | voidnova's Confidence Level |
 |---------|-------------------|--------|--------------------------|
 | 🛡️ **Rate Limiting** | Brute force attacks on login/OTP | ✅ Active | 9/10 (unless someone is REALLY persistent) |
 | 🔐 **Secure OTP** | Cryptographically secure random generation | ✅ Active | 10/10 (Python's `secrets` module ftw) |
 | ⏱️ **Timing Attack Protection** | Constant-time OTP comparison | ✅ Active | 10/10 (zero nanoseconds given to attackers) |
 | 🚫 **SQL Injection** | Parameterized queries via Django ORM | ✅ Protected | 10/10 (Django does the heavy lifting) |
-| 🔄 **CSRF Protection** | All state-changing operations require tokens | ✅ Active | 10/10 (automatic, because Sayan is lazy) |
+| 🔄 **CSRF Protection** | All state-changing operations require tokens | ✅ Active | 10/10 (automatic, because voidnova is lazy) |
 | 🍪 **Secure Cookies** | HttpOnly, SameSite, Secure flags | ✅ Active | 10/10 (cookies are actually secure) |
 | 🔒 **Security Headers** | X-Frame-Options, CSP, HSTS, XSS filter | ✅ Active | 9/10 (some configs are still evolving) |
 | 🔑 **Argon2 Hashing** | Memory-hard password hashing algorithm | ✅ Active | 10/10 (even quantum computers will struggle) |
@@ -217,7 +217,7 @@ AUdoc/
 
 ---
 
-## 🛠️ Tech Stack *(Or: How Sayan Stayed Awake)*
+## 🛠️ Tech Stack *(Or: How voidnova Stayed Awake)*
 
 ```
 ┌──────────────────┬──────────────────────────────────────────────┐
@@ -229,7 +229,7 @@ AUdoc/
 │  Email           │  Resend  ·  TLS  ·  Free tier + custom domain│
 │  Charts          │  Chart.js (make stats look pretty)           │
 │  UI Theme        │  Material Design 3  ·  Glass-morphism vibes  │
-│  Admin Panel     │  Custom UI (Sayan's pride and joy)           │
+│  Admin Panel     │  Custom UI (voidnova's pride and joy)           │
 │  AI Chatbot      │  Groq API (free, surprisingly good)          │
 │  Payments        │  Razorpay (accepts money, ironically)        │
 └──────────────────┴──────────────────────────────────────────────┘
@@ -350,7 +350,7 @@ python manage.py runserver
 
 Visit 👉 `http://127.0.0.1:8000` — if you see a page, congratulations. You didn't break anything.
 
-Admin panel 👉 `http://127.0.0.1:8000/manage/` (Modern UI designed by Sayan who probably needs sleep)
+Admin panel 👉 `http://127.0.0.1:8000/manage/` (Modern UI designed by voidnova who probably needs sleep)
 
 Django admin 👉 `http://127.0.0.1:8000/admin/` (The boring one, but it works)
 
@@ -566,15 +566,15 @@ python manage.py cleanup_todays_appointments
 - **AI Chatbot:** Uses **Groq API** (free tier, `llama-3.1-8b-instant` model — it's not GPT-4, but it's free)
 - **Custom Error Pages:** 404/500 errors display creative incident report-style pages (actually makes errors fun)
 - **DEBUG = True** is development-only. Set it to `False` in production, or wake up to a security audit.
-- The `myenv/` folder is gitignored. Always create your own virtual environment. (Sayan is tired of debugging envs)
-- The Flutter app is a **UI prototype** — backend integration with DRF is in progress (Sayan is working on it, give him a break)
+- The `myenv/` folder is gitignored. Always create your own virtual environment. (voidnova is tired of debugging envs)
+- The Flutter app is a **UI prototype** — backend integration with DRF is in progress (voidnova is working on it, give him a break)
 - The modern admin panel is at `/manage/`, not `/admin/`. (We know it's confusing)
 - Doctor profile photos are stored in `media/doctors/`. (Yes, they're real photos, not Lorem Ipsum)
-- **Never commit `.env`** — it contains secrets and is gitignored. If you commit secrets, Sayan will find you. 👀
+- **Never commit `.env`** — it contains secrets and is gitignored. If you commit secrets, voidnova will find you. 👀
 
 ---
 
-## 🤝 Contributing *(Help Sayan Stay Awake)*
+## 🤝 Contributing *(Help voidnova Stay Awake)*
 
 Contributions are welcome! Found a bug? Have a cool idea? Here's the drill:
 
@@ -583,19 +583,19 @@ Contributions are welcome! Found a bug? Have a cool idea? Here's the drill:
 2. Create your branch:   git checkout -b feat/amazing-feature
 3. Commit your changes:  git commit -m "Add some amazing feature"
 4. Push to your branch:  git push origin feat/amazing-feature
-5. Open a Pull Request   (Sayan will review it eventually)
+5. Open a Pull Request   (voidnova will review it eventually)
 ```
 
 > **Pro Tips:**
 > - Write a meaningful PR description. "fixed stuff" will be gently mocked. 😄
 > - Don't commit your `.env` file. We've all been there. We've learned. Move on. 🙈
-> - If you fix a bug, buy Sayan a coffee (UPI accepted)
+> - If you fix a bug, buy voidnova a coffee (UPI accepted)
 
 ---
 
 ## 📄 License
 
-MIT License — do whatever you want with it. Just don't blame Sayan if something breaks. 😄
+MIT License — do whatever you want with it. Just don't blame voidnova if something breaks. 😄
 
 This project was built with love (and coffee) for students at **Assam University Silchar (AUS)**.
 
@@ -610,10 +610,10 @@ Made with ☕ caffeine, 💻 late nights, 😅 existential crisis, and the genui
 
 ⭐ **Star this repo if AUdoc saved you from a WebMD spiral!** ⭐
 
-💪 **Shoutout to Sayan** — May your compile times be fast and your bugs be obvious.
+💪 **Shoutout to voidnova** — May your compile times be fast and your bugs be obvious.
 
 **Made with ❤️ at Assam University Silchar**
 
-*(If you found this project useful, tell Sayan. He probably needs validation.)*
+*(If you found this project useful, tell voidnova. He probably needs validation.)*
 
 </div>
