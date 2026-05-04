@@ -245,9 +245,18 @@ def set_staff_password(request, token):
                 'error': 'Passwords do not match'
             })
 
-        # Update password
+        # Update password in StaffProfile
         reset_token.staff.password = make_password(new_password)
         reset_token.staff.save()
+
+        # Also update User account password if it exists
+        try:
+            user = User.objects.get(username=reset_token.staff.staff_id)
+            user.set_password(new_password)
+            user.save()
+        except User.DoesNotExist:
+            pass
+
         reset_token.mark_as_used()
 
         return render(request, 'app/set_password.html', {
@@ -2728,6 +2737,17 @@ def add_doctor(request):
             is_doctor=True,
             staff_id=doctor.doctor_id,
         )
+
+        # Create User account for doctor so they can login
+        User.objects.get_or_create(
+            username=doctor.doctor_id,
+            defaults={
+                'email': email,
+                'first_name': name.split()[0] if name else '',
+                'last_name': ' '.join(name.split()[1:]) if len(name.split()) > 1 else '',
+            }
+        )
+
         send_staff_welcome_email(staff, request, password='doctor123')
 
         log_security_event("doctor_added", request, {"email": email, "name": name}, level="info")
@@ -2764,6 +2784,17 @@ def add_staff_member(request):
             password=make_password('staff123'),
             is_doctor=is_doctor,
         )
+
+        # Create User account for staff so they can login
+        User.objects.get_or_create(
+            username=staff.staff_id,
+            defaults={
+                'email': email,
+                'first_name': name.split()[0] if name else '',
+                'last_name': ' '.join(name.split()[1:]) if len(name.split()) > 1 else '',
+            }
+        )
+
         send_staff_welcome_email(staff, request, password='staff123')
 
         log_security_event("staff_added", request, {"email": email, "staff_id": staff.staff_id}, level="info")
