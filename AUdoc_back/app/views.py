@@ -2726,6 +2726,7 @@ def add_doctor(request):
             phone=phone,
             password=make_password('doctor123'),
             is_doctor=True,
+            staff_id=doctor.doctor_id,
         )
         send_staff_welcome_email(staff, request, password='doctor123')
 
