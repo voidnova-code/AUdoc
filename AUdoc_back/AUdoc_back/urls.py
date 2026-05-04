@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.static import serve
 from django.conf import settings
+from app import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -28,3 +29,7 @@ urlpatterns = [
     # Serve uploaded media files (works regardless of DEBUG setting)
     re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
 ]
+
+# Custom error handlers
+handler404 = 'app.views.page_404'
+handler500 = 'app.views.page_500'

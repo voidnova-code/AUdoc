@@ -2936,10 +2936,17 @@ def add_staff_member(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
-    except Exception as e:
-        logger.error(f"Error in api_doctor_availability: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': f'Error: {str(e)}'
-        }, status=500)
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  ERROR HANDLERS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def page_404(request, exception=None):
+    """Custom 404 page handler - displays incident report style error page."""
+    return render(request, '404.html', {}, status=404)
+
+
+def page_500(request):
+    """Custom 500 page handler - displays incident report style error page."""
+    return render(request, '404.html', {'error_type': 'Server Error'}, status=500)
 
