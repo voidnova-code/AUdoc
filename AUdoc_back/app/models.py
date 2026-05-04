@@ -713,5 +713,41 @@ class StudentNoShowRecord(models.Model):
         return f"{self.student.student_id} - {self.total_no_shows} no-shows"
 
 
+class StaffPasswordResetToken(models.Model):
+    """Token for staff/doctor password reset with 24-hour expiration"""
+    staff = models.ForeignKey(
+        'StaffProfile',
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens',
+        verbose_name="Staff Member",
+    )
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(verbose_name="Expires At")
+    is_used = models.BooleanField(default=False, verbose_name="Already Used")
+    used_at = models.DateTimeField(null=True, blank=True, verbose_name="Used At")
+
+    class Meta:
+        verbose_name = "Staff Password Reset Token"
+        verbose_name_plural = "Staff Password Reset Tokens"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        status = "Used" if self.is_used else "Active"
+        return f"{self.staff.name} - {status}"
+
+    def is_valid(self):
+        """Check if token is still valid (not expired and not used)"""
+        from django.utils import timezone
+        return not self.is_used and timezone.now() <= self.expires_at
+
+    def mark_as_used(self):
+        """Mark token as used"""
+        from django.utils import timezone
+        self.is_used = True
+        self.used_at = timezone.now()
+        self.save()
+
+
 # Update Appointment model to add no-show tracking fields
 # Add these fields to the Appointment model STATUS_CHOICES

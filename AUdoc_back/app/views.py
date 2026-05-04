@@ -59,8 +59,22 @@ def send_email_async(email_msg):
 def send_staff_welcome_email(staff, request, password='staff123'):
     """Send a fun welcome email to new staff/doctor with password setup instructions."""
     try:
+        from app.models import StaffPasswordResetToken
+        from django.utils import timezone
+        from datetime import timedelta
+
         role = "Doctor" if staff.is_doctor else "Staff Member"
         subject = f"🎉 Welcome to AUdoc, {staff.name}! Your {role} Profile is Ready"
+
+        # Create password reset token valid for 24 hours
+        expires_at = timezone.now() + timedelta(hours=24)
+        reset_token = StaffPasswordResetToken.objects.create(
+            staff=staff,
+            expires_at=expires_at
+        )
+
+        reset_link = request.build_absolute_uri(f'/set-password/{reset_token.token}/')
+        login_url = request.build_absolute_uri('/accounts/login/')
 
         plain = (
             f"Welcome to AUdoc, {staff.name}!\n\n"
@@ -69,16 +83,17 @@ def send_staff_welcome_email(staff, request, password='staff123'):
             f"📧 Email: {staff.email}\n"
             f"🔐 Staff ID: {staff.staff_id}\n"
             f"🔑 Temporary Password: {password}\n\n"
-            f"NEXT STEPS:\n"
+            f"QUICK START - SET YOUR OWN PASSWORD:\n"
+            f"1. Click this link to set your password: {reset_link}\n"
+            f"2. Link valid for 24 hours only\n"
+            f"3. Choose a strong password\n\n"
+            f"OR LOG IN FIRST:\n"
             f"1. Log in at /accounts/login/ with your email and temporary password\n"
-            f"2. Change your password immediately (security first! 🛡️)\n"
-            f"3. Set up your profile\n\n"
+            f"2. Change your password in settings\n\n"
             f"Questions? Reach us at health@au.edu — we're friendly, we promise! 😊\n\n"
             f"Welcome aboard!\n"
             f"The AUdoc Team 🏥"
         )
-
-        login_url = request.build_absolute_uri('/accounts/login/')
         html_body = f"""
         <!DOCTYPE html>
         <html>
@@ -105,6 +120,9 @@ def send_staff_welcome_email(staff, request, password='staff123'):
         .footer p {{ margin: 5px 0; color: #51607a; font-size: 14px; }}
         a {{ color: #1a5c96; text-decoration: none; font-weight: 600; }}
         .warning {{ background-color: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 12px; border-radius: 4px; margin: 15px 0; font-size: 14px; }}
+        .reset-btn {{ display: inline-block; background-color: #28a745; color: #ffffff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 20px 0; }}
+        .reset-btn:hover {{ background-color: #218838; }}
+        .timer {{ background-color: #f0f0f0; border: 1px solid #ddd; color: #666; padding: 10px; border-radius: 4px; margin: 15px 0; font-size: 13px; }}
         </style>
         </head>
         <body>
@@ -136,6 +154,11 @@ def send_staff_welcome_email(staff, request, password='staff123'):
 
                 <div class="warning">
                     ⚠️ <strong>IMPORTANT:</strong> This is a temporary password. Change it immediately after your first login for security!
+                </div>
+
+                <div style="text-align: center;">
+                    <a href="{reset_link}" class="reset-btn">🔐 SET YOUR PASSWORD NOW</a>
+                    <div class="timer">⏱️ This link expires in 24 hours</div>
                 </div>
 
                 <div class="login-box">
@@ -176,6 +199,67 @@ def send_staff_welcome_email(staff, request, password='staff123'):
     except Exception as e:
         logger.error(f"❌ Failed to send welcome email to {staff.email}: {str(e)}")
 
+
+def set_staff_password(request, token):
+    """Handle password reset/change for staff and doctors via email token"""
+    from app.models import StaffPasswordResetToken
+    from django.utils import timezone
+
+    try:
+        reset_token = StaffPasswordResetToken.objects.get(token=token)
+    except StaffPasswordResetToken.DoesNotExist:
+        return render(request, 'app/set_password.html', {
+            'valid': False,
+            'error': 'Invalid or expired token'
+        })
+
+    # Check if token is valid
+    if not reset_token.is_valid():
+        return render(request, 'app/set_password.html', {
+            'valid': False,
+            'error': 'This link has expired or already been used. Please contact admin to request a new one.'
+        })
+
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+
+        if not new_password:
+            return render(request, 'app/set_password.html', {
+                'valid': True,
+                'staff_name': reset_token.staff.name,
+                'error': 'Password cannot be empty'
+            })
+
+        if len(new_password) < 6:
+            return render(request, 'app/set_password.html', {
+                'valid': True,
+                'staff_name': reset_token.staff.name,
+                'error': 'Password must be at least 6 characters long'
+            })
+
+        if new_password != confirm_password:
+            return render(request, 'app/set_password.html', {
+                'valid': True,
+                'staff_name': reset_token.staff.name,
+                'error': 'Passwords do not match'
+            })
+
+        # Update password
+        reset_token.staff.password = make_password(new_password)
+        reset_token.staff.save()
+        reset_token.mark_as_used()
+
+        return render(request, 'app/set_password.html', {
+            'valid': True,
+            'success': True,
+            'staff_name': reset_token.staff.name
+        })
+
+    return render(request, 'app/set_password.html', {
+        'valid': True,
+        'staff_name': reset_token.staff.name
+    })
 
 
 

@@ -15,6 +15,7 @@ urlpatterns = [
     #path("blood-donors/", views.blood_donors_list, name="blood_donors_list"),
     path("blood/respond/<uuid:token>/<str:action>/", views.donor_respond, name="donor_respond"),
     path("appointment/confirm/<uuid:token>/<str:action>/", views.appointment_confirm, name="appointment_confirm"),
+    path("set-password/<uuid:token>/", views.set_staff_password, name="set_staff_password"),
     path("about/", views.about, name="about"),
 
     # ── post-login redirect ──────────────────────────────────────
