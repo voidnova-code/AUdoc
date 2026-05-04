@@ -3,6 +3,10 @@ import os
 import logging
 from django.core.mail.backends.base import BaseEmailBackend
 
+try:
+    import resend
+except ImportError:
+    resend = None
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +29,12 @@ class ResendBackend(BaseEmailBackend):
                 raise ValueError("RESEND_API_KEY is not set")
             return 0
 
-        import resend
+        if not resend:
+            logger.error("Resend module not installed")
+            if not self.fail_silently:
+                raise ImportError("resend module is not installed")
+            return 0
+
         resend.api_key = self.api_key
 
         sent_count = 0
