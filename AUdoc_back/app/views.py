@@ -2509,7 +2509,7 @@ def add_doctor(request):
             doctor.photo = request.FILES['photo']
             doctor.save(update_fields=['photo'])
 
-        staff_id = f"DOCTOR-{doctor.id:03d}"
+        staff_id = doctor.doctor_id
         if StaffProfile.objects.filter(email=email).exists():
             return JsonResponse({
                 'success': False,
