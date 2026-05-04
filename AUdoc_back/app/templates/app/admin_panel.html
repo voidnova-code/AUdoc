@@ -290,8 +290,24 @@
       overflow: hidden;
     }
     .stat-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 30px rgba(0,0,0,.12);
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 12px 30px rgba(74,124,89,0.2);
+      border-left-color: #2e5c3a;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(74,124,89,0.1), transparent);
+      transition: left 0.5s ease;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .stat-card:hover::after {
+      left: 100%;
     }
     .stat-card::before {
       content: '';
@@ -301,15 +317,20 @@
       background: linear-gradient(45deg, rgba(74,124,89,0.1), rgba(74,124,89,0.05));
       border-radius: 50%;
       transform: translate(30px, -30px);
+      z-index: 0;
     }
     .stat-number {
       font-size: 2.5rem; font-weight: 700;
       color: var(--primary); margin: 0;
       animation: countUp 2s ease-out;
+      position: relative;
+      z-index: 3;
     }
     .stat-label {
       color: #666; font-size: .9rem;
       margin-top: 8px; font-weight: 500;
+      position: relative;
+      z-index: 3;
     }
     .stat-icon {
       position: absolute;
@@ -317,10 +338,11 @@
       font-size: 2rem;
       color: rgba(74,124,89,0.2);
       transition: all 0.3s ease;
+      z-index: 1;
     }
     .stat-card:hover .stat-icon {
       color: rgba(74,124,89,0.4);
-      transform: scale(1.1);
+      transform: scale(1.15) rotate(10deg);
     }
     .stat-growth {
       font-size: 0.8rem;
@@ -328,6 +350,8 @@
       padding: 2px 8px;
       border-radius: 12px;
       font-weight: 600;
+      position: relative;
+      z-index: 3;
     }
     .growth-positive { background: #d1edda; color: #155724; }
     .growth-negative { background: #f8d7da; color: #721c24; }
@@ -398,6 +422,71 @@
       animation: slideIn 2s ease-out;
     }
 
+    /* ── Navigation Cards (Quick Access) ──────────────────────────── */
+    .nav-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+      border: 1px solid #f0f0f0;
+      position: relative;
+      overflow: hidden;
+    }
+    .nav-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+      transition: left 0.6s ease;
+    }
+    .nav-card:hover::before {
+      left: 100%;
+    }
+    .nav-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 12px 24px rgba(0,0,0,.12);
+      border-color: #e0e0e0;
+    }
+    .nav-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    .nav-card:hover .nav-icon {
+      transform: scale(1.1) rotate(-5deg);
+      box-shadow: 0 6px 18px rgba(0,0,0,.2);
+    }
+    .nav-content {
+      flex: 1;
+      position: relative;
+      z-index: 2;
+    }
+    .nav-title {
+      font-weight: 600;
+      color: #333;
+      font-size: 0.95rem;
+    }
+    .nav-count {
+      font-size: 0.8rem;
+      color: #999;
+      margin-top: 2px;
+    }
     .metric-row {
       display: flex;
       justify-content: space-between;
@@ -565,52 +654,149 @@
         <!-- Enhanced Stats Cards -->
         <div class="row stats-row">
           <div class="col-md-3 mb-3">
-            <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-card clickable" onclick="showTab('registrations')" style="cursor: pointer;" data-aos="fade-up" data-aos-delay="100">
               <div class="stat-icon">
                 <i class="bi bi-person-plus-fill"></i>
               </div>
-              <div class="stat-number" data-target="{{ stat_pending_reg }}">0</div>
+              <div class="stat-number">{{ stat_pending_reg }}</div>
               <div class="stat-label">Pending Registrations</div>
               <div class="stat-growth growth-positive">
-                <i class="bi bi-arrow-up me-1"></i>+12%
+                <i class="bi bi-arrow-right me-1"></i>View All
               </div>
             </div>
           </div>
           <div class="col-md-3 mb-3">
-            <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="stat-card clickable" onclick="showTab('appointments')" style="cursor: pointer;" data-aos="fade-up" data-aos-delay="200">
               <div class="stat-icon">
                 <i class="bi bi-calendar-check-fill"></i>
               </div>
-              <div class="stat-number" data-target="{{ stat_pending_appts }}">0</div>
+              <div class="stat-number">{{ stat_pending_appts }}</div>
               <div class="stat-label">Pending Appointments</div>
               <div class="stat-growth growth-negative">
-                <i class="bi bi-arrow-down me-1"></i>-3%
+                <i class="bi bi-arrow-right me-1"></i>View All
               </div>
             </div>
           </div>
           <div class="col-md-3 mb-3">
-            <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="stat-card clickable" onclick="showTab('doctors')" style="cursor: pointer;" data-aos="fade-up" data-aos-delay="300">
               <div class="stat-icon">
                 <i class="bi bi-person-badge-fill"></i>
               </div>
-              <div class="stat-number" data-target="{{ stat_active_doctors }}">0</div>
+              <div class="stat-number">{{ stat_active_doctors }}</div>
               <div class="stat-label">Active Doctors</div>
               <div class="stat-growth growth-positive">
-                <i class="bi bi-arrow-up me-1"></i>+5%
+                <i class="bi bi-arrow-right me-1"></i>View All
               </div>
             </div>
           </div>
           <div class="col-md-3 mb-3">
-            <div class="stat-card" data-aos="fade-up" data-aos-delay="400">
+            <div class="stat-card clickable" onclick="showTab('todays-appointments')" style="cursor: pointer;" data-aos="fade-up" data-aos-delay="400">
               <div class="stat-icon">
                 <i class="bi bi-clock-fill"></i>
               </div>
-              <div class="stat-number" data-target="{{ stat_todays_pending }}">0</div>
+              <div class="stat-number">{{ stat_todays_pending }}</div>
               <div class="stat-label">Today's Pending</div>
               <div class="stat-growth growth-neutral">
-                <i class="bi bi-dash me-1"></i>0%
+                <i class="bi bi-arrow-right me-1"></i>View All
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Quick Navigation Cards -->
+        <div class="quick-nav-section mb-4">
+          <h6 style="color: var(--primary); font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Quick Access</h6>
+          <div class="row g-3">
+            <div class="col-md-3 col-sm-6">
+              <div class="nav-card" onclick="showTab('registrations')" data-aos="zoom-in" data-aos-delay="100">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #FF6B6B, #FF8E8E);">
+                  <i class="bi bi-person-check"></i>
+                </div>
+                <div class="nav-content">
+                  <div class="nav-title">Registrations</div>
+                  <div class="nav-count">{{ stat_pending_reg }} pending</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="nav-card" onclick="showTab('appointments')" data-aos="zoom-in" data-aos-delay="150">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #4ECDC4, #6EE7DE);">
+                  <i class="bi bi-calendar-event"></i>
+                </div>
+                <div class="nav-content">
+                  <div class="nav-title">Appointments</div>
+                  <div class="nav-count">{{ stat_pending_appts }} pending</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="nav-card" onclick="showTab('blood-donations')" data-aos="zoom-in" data-aos-delay="200">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #FF6B9D, #FF8FAB);">
+                  <i class="bi bi-heart-pulse"></i>
+                </div>
+                <div class="nav-content">
+                  <div class="nav-title">Blood Bank</div>
+                  <div class="nav-count">{{ stat_pending_blooddon }} donations</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="nav-card" onclick="showTab('blood-requests')" data-aos="zoom-in" data-aos-delay="250">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #FFA07A, #FFB68D);">
+                  <i class="bi bi-droplet"></i>
+                </div>
+                <div class="nav-content">
+                  <div class="nav-title">Blood Requests</div>
+                  <div class="nav-count">{{ stat_pending_bloodreq }} requests</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="nav-card" onclick="showTab('doctors')" data-aos="zoom-in" data-aos-delay="300">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #95E1D3, #B8F3E8);">
+                  <i class="bi bi-person-badge"></i>
+                </div>
+                <div class="nav-content">
+                  <div class="nav-title">Doctors</div>
+                  <div class="nav-count">{{ stat_active_doctors }} active</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="nav-card" onclick="showTab('staff-members')" data-aos="zoom-in" data-aos-delay="350">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #C7CEEA, #E0E5FF);">
+                  <i class="bi bi-people"></i>
+                </div>
+                <div class="nav-content">
+                  <div class="nav-title">Staff Members</div>
+                  <div class="nav-count">{{ stat_staff }} staff</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="nav-card" onclick="showTab('todays-appointments')" data-aos="zoom-in" data-aos-delay="400">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #FFD89B, #FFEB99);">
+                  <i class="bi bi-calendar-day"></i>
+                </div>
+                <div class="nav-content">
+                  <div class="nav-title">Today's Queue</div>
+                  <div class="nav-count">{{ stat_todays_confirmed }} confirmed</div>
+                </div>
+              </div>
+            </div>
+            {% if user.is_superuser %}
+            <div class="col-md-3 col-sm-6">
+              <div class="nav-card" onclick="showTab('feedback')" data-aos="zoom-in" data-aos-delay="450">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #F8B195, #F8D7A1);">
+                  <i class="bi bi-chat-dots"></i>
+                </div>
+                <div class="nav-content">
+                  <div class="nav-title">Feedback</div>
+                  <div class="nav-count">{{ stat_feedback }} reviews</div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
           </div>
         </div>
 
@@ -1786,23 +1972,33 @@
       new Chart(ctx, {
         type: 'line',
         data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          labels: {{ day_labels|safe }},
           datasets: [{
             label: 'Appointments',
-            data: [12, 19, 8, 15, 22, 14, 9],
+            data: {{ weekly_appointments|safe }},
             borderColor: '#4a7c59',
             backgroundColor: 'rgba(74, 124, 89, 0.1)',
             borderWidth: 3,
             fill: true,
-            tension: 0.4
+            tension: 0.4,
+            pointBackgroundColor: '#4a7c59',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
           }, {
             label: 'Registrations',
-            data: [5, 12, 6, 9, 15, 8, 4],
+            data: {{ weekly_registrations|safe }},
             borderColor: '#5a8a6a',
             backgroundColor: 'rgba(90, 138, 106, 0.1)',
             borderWidth: 3,
             fill: true,
-            tension: 0.4
+            tension: 0.4,
+            pointBackgroundColor: '#5a8a6a',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
           }]
         },
         options: {
@@ -1813,21 +2009,32 @@
               position: 'top',
               labels: {
                 usePointStyle: true,
-                padding: 20
+                padding: 20,
+                font: { size: 13, weight: 'bold' }
               }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: { size: 14, weight: 'bold' },
+              bodyFont: { size: 12 },
+              borderColor: '#4a7c59',
+              borderWidth: 2,
+              displayColors: true
             }
           },
           scales: {
             y: {
               beginAtZero: true,
               grid: {
-                color: 'rgba(0,0,0,0.1)'
-              }
+                color: 'rgba(0,0,0,0.05)',
+                drawBorder: false
+              },
+              ticks: { font: { size: 11 } }
             },
             x: {
-              grid: {
-                display: false
-              }
+              grid: { display: false },
+              ticks: { font: { size: 11 } }
             }
           },
           elements: {
@@ -1848,9 +2055,9 @@
       new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['General', 'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics'],
+          labels: {{ dept_labels|safe }},
           datasets: [{
-            data: [35, 25, 15, 15, 10],
+            data: {{ dept_data|safe }},
             backgroundColor: [
               '#4a7c59',
               '#5a8a6a',
@@ -1858,7 +2065,8 @@
               '#7cac8b',
               '#8dbd9c'
             ],
-            borderWidth: 0
+            borderWidth: 0,
+            hoverOffset: 8
           }]
         },
         options: {
@@ -1870,8 +2078,19 @@
               labels: {
                 usePointStyle: true,
                 padding: 15,
-                font: {
-                  size: 12
+                font: { size: 12, weight: '600' }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: { size: 13, weight: 'bold' },
+              bodyFont: { size: 12 },
+              borderColor: '#4a7c59',
+              borderWidth: 2,
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': ' + context.parsed + ' appointments';
                 }
               }
             }

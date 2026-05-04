@@ -1304,6 +1304,32 @@ def admin_dashboard(request):
     all_appointments = Appointment.objects.select_related('doctor').order_by('-created_at')
     doctors = Doctor.objects.all().order_by('name')
 
+    # ── Generate real chart data for weekly activity ──
+    today = date.today()
+    dates = [today - timedelta(days=i) for i in range(6, -1, -1)]
+    weekly_appointments = []
+    weekly_registrations = []
+    day_labels = []
+
+    for day in dates:
+        appt_count = Appointment.objects.filter(appointment_date=day).count()
+        reg_count = StudentRegistration.objects.filter(registered_at__date=day).count()
+        weekly_appointments.append(appt_count)
+        weekly_registrations.append(reg_count)
+        day_labels.append(day.strftime('%a'))
+
+    # ── Generate department distribution data ──
+    dept_distribution = {}
+    for dept, _ in MEDICAL_DEPT_CHOICES:
+        count = Appointment.objects.filter(student_department=dept).count()
+        if count > 0:
+            dept_distribution[dept] = count
+
+    # Sort by count and get top departments
+    sorted_depts = sorted(dept_distribution.items(), key=lambda x: x[1], reverse=True)
+    dept_labels = [d[0] for d in sorted_depts[:5]] if sorted_depts else ['General']
+    dept_data = [d[1] for d in sorted_depts[:5]] if sorted_depts else [0]
+
     context = {
         # ── Main dashboard data for new template ──────────
         'todays_appointments': todays_appointments,
@@ -1322,6 +1348,13 @@ def admin_dashboard(request):
         'stat_staff':             StaffProfile.objects.count(),
         'stat_todays_pending':    TodaysAppointment.objects.filter(status='PENDING').count(),
         'stat_todays_confirmed':  TodaysAppointment.objects.filter(status='CONFIRMED').count(),
+
+        # ── Chart data (real) ────────────────────────────
+        'weekly_appointments': weekly_appointments,
+        'weekly_registrations': weekly_registrations,
+        'day_labels': day_labels,
+        'dept_labels': dept_labels,
+        'dept_data': dept_data,
 
         # ── Legacy table data (preserved for compatibility) ──
         'registrations':  StudentRegistration.objects.order_by('-registered_at'),
