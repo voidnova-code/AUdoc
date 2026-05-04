@@ -851,32 +851,40 @@
               </div>
 
               <div class="metric-row">
-                <span class="metric-label">Database Performance</span>
-                <span class="metric-value">Fast</span>
+                <span class="metric-label">Database Status</span>
+                <span class="metric-value" id="db-status">Connecting...</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" style="--progress-width: 92%; width: 92%;"></div>
+                <div class="progress-fill" id="db-progress" style="--progress-width: 0%; width: 0%;"></div>
               </div>
 
               <div class="metric-row">
-                <span class="metric-label">Server Load</span>
-                <span class="metric-value">Optimal</span>
+                <span class="metric-label">CPU Usage</span>
+                <span class="metric-value" id="cpu-usage">--</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" style="--progress-width: 68%; width: 68%;"></div>
+                <div class="progress-fill" id="cpu-progress" style="--progress-width: 0%; width: 0%;"></div>
+              </div>
+
+              <div class="metric-row">
+                <span class="metric-label">Memory Usage</span>
+                <span class="metric-value" id="memory-usage">--</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="memory-progress" style="--progress-width: 0%; width: 0%;"></div>
               </div>
 
               <div class="metric-row">
                 <span class="metric-label">Storage Usage</span>
-                <span class="metric-value">{{ stat_feedback }}% Used</span>
+                <span class="metric-value" id="disk-usage">--</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" style="--progress-width: {{ stat_feedback }}%; width: {{ stat_feedback }}%;"></div>
+                <div class="progress-fill" id="disk-progress" style="--progress-width: 0%; width: 0%;"></div>
               </div>
 
               <div class="metric-row">
                 <span class="metric-label">Active Sessions</span>
-                <span class="metric-value">{{ stat_staff }} Users</span>
+                <span class="metric-value" id="active-sessions">--</span>
               </div>
             </div>
           </div>
@@ -2100,6 +2108,44 @@
       });
     }
 
+    // Fetch system health metrics
+    function updateSystemHealth() {
+      fetch('{% url "system_health" %}')
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'healthy') {
+            // Update Database Status
+            document.getElementById('db-status').textContent = data.database.status;
+            document.getElementById('db-progress').style.width = data.database.status === 'Connected' ? '100%' : '0%';
+
+            // Update CPU Usage
+            const cpuPercent = data.cpu.percent;
+            document.getElementById('cpu-usage').textContent = cpuPercent.toFixed(1) + '% - ' + data.cpu.status;
+            document.getElementById('cpu-progress').style.width = cpuPercent + '%';
+            document.getElementById('cpu-progress').style.background = cpuPercent > 80 ? 'linear-gradient(90deg, #e74c3c, #c0392b)' : cpuPercent > 60 ? 'linear-gradient(90deg, #f39c12, #e67e22)' : 'linear-gradient(90deg, var(--primary), #5a8a6a)';
+
+            // Update Memory Usage
+            const memPercent = data.memory.percent;
+            document.getElementById('memory-usage').textContent = memPercent.toFixed(1) + '% - ' + data.memory.status;
+            document.getElementById('memory-progress').style.width = memPercent + '%';
+            document.getElementById('memory-progress').style.background = memPercent > 80 ? 'linear-gradient(90deg, #e74c3c, #c0392b)' : memPercent > 60 ? 'linear-gradient(90deg, #f39c12, #e67e22)' : 'linear-gradient(90deg, var(--primary), #5a8a6a)';
+
+            // Update Disk Usage
+            const diskPercent = data.disk.percent;
+            document.getElementById('disk-usage').textContent = diskPercent.toFixed(1) + '% - ' + data.disk.status;
+            document.getElementById('disk-progress').style.width = diskPercent + '%';
+            document.getElementById('disk-progress').style.background = diskPercent > 80 ? 'linear-gradient(90deg, #e74c3c, #c0392b)' : diskPercent > 60 ? 'linear-gradient(90deg, #f39c12, #e67e22)' : 'linear-gradient(90deg, var(--primary), #5a8a6a)';
+
+            // Update Active Sessions
+            document.getElementById('active-sessions').textContent = data.sessions.active + ' Sessions';
+          }
+        })
+        .catch(error => {
+          console.log('System health fetch error:', error);
+          document.getElementById('db-status').textContent = 'Unavailable';
+        });
+    }
+
     // Real-time updates (every 30 seconds)
     function startRealTimeUpdates() {
       setInterval(() => {
@@ -2211,6 +2257,10 @@
 
       // Initialize counters
       setTimeout(initializeCounters, 1500);
+
+      // Fetch system health data immediately and every 10 seconds
+      updateSystemHealth();
+      setInterval(updateSystemHealth, 10000);
 
       // Start real-time updates
       // startRealTimeUpdates();

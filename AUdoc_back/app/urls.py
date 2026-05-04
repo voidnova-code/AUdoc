@@ -24,6 +24,7 @@ urlpatterns = [
     # ── custom admin panel ───────────────────────────────────────
     path("manage/", views.admin_dashboard, name="admin_dashboard"),
     path("manage/stats/", views.admin_dashboard_stats, name="admin_dashboard_stats"),
+    path("manage/system-health/", views.system_health, name="system_health"),
     path("manage/chart-data/", views.admin_chart_data, name="admin_chart_data"),
     path("manage/registration/<int:pk>/action/", views.admin_registration_action, name="admin_registration_action"),
     path("manage/appointment/<int:pk>/status/", views.admin_appointment_status, name="admin_appointment_status"),
