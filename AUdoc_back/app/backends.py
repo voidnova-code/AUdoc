@@ -44,8 +44,13 @@ class StaffIDBackend(BaseBackend):
                         'email': staff.email,
                         'first_name': staff.name.split()[0] if staff.name else '',
                         'last_name': ' '.join(staff.name.split()[1:]) if len(staff.name.split()) > 1 else '',
+                        'is_staff': True,
                     }
                 )
+                # Ensure is_staff is always True for staff/doctors
+                if not user.is_staff:
+                    user.is_staff = True
+                    user.save()
                 return user
         except StaffProfile.DoesNotExist:
             return None
