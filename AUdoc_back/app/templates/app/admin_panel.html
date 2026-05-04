@@ -507,6 +507,26 @@
       from { width: 0; }
       to { width: var(--progress-width, 100%); }
     }
+    @keyframes toastSlideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    @keyframes toastSlideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
     .fade-in-up {
       animation: fadeInUp 0.6s ease-out;
     }
@@ -897,32 +917,86 @@
                 </div>
                 <div>
                   <h5 class="card-title mb-1">Quick Actions</h5>
-                  <small class="text-muted">Fast access to common tasks</small>
+                  <small class="text-muted">Smart shortcuts & priorities</small>
                 </div>
               </div>
 
-              <div class="d-grid gap-3">
-                <button class="btn btn-primary d-flex align-items-center" onclick="showTab('registrations')" style="background: linear-gradient(45deg, var(--primary), #5a8a6a);">
-                  <i class="bi bi-person-plus me-2"></i>
-                  <div class="text-start">
-                    <div>Manage Registrations</div>
-                    <small style="opacity: 0.8;">{{ stat_pending_reg }} pending approval</small>
+              <!-- Priority Alert Section -->
+              {% if stat_pending_reg > 0 or stat_pending_appts > 0 %}
+              <div style="background: linear-gradient(135deg, #fff8e1 0%, #fffaf0 100%); border-left: 4px solid #f9a825; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-exclamation-circle" style="color: #d39e00; font-size: 1.2rem; flex-shrink: 0;"></i>
+                <div style="font-size: 0.85rem; color: #664d03;">
+                  <strong>{% if stat_pending_reg > 0 %}{{ stat_pending_reg }} registration{{ stat_pending_reg|pluralize }}{% endif %}{% if stat_pending_appts > 0 %}{% if stat_pending_reg > 0 %}, {% endif %}{{ stat_pending_appts }} appointment{{ stat_pending_appts|pluralize }}{% endif %} awaiting action</strong>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Primary Actions -->
+              <div class="d-grid gap-2 mb-3">
+                <button class="btn d-flex align-items-center justify-content-between" onclick="showTab('registrations')" style="background: linear-gradient(135deg, #4a7c59 0%, #5a8a6a 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(74,124,89,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                  <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                    <i class="bi bi-person-check" style="font-size: 1.1rem;"></i>
+                    <div style="text-align: left;">
+                      <div style="font-weight: 600; font-size: 0.95rem;">Registrations</div>
+                      <small style="opacity: 0.85;">{{ stat_pending_reg }} pending</small>
+                    </div>
                   </div>
+                  <span class="badge" style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Action</span>
                 </button>
-                <button class="btn btn-success d-flex align-items-center" onclick="showTab('todays-appointments')" style="background: linear-gradient(45deg, #28a745, #20c997);">
-                  <i class="bi bi-calendar-check me-2"></i>
-                  <div class="text-start">
-                    <div>Today's Schedule</div>
-                    <small style="opacity: 0.8;">{{ stat_todays_confirmed }} confirmed</small>
+
+                <button class="btn d-flex align-items-center justify-content-between" onclick="showTab('todays-appointments')" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(40,167,69,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                  <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                    <i class="bi bi-calendar-check" style="font-size: 1.1rem;"></i>
+                    <div style="text-align: left;">
+                      <div style="font-weight: 600; font-size: 0.95rem;">Today's Queue</div>
+                      <small style="opacity: 0.85;">{{ stat_todays_confirmed }} confirmed</small>
+                    </div>
                   </div>
+                  <span class="badge" style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Live</span>
                 </button>
-                <button class="btn btn-info d-flex align-items-center" onclick="showTab('blood-donations')" style="background: linear-gradient(45deg, #17a2b8, #20c997);">
-                  <i class="bi bi-heart-pulse me-2"></i>
-                  <div class="text-start">
-                    <div>Blood Bank</div>
-                    <small style="opacity: 0.8;">Manage donations & requests</small>
+
+                <button class="btn d-flex align-items-center justify-content-between" onclick="showTab('blood-donations')" style="background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(220,53,69,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                  <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                    <i class="bi bi-heart-pulse" style="font-size: 1.1rem;"></i>
+                    <div style="text-align: left;">
+                      <div style="font-weight: 600; font-size: 0.95rem;">Blood Bank</div>
+                      <small style="opacity: 0.85;">{{ stat_pending_blooddon }} donors pending</small>
+                    </div>
                   </div>
+                  <span class="badge" style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Review</span>
                 </button>
+              </div>
+
+              <!-- Secondary Quick Access -->
+              <hr style="margin: 12px 0; opacity: 0.3;">
+              <div style="font-size: 0.8rem; color: #999; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Secondary Shortcuts</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button class="btn btn-sm" onclick="showTab('blood-requests')" style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
+                  <i class="bi bi-droplet me-1"></i>
+                  <div style="font-weight: 500;">Requests</div>
+                  <small style="color: #999;">{{ stat_pending_bloodreq }}</small>
+                </button>
+                <button class="btn btn-sm" onclick="showTab('doctors')" style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
+                  <i class="bi bi-person-badge me-1"></i>
+                  <div style="font-weight: 500;">Doctors</div>
+                  <small style="color: #999;">{{ stat_active_doctors }} active</small>
+                </button>
+                <button class="btn btn-sm" onclick="showTab('appointments')" style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
+                  <i class="bi bi-calendar3 me-1"></i>
+                  <div style="font-weight: 500;">All Appts</div>
+                  <small style="color: #999;">{{ stat_pending_appts }}</small>
+                </button>
+                <button class="btn btn-sm" onclick="showTab('staff-members')" style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
+                  <i class="bi bi-people me-1"></i>
+                  <div style="font-weight: 500;">Staff</div>
+                  <small style="color: #999;">{{ stat_staff }} members</small>
+                </button>
+              </div>
+
+              <!-- Keyboard Shortcuts Hint -->
+              <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 10px; margin-top: 12px; font-size: 0.75rem; color: #666;">
+                <i class="bi bi-keyboard" style="color: var(--primary);"></i>
+                <strong> Pro Tip:</strong> Use keyboard shortcuts: <code style="background: white; padding: 2px 4px; border-radius: 3px; font-size: 0.7rem;">Alt+R</code> for registrations
               </div>
             </div>
           </div>
@@ -2298,6 +2372,46 @@
           this.style.transform = 'translateX(0)';
         });
       });
+
+      // Keyboard shortcuts for quick navigation
+      document.addEventListener('keydown', function(e) {
+        // Alt+R for Registrations
+        if (e.altKey && e.key === 'r') {
+          e.preventDefault();
+          showTab('registrations');
+          showToast('📝 Registrations (Alt+R)');
+        }
+        // Alt+A for Today's Appointments
+        else if (e.altKey && e.key === 'a') {
+          e.preventDefault();
+          showTab('todays-appointments');
+          showToast('📅 Today\'s Queue (Alt+A)');
+        }
+        // Alt+B for Blood Bank
+        else if (e.altKey && e.key === 'b') {
+          e.preventDefault();
+          showTab('blood-donations');
+          showToast('🩸 Blood Bank (Alt+B)');
+        }
+        // Alt+D for Doctors
+        else if (e.altKey && e.key === 'd') {
+          e.preventDefault();
+          showTab('doctors');
+          showToast('👨‍⚕️ Doctors (Alt+D)');
+        }
+        // Alt+S for Staff
+        else if (e.altKey && e.key === 's') {
+          e.preventDefault();
+          showTab('staff-members');
+          showToast('👥 Staff (Alt+S)');
+        }
+        // Alt+H for Home/Dashboard
+        else if (e.altKey && e.key === 'h') {
+          e.preventDefault();
+          showTab('dashboard');
+          showToast('🏠 Dashboard (Alt+H)');
+        }
+      });
     });
 
     // Tab switching functionality (enhanced version)
@@ -2312,6 +2426,31 @@
     // Sidebar toggle for mobile
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('show');
+    }
+
+    // Toast notification helper
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #4a7c59 0%, #2e5c3a 100%);
+        color: white;
+        padding: 12px 18px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 9999;
+        font-size: 0.9rem;
+        font-weight: 500;
+        animation: toastSlideIn 0.3s ease-out;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'toastSlideOut 0.3s ease-out forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 2000);
     }
 
     // View details function (enhanced with modal-like effect)
