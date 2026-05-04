@@ -1549,10 +1549,10 @@
           {% csrf_token %}
           <div class="modal-body" style="background: #f8f9fa; max-height: 70vh; overflow-y: auto;">
             <input type="hidden" id="staffPk" name="pk" value="">
-            
+
             <div class="mb-3">
               <label class="form-label"><strong>Staff ID</strong></label>
-              <input type="text" id="staffId" name="staff_id" class="form-control" placeholder="Enter staff ID" required readonly>
+              <input type="text" id="staffId" class="form-control" placeholder="Auto-generated" readonly disabled style="background-color: #e9ecef;">
             </div>
 
             <div class="mb-3">
@@ -2722,10 +2722,6 @@
         <form id="addStaffForm">
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label">Staff ID *</label>
-              <input type="text" class="form-control" name="staff_id" placeholder="e.g. STAFF-001" required>
-            </div>
-            <div class="mb-3">
               <label class="form-label">Name *</label>
               <input type="text" class="form-control" name="name" required>
             </div>
@@ -2744,6 +2740,9 @@
                   Is Doctor
                 </label>
               </div>
+            </div>
+            <div class="alert alert-info mb-0">
+              <small><i class="bi bi-info-circle"></i> Staff ID will be auto-generated (e.g., STAdwt4t4)</small>
             </div>
           </div>
           <div class="modal-footer">
