@@ -2745,6 +2745,7 @@ def add_doctor(request):
                 'email': email,
                 'first_name': name.split()[0] if name else '',
                 'last_name': ' '.join(name.split()[1:]) if len(name.split()) > 1 else '',
+                'is_staff': True,
             }
         )
 
@@ -2792,6 +2793,7 @@ def add_staff_member(request):
                 'email': email,
                 'first_name': name.split()[0] if name else '',
                 'last_name': ' '.join(name.split()[1:]) if len(name.split()) > 1 else '',
+                'is_staff': True,
             }
         )
 

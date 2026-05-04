@@ -504,6 +504,7 @@
       </a>
     </nav>
 
+    {% if user.is_superuser %}
     <div class="sidebar-section">System</div>
     <nav>
       <a href="#" data-tab="donations" class="tab-link">
@@ -523,6 +524,7 @@
         <i class="bi bi-exclamation-triangle-fill"></i> Data Management
       </a>
     </nav>
+    {% endif %}
   </div>
 
   <!-- Main Content -->
@@ -1264,6 +1266,7 @@
         </div>
       </div>
 
+      {% if user.is_superuser %}
       <div id="donations" class="tab-content">
         <div class="card">
           <div class="card-header">
@@ -1514,6 +1517,7 @@
           </div>
         </div>
       </div>
+      {% endif %}
     </div>
   </div>
 
