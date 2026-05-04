@@ -1456,6 +1456,10 @@ def system_health(request):
             'status': 'error',
             'message': str(e)
         }, status=500)
+
+
+@_admin_required
+def admin_dashboard_stats(request):
     """AJAX endpoint for real-time dashboard statistics"""
     # Calculate statistics
     today = date.today()
