@@ -449,7 +449,7 @@ class BloodRequest(models.Model):
         default="PENDING",
         verbose_name="Status",
     )
-    created_at        = models.DateTimeField(auto_now_add=True, verbose_name="Requested At")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Requested At")
 
     class Meta:
         ordering = ["-created_at"]
