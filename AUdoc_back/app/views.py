@@ -1459,20 +1459,18 @@ def admin_doctor_delete(request, pk):
 @require_POST
 def admin_staff_save(request):
     pk          = request.POST.get('pk') or None
-    staff_id    = request.POST.get('staff_id', '').strip()
     name        = request.POST.get('name', '').strip()
     email       = request.POST.get('email', '').strip()
     phone       = request.POST.get('phone', '').strip()
     password    = request.POST.get('password', '').strip()
     is_doctor   = request.POST.get('is_doctor') == 'on'
 
-    if not staff_id or not name:
-        messages.error(request, "Staff ID and Name are required.")
+    if not name:
+        messages.error(request, "Name is required.")
         return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
 
     if pk:
         staff = get_object_or_404(StaffProfile, pk=pk)
-        staff.staff_id  = staff_id
         staff.name      = name
         staff.email     = email
         staff.phone     = phone
@@ -1486,7 +1484,7 @@ def admin_staff_save(request):
             messages.error(request, "Password is required when adding a new staff member.")
             return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
         StaffProfile.objects.create(
-            staff_id=staff_id, name=name, email=email,
+            name=name, email=email,
             phone=phone, password=make_password(password), is_doctor=is_doctor,
         )
         messages.success(request, f"Staff member '{name}' added.")
@@ -2509,7 +2507,6 @@ def add_doctor(request):
             doctor.photo = request.FILES['photo']
             doctor.save(update_fields=['photo'])
 
-        staff_id = doctor.doctor_id
         if StaffProfile.objects.filter(email=email).exists():
             return JsonResponse({
                 'success': False,
@@ -2517,7 +2514,6 @@ def add_doctor(request):
             }, status=400)
 
         StaffProfile.objects.create(
-            staff_id=staff_id,
             name=name,
             email=email,
             phone=phone,
@@ -2541,23 +2537,18 @@ def add_doctor(request):
 def add_staff_member(request):
     """API endpoint to create a new staff member."""
     try:
-        staff_id = sanitize_string(request.POST.get('staff_id', ''), max_length=50)
         name = sanitize_string(request.POST.get('name', ''), max_length=150)
         email = sanitize_string(request.POST.get('email', ''), max_length=254)
         phone = sanitize_string(request.POST.get('phone', ''), max_length=20)
         is_doctor = request.POST.get('is_doctor', 'false').lower() == 'true'
 
-        if not all([staff_id, name, email, phone]):
+        if not all([name, email, phone]):
             return JsonResponse({'success': False, 'message': 'All fields are required'}, status=400)
-
-        if StaffProfile.objects.filter(staff_id=staff_id).exists():
-            return JsonResponse({'success': False, 'message': 'Staff ID already exists'}, status=400)
 
         if StaffProfile.objects.filter(email=email).exists():
             return JsonResponse({'success': False, 'message': 'Email already exists'}, status=400)
 
         StaffProfile.objects.create(
-            staff_id=staff_id,
             name=name,
             email=email,
             phone=phone,

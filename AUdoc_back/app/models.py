@@ -92,6 +92,16 @@ BLOOD_GROUP_CHOICES = [
 ]
 
 
+def generate_default_doctor_id():
+    random_suffix = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
+    return f"DOC{random_suffix}"
+
+
+def generate_default_staff_id():
+    random_suffix = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
+    return f"STA{random_suffix}"
+
+
 class StudentProfile(models.Model):
     user              = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -145,14 +155,24 @@ class StudentProfile(models.Model):
 
 class StaffProfile(models.Model):
     staff_id  = models.CharField(
-        max_length=50, unique=True, verbose_name="Staff ID",
-        help_text='e.g. "STAFF-001"',
+        max_length=50, unique=True, editable=False, verbose_name="Staff ID",
+        default=generate_default_staff_id,
+        help_text='Auto-generated ID (e.g., STAdwt4t4)',
     )
     name      = models.CharField(max_length=150, verbose_name="Name")
     email     = models.EmailField(unique=True, verbose_name="Email")
     phone     = models.CharField(max_length=20, verbose_name="Phone No.")
     password  = models.CharField(max_length=128, verbose_name="Password")
     is_doctor = models.BooleanField(default=False, verbose_name="Is Doctor")
+
+    def save(self, *args, **kwargs):
+        if not self.staff_id:
+            while True:
+                random_suffix = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
+                self.staff_id = f"STA{random_suffix}"
+                if not StaffProfile.objects.filter(staff_id=self.staff_id).exists():
+                    break
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["name"]
@@ -162,13 +182,6 @@ class StaffProfile(models.Model):
     def __str__(self):
         role = "Doctor" if self.is_doctor else "Staff"
         return f"{self.name} ({self.staff_id}) — {role}"
-
-
-def generate_default_doctor_id():
-    import secrets
-    import string
-    random_suffix = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
-    return f"DOC{random_suffix}"
 
 
 class Doctor(models.Model):
