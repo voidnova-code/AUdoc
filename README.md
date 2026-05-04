@@ -78,6 +78,7 @@ The system has two layers working together:
 | 🎨 **Modern Admin Panel** | Glass-morphism UI with dark/light mode toggle |
 | 📊 **Interactive Dashboard** | Real-time stats, charts, and trend indicators |
 | 📈 **Live Charts** | Appointment trends & blood group distribution (Chart.js) |
+| ⚡ **Quick Actions** | Priority-based action buttons with live stats & keyboard shortcuts |
 | 🎫 **FCFS Queue View** | Today's appointments with queue positions |
 | ✅ **Registration Workflow** | Review → Approve/Reject → auto-create user account + send welcome email |
 | 👨‍⚕️ **Doctor Management** | Manage doctors, specialties, availability, and time slots |
@@ -400,13 +401,60 @@ The admin panel has been completely redesigned with a modern glass-morphism UI!
 | 📈 **Real-time Stats** | Auto-refresh every 30 seconds |
 | 🎫 **FCFS Queue View** | Today's appointments in queue order |
 | 🔍 **Advanced Search** | Fast search with DataTables integration |
+| ⚡ **Quick Actions** | Priority-based action buttons with stats and keyboard shortcuts |
 | 📱 **Mobile Responsive** | Works on all devices |
+
+### Quick Actions
+
+The enhanced Quick Actions section provides:
+- **Priority Alert** — Shows pending registrations and appointments count
+- **Primary Actions** — 3 main buttons with gradient backgrounds and live stats:
+  - Registrations (green) — View pending student registrations
+  - Today's Queue (success green) — Access FCFS queue for today's appointments
+  - Blood Bank (red) — Manage blood donations and requests
+- **Secondary Actions** — 2x2 grid of quick access buttons for Blood Requests, Doctors, Appointments, and Staff
+- **Keyboard Shortcuts** — Use `Alt+R`, `Alt+A`, `Alt+B`, `Alt+D`, `Alt+S` for quick navigation
+- **Toast Notifications** — Visual feedback for keyboard shortcuts
 
 ### Access
 
 Navigate to: `http://localhost:8000/manage/`
 
 *(Staff/admin account required)*
+
+---
+
+## 🎭 Custom Error Pages
+
+### 404 & 500 Error Pages
+
+AUdoc features custom, creatively-styled error pages designed as **"AUdoc Incident Reports"**:
+
+| Error | Features | Status |
+|-------|----------|--------|
+| **404 Not Found** | Animated incident descriptions, randomized messages, redacted text (click to reveal) | ✅ Live |
+| **500 Server Error** | Same creative styling as 404 for consistent branding | ✅ Live |
+
+### Error Page Features
+
+- 📋 **Official Incident Report Style** — Styled like a bureaucratic form letter
+- 🎬 **Animated Content** — Incident descriptions rotate every 5 seconds with smooth fade transitions
+- 🔓 **Interactive Elements** — Redacted text reveals on hover with quirky messages
+- 🎨 **Visual Details** — Includes tape, paperclip, and official stamp for immersion
+- ⌚ **Dynamic Data** — Shows current date/time and randomized file paths
+- 🏠 **Quick Actions** — "Return to Base" and "Browse Archives" buttons for navigation
+
+### How It Works
+
+```
+User visits non-existent URL
+    ↓
+Django triggers 404/500 error handler
+    ↓
+Custom page_404/page_500 views render 404.html template
+    ↓
+User sees creative incident report (and smiles)
+```
 
 ---
 
@@ -478,10 +526,12 @@ python manage.py cleanup_todays_appointments
 
 - [x] ~~Flutter app ↔ Django REST API integration~~ ✅ DRF installed
 - [x] ~~Modern admin panel with charts~~ ✅ Glass-morphism UI
+- [x] ~~Quick Actions section~~ ✅ Enhanced with priority alerts & keyboard shortcuts
 - [x] ~~FCFS queue system~~ ✅ Today's Appointments
 - [x] ~~AI Chatbot~~ ✅ Groq API integration
 - [x] ~~PostgreSQL support for production~~ ✅ Render deployment
 - [x] ~~Email with Resend~~ ✅ Custom domain support
+- [x] ~~Custom error pages~~ ✅ Creative 404/500 incident report pages
 - [ ] Push notifications for appointment confirmations
 - [ ] Prescription & medical history records
 - [ ] Docker + CI/CD pipeline
@@ -497,6 +547,7 @@ python manage.py cleanup_todays_appointments
   - Use `onboarding@resend.dev` for testing
   - Add your domain in Resend dashboard for production
 - **AI Chatbot:** Uses **Groq API** (free tier, `llama-3.1-8b-instant` model)
+- **Custom Error Pages:** 404/500 errors display creative incident report-style pages (works in both DEBUG=True and DEBUG=False)
 - `DEBUG = True` is development-only. Set it to `False` in production, or regret it deeply.
 - The `myenv/` folder is gitignored. Always create your own virtual environment.
 - The Flutter app is a **UI prototype** — backend integration with DRF is in progress.
