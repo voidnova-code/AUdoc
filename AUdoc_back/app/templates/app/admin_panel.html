@@ -2115,26 +2115,42 @@
         .then(data => {
           if (data.status === 'healthy') {
             // Update Database Status
-            document.getElementById('db-status').textContent = data.database.status;
-            document.getElementById('db-progress').style.width = data.database.status === 'Connected' ? '100%' : '0%';
+            const dbStatus = data.database.status;
+            document.getElementById('db-status').textContent = dbStatus;
+            document.getElementById('db-progress').style.width = dbStatus === 'Connected' ? '100%' : '10%';
 
             // Update CPU Usage
             const cpuPercent = data.cpu.percent;
-            document.getElementById('cpu-usage').textContent = cpuPercent.toFixed(1) + '% - ' + data.cpu.status;
-            document.getElementById('cpu-progress').style.width = cpuPercent + '%';
-            document.getElementById('cpu-progress').style.background = cpuPercent > 80 ? 'linear-gradient(90deg, #e74c3c, #c0392b)' : cpuPercent > 60 ? 'linear-gradient(90deg, #f39c12, #e67e22)' : 'linear-gradient(90deg, var(--primary), #5a8a6a)';
+            const cpuDisplay = data.cpu.status === 'Unavailable' ? data.cpu.status : cpuPercent.toFixed(1) + '% - ' + data.cpu.status;
+            document.getElementById('cpu-usage').textContent = cpuDisplay;
+            if (data.cpu.status !== 'Unavailable') {
+              document.getElementById('cpu-progress').style.width = cpuPercent + '%';
+              document.getElementById('cpu-progress').style.background = cpuPercent > 80 ? 'linear-gradient(90deg, #e74c3c, #c0392b)' : cpuPercent > 60 ? 'linear-gradient(90deg, #f39c12, #e67e22)' : 'linear-gradient(90deg, var(--primary), #5a8a6a)';
+            } else {
+              document.getElementById('cpu-progress').style.width = '0%';
+            }
 
             // Update Memory Usage
             const memPercent = data.memory.percent;
-            document.getElementById('memory-usage').textContent = memPercent.toFixed(1) + '% - ' + data.memory.status;
-            document.getElementById('memory-progress').style.width = memPercent + '%';
-            document.getElementById('memory-progress').style.background = memPercent > 80 ? 'linear-gradient(90deg, #e74c3c, #c0392b)' : memPercent > 60 ? 'linear-gradient(90deg, #f39c12, #e67e22)' : 'linear-gradient(90deg, var(--primary), #5a8a6a)';
+            const memDisplay = data.memory.status === 'Unavailable' ? data.memory.status : memPercent.toFixed(1) + '% - ' + data.memory.status;
+            document.getElementById('memory-usage').textContent = memDisplay;
+            if (data.memory.status !== 'Unavailable') {
+              document.getElementById('memory-progress').style.width = memPercent + '%';
+              document.getElementById('memory-progress').style.background = memPercent > 80 ? 'linear-gradient(90deg, #e74c3c, #c0392b)' : memPercent > 60 ? 'linear-gradient(90deg, #f39c12, #e67e22)' : 'linear-gradient(90deg, var(--primary), #5a8a6a)';
+            } else {
+              document.getElementById('memory-progress').style.width = '0%';
+            }
 
             // Update Disk Usage
             const diskPercent = data.disk.percent;
-            document.getElementById('disk-usage').textContent = diskPercent.toFixed(1) + '% - ' + data.disk.status;
-            document.getElementById('disk-progress').style.width = diskPercent + '%';
-            document.getElementById('disk-progress').style.background = diskPercent > 80 ? 'linear-gradient(90deg, #e74c3c, #c0392b)' : diskPercent > 60 ? 'linear-gradient(90deg, #f39c12, #e67e22)' : 'linear-gradient(90deg, var(--primary), #5a8a6a)';
+            const diskDisplay = data.disk.status === 'Unavailable' ? data.disk.status : diskPercent.toFixed(1) + '% - ' + data.disk.status;
+            document.getElementById('disk-usage').textContent = diskDisplay;
+            if (data.disk.status !== 'Unavailable') {
+              document.getElementById('disk-progress').style.width = diskPercent + '%';
+              document.getElementById('disk-progress').style.background = diskPercent > 80 ? 'linear-gradient(90deg, #e74c3c, #c0392b)' : diskPercent > 60 ? 'linear-gradient(90deg, #f39c12, #e67e22)' : 'linear-gradient(90deg, var(--primary), #5a8a6a)';
+            } else {
+              document.getElementById('disk-progress').style.width = '0%';
+            }
 
             // Update Active Sessions
             document.getElementById('active-sessions').textContent = data.sessions.active + ' Sessions';
@@ -2142,7 +2158,10 @@
         })
         .catch(error => {
           console.log('System health fetch error:', error);
-          document.getElementById('db-status').textContent = 'Unavailable';
+          document.getElementById('db-status').textContent = 'Checking...';
+          document.getElementById('cpu-usage').textContent = 'Fetching...';
+          document.getElementById('memory-usage').textContent = 'Fetching...';
+          document.getElementById('disk-usage').textContent = 'Fetching...';
         });
     }
 

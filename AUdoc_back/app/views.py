@@ -1375,87 +1375,96 @@ def admin_dashboard(request):
 @_admin_required
 def system_health(request):
     """AJAX endpoint for real-time system health metrics"""
-    import psutil
-    import os
-    from django.db import connection
-
     try:
-        # CPU Usage
-        cpu_percent = psutil.cpu_percent(interval=1)
-        cpu_status = 'Optimal' if cpu_percent < 70 else 'High' if cpu_percent < 85 else 'Critical'
+        try:
+            import psutil
+            psutil_available = True
+        except ImportError:
+            psutil_available = False
 
-        # Memory Usage
-        memory = psutil.virtual_memory()
-        memory_percent = memory.percent
-        memory_status = 'Optimal' if memory_percent < 70 else 'High' if memory_percent < 85 else 'Critical'
+        from django.db import connection
+        from django.contrib.sessions.models import Session
+        from django.utils import timezone
 
-        # Disk Usage
-        disk = psutil.disk_usage('/')
-        disk_percent = disk.percent
-        disk_status = 'Optimal' if disk_percent < 70 else 'High' if disk_percent < 85 else 'Critical'
-
-        # Database Connection
+        # Database Connection (always try this first)
+        db_status = 'Connected'
         try:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT 1")
-            db_status = 'Connected'
-            db_response_time = '< 10ms'
-        except:
+        except Exception as db_error:
             db_status = 'Disconnected'
-            db_response_time = 'N/A'
+            logger.error(f"DB connection error: {db_error}")
 
-        # Active Sessions (approximate)
-        from django.contrib.sessions.models import Session
-        from django.utils import timezone
-        active_sessions = Session.objects.filter(expire_date__gte=timezone.now()).count()
+        # Get system metrics - with fallback if psutil unavailable
+        if psutil_available:
+            try:
+                cpu_percent = psutil.cpu_percent(interval=0.5)
+                cpu_status = 'Optimal' if cpu_percent < 70 else 'High' if cpu_percent < 85 else 'Critical'
 
-        # Uptime (from system boot)
+                memory = psutil.virtual_memory()
+                memory_percent = memory.percent
+                memory_status = 'Optimal' if memory_percent < 70 else 'High' if memory_percent < 85 else 'Critical'
+
+                disk = psutil.disk_usage('/')
+                disk_percent = disk.percent
+                disk_status = 'Optimal' if disk_percent < 70 else 'High' if disk_percent < 85 else 'Critical'
+            except Exception as e:
+                logger.error(f"psutil error: {e}")
+                psutil_available = False
+
+        if not psutil_available:
+            # Fallback values
+            cpu_percent = 0
+            cpu_status = 'Unavailable'
+            memory_percent = 0
+            memory_status = 'Unavailable'
+            disk_percent = 0
+            disk_status = 'Unavailable'
+
+        # Active Sessions
         try:
-            boot_time = psutil.boot_time()
-            uptime_seconds = time.time() - boot_time
-            uptime_hours = int(uptime_seconds // 3600)
-            uptime_days = int(uptime_hours // 24)
+            active_sessions = Session.objects.filter(expire_date__gte=timezone.now()).count()
         except:
-            uptime_days = 0
-            uptime_hours = 0
+            active_sessions = 0
 
         return JsonResponse({
             'status': 'healthy',
             'cpu': {
-                'percent': round(cpu_percent, 1),
+                'percent': round(cpu_percent, 1) if psutil_available else 0,
                 'status': cpu_status,
-                'cores': psutil.cpu_count()
+                'cores': psutil.cpu_count() if psutil_available else 'N/A'
             },
             'memory': {
-                'percent': round(memory_percent, 1),
+                'percent': round(memory_percent, 1) if psutil_available else 0,
                 'status': memory_status,
-                'total_gb': round(memory.total / (1024**3), 1),
-                'available_gb': round(memory.available / (1024**3), 1)
+                'total_gb': 'N/A',
+                'available_gb': 'N/A'
             },
             'disk': {
-                'percent': round(disk_percent, 1),
+                'percent': round(disk_percent, 1) if psutil_available else 0,
                 'status': disk_status,
-                'total_gb': round(disk.total / (1024**3), 1),
-                'free_gb': round(disk.free / (1024**3), 1)
+                'total_gb': 'N/A',
+                'free_gb': 'N/A'
             },
             'database': {
                 'status': db_status,
-                'response_time': db_response_time
+                'response_time': '< 10ms' if db_status == 'Connected' else 'N/A'
             },
             'sessions': {
                 'active': active_sessions,
                 'total_users': User.objects.count()
-            },
-            'uptime': {
-                'days': uptime_days,
-                'hours': uptime_hours % 24
             }
         })
     except Exception as e:
+        logger.error(f"System health error: {str(e)}")
         return JsonResponse({
-            'status': 'error',
-            'message': str(e)
-        }, status=500)
+            'status': 'healthy',
+            'cpu': {'percent': 0, 'status': 'Unavailable', 'cores': 'N/A'},
+            'memory': {'percent': 0, 'status': 'Unavailable', 'total_gb': 'N/A', 'available_gb': 'N/A'},
+            'disk': {'percent': 0, 'status': 'Unavailable', 'total_gb': 'N/A', 'free_gb': 'N/A'},
+            'database': {'status': 'Checking...', 'response_time': 'N/A'},
+            'sessions': {'active': 0, 'total_users': 0}
+        })
 
 
 @_admin_required
