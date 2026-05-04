@@ -365,7 +365,7 @@
 
   <div class="path-row">
     <span class="path-label">Last known URL</span>
-    <span class="path-value" id="urlPath">/docs/untitled_final_v3</span>
+    <span class="path-value" id="urlPath">{{ requested_path|default:'/unknown' }}</span>
     <span class="path-badge">Not Found</span>
   </div>
 
@@ -395,11 +395,6 @@
   document.getElementById('datefield').textContent =
     now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
     now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-
-  const paths=['/docs/untitled_final_v3','/docs/the_real_one_THIS_ONE',
-    '/docs/important_do_not_delete','/docs/backup_of_backup_final',
-    '/docs/please_work_v7','/docs/readme_i_think'];
-  document.getElementById('urlPath').textContent=paths[Math.floor(Math.random()*paths.length)];
 
   const incidents=[
     `The requested document was last seen at approximately

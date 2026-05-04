@@ -2943,7 +2943,7 @@ def add_staff_member(request):
 
 def page_404(request, exception=None):
     """Custom 404 page handler - displays incident report style error page."""
-    return render(request, '404.html', {}, status=404)
+    return render(request, '404.html', {'requested_path': request.path}, status=404)
 
 
 def page_500(request):
