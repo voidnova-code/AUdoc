@@ -56,6 +56,128 @@ def send_email_async(email_msg):
     logger.info(f"🧵 [Async] Email thread started (daemon)")
 
 
+def send_staff_welcome_email(staff, request, password='staff123'):
+    """Send a fun welcome email to new staff/doctor with password setup instructions."""
+    try:
+        role = "Doctor" if staff.is_doctor else "Staff Member"
+        subject = f"🎉 Welcome to AUdoc, {staff.name}! Your {role} Profile is Ready"
+
+        plain = (
+            f"Welcome to AUdoc, {staff.name}!\n\n"
+            f"Great news! You've been added as a {role} in the AUdoc system.\n\n"
+            f"Your credentials:\n"
+            f"📧 Email: {staff.email}\n"
+            f"🔐 Staff ID: {staff.staff_id}\n"
+            f"🔑 Temporary Password: {password}\n\n"
+            f"NEXT STEPS:\n"
+            f"1. Log in at /accounts/login/ with your email and temporary password\n"
+            f"2. Change your password immediately (security first! 🛡️)\n"
+            f"3. Set up your profile\n\n"
+            f"Questions? Reach us at health@au.edu — we're friendly, we promise! 😊\n\n"
+            f"Welcome aboard!\n"
+            f"The AUdoc Team 🏥"
+        )
+
+        login_url = request.build_absolute_uri('/accounts/login/')
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+        body {{ margin: 0; padding: 0; background-color: #e8f0fe; font-family: 'Segoe UI', Arial, sans-serif; }}
+        .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; box-shadow: 0 8px 32px rgba(26,92,150,.18); overflow: hidden; }}
+        .header {{ background: linear-gradient(135deg, #1a5c96 0%, #134a7a 100%); color: #ffffff; padding: 42px 20px; text-align: center; }}
+        .header h1 {{ margin: 10px 0; font-size: 28px; font-weight: bold; }}
+        .header .badge {{ background: rgba(255,255,255,0.22); color: #ffffff; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 10px; font-size: 14px; }}
+        .content {{ padding: 30px 25px; background: linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%); }}
+        .content p {{ color: #1f2a44; line-height: 1.6; margin: 0 0 15px 0; }}
+        .section-title {{ font-weight: bold; color: #1a5c96; margin-top: 20px; margin-bottom: 15px; font-size: 16px; }}
+        .credentials-box {{ background-color: #eef4ff; border: 2px solid #1a5c96; border-radius: 16px; padding: 20px; margin: 20px 0; }}
+        .credential-item {{ margin: 12px 0; color: #1f2a44; }}
+        .credential-label {{ font-weight: bold; color: #1a5c96; }}
+        .credential-value {{ background-color: #ddeaff; color: #134a7a; padding: 8px 12px; border-radius: 4px; font-family: monospace; display: inline-block; margin-top: 4px; }}
+        .step {{ margin: 12px 0; display: flex; align-items: flex-start; }}
+        .step-number {{ background-color: #1a5c96; color: #ffffff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; }}
+        .step-text {{ color: #1f2a44; flex: 1; }}
+        .footer {{ background-color: #f4f8fc; border-top: 1px solid #e5edf5; padding: 20px; text-align: center; }}
+        .footer p {{ margin: 5px 0; color: #51607a; font-size: 14px; }}
+        a {{ color: #1a5c96; text-decoration: none; font-weight: 600; }}
+        .warning {{ background-color: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 12px; border-radius: 4px; margin: 15px 0; font-size: 14px; }}
+        </style>
+        </head>
+        <body>
+        <div class="container">
+            <div class="header">
+                <div style="font-size: 32px; margin-bottom: 10px;">🎉</div>
+                <h1>Welcome to AUdoc, {staff.name}!</h1>
+                <div class="badge">✅ YOUR {role.upper()} ACCOUNT IS READY</div>
+            </div>
+            <div class="content">
+                <p><strong>Big News! 🚀</strong></p>
+                <p>You've been added as a <strong>{role}</strong> in the AUdoc system. The admin team has set up your profile with superpowers (well, almost). Now it's your turn!</p>
+
+                <div class="credentials-box">
+                    <p class="section-title">🔐 Your Login Credentials</p>
+                    <div class="credential-item">
+                        <div class="credential-label">📧 Email:</div>
+                        <div class="credential-value">{staff.email}</div>
+                    </div>
+                    <div class="credential-item">
+                        <div class="credential-label">👤 {role} ID:</div>
+                        <div class="credential-value">{staff.staff_id}</div>
+                    </div>
+                    <div class="credential-item">
+                        <div class="credential-label">🔑 Temporary Password:</div>
+                        <div class="credential-value">{password}</div>
+                    </div>
+                </div>
+
+                <div class="warning">
+                    ⚠️ <strong>IMPORTANT:</strong> This is a temporary password. Change it immediately after your first login for security!
+                </div>
+
+                <div class="login-box">
+                    <p class="section-title">🚀 Quick Start Guide</p>
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-text">Visit the <a href="{login_url}">AUdoc Login Page</a></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-text">Log in with your email and temporary password</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-text">Go to your profile settings and <strong>change your password</strong> 🔐</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-text">You're all set! Start managing your schedule and appointments</div>
+                    </div>
+                </div>
+
+                <p><strong>Need help?</strong> 💬 Reach out to us at <a href="mailto:health@au.edu">health@au.edu</a> — we're here to help!</p>
+            </div>
+            <div class="footer">
+                <p><strong>Welcome aboard, {staff.name}! 💪</strong></p>
+                <p style="color: #999;">© 2026 <strong style="color: #1a5c96;">AUdoc</strong> — Assam University Silchar Campus Health</p>
+            </div>
+        </div>
+        </body>
+        </html>
+        """
+
+        msg = EmailMultiAlternatives(subject, plain, None, [staff.email])
+        msg.attach_alternative(html_body, "text/html")
+        send_email_async(msg)
+        logger.info(f"📧 Welcome email sent to {staff.email}")
+    except Exception as e:
+        logger.error(f"❌ Failed to send welcome email to {staff.email}: {str(e)}")
+
+
+
 
 def about(request):
     if request.method == "POST":
@@ -1483,11 +1605,12 @@ def admin_staff_save(request):
         if not password:
             messages.error(request, "Password is required when adding a new staff member.")
             return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
-        StaffProfile.objects.create(
+        staff = StaffProfile.objects.create(
             name=name, email=email,
             phone=phone, password=make_password(password), is_doctor=is_doctor,
         )
-        messages.success(request, f"Staff member '{name}' added.")
+        send_staff_welcome_email(staff, request, password=password)
+        messages.success(request, f"Staff member '{name}' added. Welcome email sent! 📧")
 
     return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
 
@@ -2513,13 +2636,14 @@ def add_doctor(request):
                 'message': 'Staff member with this email already exists'
             }, status=400)
 
-        StaffProfile.objects.create(
+        staff = StaffProfile.objects.create(
             name=name,
             email=email,
             phone=phone,
             password=make_password('doctor123'),
             is_doctor=True,
         )
+        send_staff_welcome_email(staff, request, password='doctor123')
 
         log_security_event("doctor_added", request, {"email": email, "name": name}, level="info")
 
@@ -2548,15 +2672,16 @@ def add_staff_member(request):
         if StaffProfile.objects.filter(email=email).exists():
             return JsonResponse({'success': False, 'message': 'Email already exists'}, status=400)
 
-        StaffProfile.objects.create(
+        staff = StaffProfile.objects.create(
             name=name,
             email=email,
             phone=phone,
             password=make_password('staff123'),
             is_doctor=is_doctor,
         )
+        send_staff_welcome_email(staff, request, password='staff123')
 
-        log_security_event("staff_added", request, {"email": email, "staff_id": staff_id}, level="info")
+        log_security_event("staff_added", request, {"email": email, "staff_id": staff.staff_id}, level="info")
 
         return JsonResponse({
             'success': True,
