@@ -1452,8 +1452,7 @@ def admin_doctor_delete(request, pk):
     doc = get_object_or_404(Doctor, pk=pk)
     name = doc.name
     doc.delete()
-    messages.success(request, f"Doctor '{name}' deleted.")
-    return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
+    return JsonResponse({'success': True, 'message': f"Doctor '{name}' deleted successfully"})
 
 
 @_admin_required
@@ -1501,8 +1500,7 @@ def admin_staff_delete(request, pk):
     staff = get_object_or_404(StaffProfile, pk=pk)
     name = staff.name
     staff.delete()
-    messages.success(request, f"Staff member '{name}' deleted.")
-    return redirect(f"{reverse('admin_dashboard')}?tab=staff-members")
+    return JsonResponse({'success': True, 'message': f"Staff member '{name}' deleted successfully"})
 
 
 @_admin_required
@@ -1511,8 +1509,7 @@ def admin_blood_request_delete(request, pk):
     blood_request = get_object_or_404(BloodRequest, pk=pk)
     requester_name = blood_request.requester_name
     blood_request.delete()
-    messages.success(request, f"Blood request from '{requester_name}' deleted.")
-    return redirect(f"{reverse('admin_dashboard')}?tab=blood-requests")
+    return JsonResponse({'success': True, 'message': f"Blood request from '{requester_name}' deleted successfully"})
 
 
 @_admin_required
