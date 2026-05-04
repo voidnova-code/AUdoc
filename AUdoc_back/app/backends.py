@@ -1,7 +1,8 @@
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
 
-from .models import StudentProfile
+from .models import StudentProfile, StaffProfile
 
 
 class StudentIDBackend(BaseBackend):
@@ -18,6 +19,35 @@ class StudentIDBackend(BaseBackend):
             )
             return profile.user
         except StudentProfile.DoesNotExist:
+            return None
+
+    def get_user(self, user_id):
+        try:
+            return User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return None
+
+
+class StaffIDBackend(BaseBackend):
+    """
+    Allows staff/doctors to log in using their staff_id and password.
+    """
+
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        try:
+            staff = StaffProfile.objects.get(staff_id=username)
+            if check_password(password, staff.password):
+                # Get or create User account for the staff
+                user, created = User.objects.get_or_create(
+                    username=staff.staff_id,
+                    defaults={
+                        'email': staff.email,
+                        'first_name': staff.name.split()[0] if staff.name else '',
+                        'last_name': ' '.join(staff.name.split()[1:]) if len(staff.name.split()) > 1 else '',
+                    }
+                )
+                return user
+        except StaffProfile.DoesNotExist:
             return None
 
     def get_user(self, user_id):

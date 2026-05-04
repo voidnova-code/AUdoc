@@ -213,10 +213,12 @@ LOGIN_URL           = "/accounts/login/"
 # ── Authentication backends ───────────────────────────────────────────────────
 # StudentIDBackend first: lets students log in with Student ID (no password).
 # GoogleStudentBackend: lets approved students log in with Google OAuth.
+# StaffIDBackend: lets staff/doctors log in with staff_id and password.
 # ModelBackend last: lets staff/admin log in with username + password.
 AUTHENTICATION_BACKENDS = [
     "app.backends.StudentIDBackend",
     "app.backends.GoogleStudentBackend",
+    "app.backends.StaffIDBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
