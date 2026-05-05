@@ -1709,79 +1709,324 @@
 
       <!-- DANGER ZONE Tab -->
       <div id="danger-zone" class="tab-content">
-        <div class="danger-zone" data-aos="fade-up">
-          <div class="danger-header">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            DANGER ZONE - STUDENT DATA MANAGEMENT
+        <style>
+          .dz-header-banner {
+            background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #450a0a 100%);
+            border-radius: 16px; padding: 32px; margin-bottom: 24px;
+            color: #fff; text-align: center; position: relative; overflow: hidden;
+          }
+          .dz-header-banner::before {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,.02) 20px, rgba(255,255,255,.02) 40px);
+            animation: dangerStripes 20s linear infinite;
+          }
+          @keyframes dangerStripes { from { transform: translateX(0); } to { transform: translateX(56px); } }
+          .dz-header-banner h2 { margin: 0; font-size: 1.6rem; font-weight: 800; position: relative; z-index: 2; letter-spacing: .5px; }
+          .dz-header-banner p { margin: 8px 0 0; opacity: .85; font-size: .9rem; position: relative; z-index: 2; }
+
+          .dz-toolbar {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            align-items: center; margin-bottom: 20px;
+            padding: 14px 18px; background: #fff; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06); border: 1px solid #fecaca;
+          }
+          .dz-toolbar .btn { font-size: .82rem; padding: 7px 14px; border-radius: 8px; font-weight: 600; }
+
+          .dz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+
+          .dz-card {
+            background: #fff; border-radius: 14px; padding: 0; overflow: hidden;
+            border: 2px solid #e5e7eb; transition: all .3s cubic-bezier(.23,1,.32,1);
+            cursor: pointer; position: relative;
+          }
+          .dz-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,.1); }
+          .dz-card.selected { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.15), 0 8px 24px rgba(220,38,38,.12); }
+          .dz-card.selected .dz-card-check { background: #dc2626; color: #fff; border-color: #dc2626; }
+
+          .dz-card-top { padding: 20px 20px 14px; display: flex; align-items: flex-start; gap: 14px; }
+          .dz-card-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; flex-shrink: 0;
+          }
+          .dz-card-info { flex: 1; }
+          .dz-card-info h6 { margin: 0; font-weight: 700; font-size: .95rem; color: #1f2937; }
+          .dz-card-info .dz-count {
+            font-size: 1.8rem; font-weight: 800; color: #111827; margin: 4px 0 2px; line-height: 1;
+          }
+          .dz-card-info .dz-label { font-size: .75rem; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; }
+          .dz-card-check {
+            width: 26px; height: 26px; border-radius: 7px;
+            border: 2px solid #d1d5db; display: flex;
+            align-items: center; justify-content: center;
+            transition: all .2s ease; flex-shrink: 0;
+          }
+          .dz-card-check i { font-size: .8rem; }
+
+          .dz-card-actions {
+            display: flex; border-top: 1px solid #f3f4f6;
+            background: #fafafa;
+          }
+          .dz-card-actions a {
+            flex: 1; padding: 10px 12px; text-align: center; font-size: .78rem;
+            color: #6b7280; text-decoration: none; font-weight: 600;
+            transition: all .2s ease; display: flex; align-items: center;
+            justify-content: center; gap: 5px;
+          }
+          .dz-card-actions a:hover { background: #f0fdf4; color: #15803d; }
+          .dz-card-actions a.dl-csv:hover { background: #eff6ff; color: #1d4ed8; }
+          .dz-card-actions a + a { border-left: 1px solid #f3f4f6; }
+
+          .dz-nuclear {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #fca5a5; border-radius: 14px;
+            padding: 28px; text-align: center; margin-top: 8px;
+          }
+          .dz-nuclear h5 { color: #991b1b; font-weight: 800; margin-bottom: 8px; }
+          .dz-nuclear p { color: #7f1d1d; margin-bottom: 20px; font-size: .9rem; line-height: 1.6; }
+
+          .dz-security-note {
+            background: #fff; border-radius: 10px; border: 1px solid #fca5a5;
+            padding: 16px 20px; margin-top: 20px;
+            display: flex; align-items: flex-start; gap: 12px;
+          }
+          .dz-security-note i { color: #dc2626; font-size: 1.2rem; margin-top: 2px; flex-shrink: 0; }
+          .dz-security-note small { color: #7f1d1d; line-height: 1.5; }
+
+          /* Purge Confirmation Modal */
+          .purge-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6);
+            backdrop-filter: blur(4px); z-index: 9999;
+            align-items: center; justify-content: center; padding: 20px;
+          }
+          .purge-modal-overlay.active { display: flex; }
+          .purge-modal {
+            background: #fff; border-radius: 20px; max-width: 520px; width: 100%;
+            box-shadow: 0 25px 60px rgba(0,0,0,.3); overflow: hidden;
+            animation: purgeModalIn .3s ease;
+          }
+          @keyframes purgeModalIn { from { opacity: 0; transform: scale(.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+          .purge-modal-header {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            padding: 24px 28px; color: #fff; text-align: center;
+          }
+          .purge-modal-header h4 { margin: 0; font-weight: 800; }
+          .purge-modal-body { padding: 28px; }
+          .purge-modal-body .purge-summary {
+            background: #fef2f2; border-radius: 10px; padding: 16px;
+            margin-bottom: 20px; border: 1px solid #fecaca;
+          }
+          .purge-modal-body .purge-summary li { padding: 4px 0; color: #991b1b; font-size: .9rem; }
+          .purge-modal-body label { font-weight: 700; font-size: .9rem; color: #374151; display: block; margin-bottom: 8px; }
+          .purge-modal-body input[type="text"] {
+            width: 100%; padding: 12px 16px; border: 2px solid #d1d5db;
+            border-radius: 10px; font-size: .95rem; font-family: monospace;
+            transition: border-color .2s;
+          }
+          .purge-modal-body input[type="text"]:focus { outline: none; border-color: #dc2626; }
+          .purge-modal-footer { padding: 0 28px 24px; display: flex; gap: 12px; }
+          .purge-modal-footer .btn { flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; font-size: .95rem; }
+        </style>
+
+        <!-- Header Banner -->
+        <div class="dz-header-banner" data-aos="fade-down">
+          <h2><i class="bi bi-shield-exclamation me-2"></i> DATA MANAGEMENT CENTER</h2>
+          <p>Select data categories to download or delete • All operations are logged for security</p>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="dz-toolbar" data-aos="fade-up" data-aos-delay="100">
+          <button class="btn btn-outline-secondary" onclick="dzSelectAll()" id="dzSelectAllBtn">
+            <i class="bi bi-check2-all me-1"></i> Select All
+          </button>
+          <button class="btn btn-outline-secondary" onclick="dzDeselectAll()">
+            <i class="bi bi-x-lg me-1"></i> Deselect All
+          </button>
+          <div style="flex: 1;"></div>
+          <span class="text-muted" style="font-size: .82rem;" id="dzSelectedCount">0 categories selected</span>
+          <button class="btn btn-success" onclick="dzDownloadSelected('json')" id="dzDownloadJsonBtn" disabled>
+            <i class="bi bi-filetype-json me-1"></i> Download JSON
+          </button>
+          <button class="btn text-white" style="background: #1d4ed8;" onclick="dzDownloadSelected('csv')" id="dzDownloadCsvBtn" disabled>
+            <i class="bi bi-filetype-csv me-1"></i> Download CSV
+          </button>
+          <button class="btn btn-danger" onclick="dzOpenPurgeModal()" id="dzDeleteBtn" disabled>
+            <i class="bi bi-trash3 me-1"></i> Delete Selected
+          </button>
+        </div>
+
+        <!-- Data Category Cards -->
+        <div class="dz-grid" data-aos="fade-up" data-aos-delay="200">
+
+          <div class="dz-card" data-category="registration" onclick="dzToggleCard(this)">
+            <div class="dz-card-top">
+              <div class="dz-card-icon" style="background: #fef3c7; color: #d97706;"><i class="bi bi-person-plus-fill"></i></div>
+              <div class="dz-card-info">
+                <h6>Student Registrations</h6>
+                <div class="dz-count">{{ total_registrations }}</div>
+                <div class="dz-label">total records</div>
+              </div>
+              <div class="dz-card-check"><i class="bi bi-check2"></i></div>
+            </div>
+            <div class="dz-card-actions">
+              <a href="{% url 'admin_export_data' 'registration' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'registration' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+            </div>
           </div>
-          <div class="danger-description">
-            <strong>⚠️ WARNING:</strong> This section contains destructive operations that cannot be undone.
-            Proceed with extreme caution as these actions will permanently delete data from the database.
-          </div>
 
-          <!-- Data Statistics -->
-          <div class="stats-warning">
-            <h6 class="mb-3" style="color: #c53030; font-weight: 700;">Current Database Status:</h6>
-            <div class="stat-item">
-              <span>Student Registrations:</span>
-              <span class="stat-number">{{ stat_pending_reg }}+ records</span>
+          <div class="dz-card" data-category="appointment" onclick="dzToggleCard(this)">
+            <div class="dz-card-top">
+              <div class="dz-card-icon" style="background: #d1fae5; color: #059669;"><i class="bi bi-calendar-check-fill"></i></div>
+              <div class="dz-card-info">
+                <h6>Appointments</h6>
+                <div class="dz-count">{{ total_appointments }}</div>
+                <div class="dz-label">total records</div>
+              </div>
+              <div class="dz-card-check"><i class="bi bi-check2"></i></div>
             </div>
-            <div class="stat-item">
-              <span>Appointments:</span>
-              <span class="stat-number">{{ stat_pending_appts }}+ records</span>
-            </div>
-            <div class="stat-item">
-              <span>Blood Donations:</span>
-              <span class="stat-number">{{ stat_pending_blooddon }}+ records</span>
-            </div>
-            <div class="stat-item">
-              <span>Blood Requests:</span>
-              <span class="stat-number">{{ stat_pending_bloodreq }}+ records</span>
-            </div>
-            <div class="stat-item">
-              <span>Feedback Entries:</span>
-              <span class="stat-number">{{ stat_feedback }} records</span>
-            </div>
-            <div class="stat-item">
-              <span>Active Staff:</span>
-              <span class="stat-number">{{ stat_staff }} records</span>
+            <div class="dz-card-actions">
+              <a href="{% url 'admin_export_data' 'appointment' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'appointment' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
             </div>
           </div>
 
-          <!-- Kill Button -->
-          <div class="text-center">
-            <h5 style="color: #c53030; margin-bottom: 16px; font-weight: 700;">
-              🗑️ NUCLEAR OPTION: PURGE ALL STUDENT DATA
-            </h5>
-            <p style="color: #742a2a; margin-bottom: 20px;">
-              This will permanently delete ALL student-related data including registrations, appointments,
-              blood donations/requests, feedback, login logs, and user accounts.
-              <strong>Doctors and staff data will be preserved.</strong>
-            </p>
-
-            <button
-              type="button"
-              class="btn kill-button"
-              onclick="confirmDataPurge()"
-              data-aos="pulse"
-              data-aos-delay="500"
-            >
-              <i class="bi bi-trash3-fill me-2"></i>
-              🚨 KILL ALL STUDENT DATA 🚨
-            </button>
+          <div class="dz-card" data-category="blood_donation" onclick="dzToggleCard(this)">
+            <div class="dz-card-top">
+              <div class="dz-card-icon" style="background: #fce7f3; color: #db2777;"><i class="bi bi-heart-pulse-fill"></i></div>
+              <div class="dz-card-info">
+                <h6>Blood Donations</h6>
+                <div class="dz-count">{{ total_blood_donations }}</div>
+                <div class="dz-label">total records</div>
+              </div>
+              <div class="dz-card-check"><i class="bi bi-check2"></i></div>
+            </div>
+            <div class="dz-card-actions">
+              <a href="{% url 'admin_export_data' 'blood_donation' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'blood_donation' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+            </div>
           </div>
 
-          <!-- Hidden Form for Data Purge -->
-          <form id="purgeForm" method="post" action="{% url 'admin_clear_all_data' %}" style="display: none;">
-            {% csrf_token %}
-            <input type="hidden" id="confirmationInput" name="confirmation" value="">
-          </form>
+          <div class="dz-card" data-category="blood_request" onclick="dzToggleCard(this)">
+            <div class="dz-card-top">
+              <div class="dz-card-icon" style="background: #fee2e2; color: #dc2626;"><i class="bi bi-droplet-fill"></i></div>
+              <div class="dz-card-info">
+                <h6>Blood Requests</h6>
+                <div class="dz-count">{{ total_blood_requests }}</div>
+                <div class="dz-label">total records</div>
+              </div>
+              <div class="dz-card-check"><i class="bi bi-check2"></i></div>
+            </div>
+            <div class="dz-card-actions">
+              <a href="{% url 'admin_export_data' 'blood_request' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'blood_request' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+            </div>
+          </div>
 
-          <div class="mt-4 p-3" style="background: #fff; border-radius: 8px; border: 1px solid #fc8181;">
-            <small style="color: #742a2a;">
-              <strong>Security Notice:</strong> This action requires typing the exact confirmation phrase
-              and will be logged for security auditing. Make sure you have a database backup before proceeding.
-            </small>
+          <div class="dz-card" data-category="feedback" onclick="dzToggleCard(this)">
+            <div class="dz-card-top">
+              <div class="dz-card-icon" style="background: #ede9fe; color: #7c3aed;"><i class="bi bi-chat-square-text-fill"></i></div>
+              <div class="dz-card-info">
+                <h6>Feedback Entries</h6>
+                <div class="dz-count">{{ total_feedback }}</div>
+                <div class="dz-label">total records</div>
+              </div>
+              <div class="dz-card-check"><i class="bi bi-check2"></i></div>
+            </div>
+            <div class="dz-card-actions">
+              <a href="{% url 'admin_export_data' 'feedback' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'feedback' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+            </div>
+          </div>
+
+          <div class="dz-card" data-category="login_log" onclick="dzToggleCard(this)">
+            <div class="dz-card-top">
+              <div class="dz-card-icon" style="background: #e0f2fe; color: #0284c7;"><i class="bi bi-clock-history"></i></div>
+              <div class="dz-card-info">
+                <h6>Login Logs</h6>
+                <div class="dz-count">{{ total_login_logs }}</div>
+                <div class="dz-label">total records</div>
+              </div>
+              <div class="dz-card-check"><i class="bi bi-check2"></i></div>
+            </div>
+            <div class="dz-card-actions">
+              <a href="{% url 'admin_export_data' 'login_log' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'login_log' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+            </div>
+          </div>
+
+          <div class="dz-card" data-category="donation" onclick="dzToggleCard(this)">
+            <div class="dz-card-top">
+              <div class="dz-card-icon" style="background: #ecfdf5; color: #10b981;"><i class="bi bi-cash-coin"></i></div>
+              <div class="dz-card-info">
+                <h6>Monetary Donations</h6>
+                <div class="dz-count">{{ total_donations }}</div>
+                <div class="dz-label">total records</div>
+              </div>
+              <div class="dz-card-check"><i class="bi bi-check2"></i></div>
+            </div>
+            <div class="dz-card-actions">
+              <a href="{% url 'admin_export_data' 'donation' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'donation' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Nuclear Zone -->
+        <div class="dz-nuclear" data-aos="fade-up" data-aos-delay="300">
+          <h5><i class="bi bi-radioactive me-2"></i> NUCLEAR OPTION: PURGE ALL STUDENT DATA</h5>
+          <p>
+            This will permanently delete <strong>ALL</strong> student-related data including registrations, appointments,
+            blood donations/requests, feedback, login logs, and user accounts.
+            <strong>Doctors and staff data will be preserved.</strong>
+          </p>
+          <button type="button" class="btn kill-button" onclick="dzOpenPurgeModal(true)">
+            <i class="bi bi-trash3-fill me-2"></i> 🚨 PURGE ALL STUDENT DATA 🚨
+          </button>
+        </div>
+
+        <!-- Hidden Forms -->
+        <form id="purgeForm" method="post" action="{% url 'admin_clear_all_data' %}" style="display: none;">
+          {% csrf_token %}
+          <input type="hidden" id="confirmationInput" name="confirmation" value="">
+          <input type="hidden" id="selectedDataInput" name="selected_data" value="">
+        </form>
+
+        <!-- Security Notice -->
+        <div class="dz-security-note" data-aos="fade-up" data-aos-delay="400">
+          <i class="bi bi-shield-lock-fill"></i>
+          <small>
+            <strong>Security Notice:</strong> All delete operations require confirmation, are rate-limited,
+            and are permanently logged for auditing. Always download a backup before deleting data.
+            Keyboard shortcut: <kbd>Ctrl</kbd>+<kbd>D</kbd> to quickly access this page.
+          </small>
+        </div>
+
+        <!-- Purge Confirmation Modal -->
+        <div class="purge-modal-overlay" id="purgeModalOverlay" onclick="if(event.target===this)dzClosePurgeModal()">
+          <div class="purge-modal">
+            <div class="purge-modal-header">
+              <h4><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Data Deletion</h4>
+            </div>
+            <div class="purge-modal-body">
+              <div class="purge-summary">
+                <strong style="color: #991b1b;">The following data will be permanently deleted:</strong>
+                <ul id="purgeItemsList" class="mt-2 mb-0" style="list-style: none; padding-left: 0;"></ul>
+              </div>
+              <label for="purgeConfirmInput">
+                Type <code style="color: #dc2626; background: #fef2f2; padding: 2px 8px; border-radius: 4px;">DELETE_ALL_STUDENT_DATA</code> to confirm:
+              </label>
+              <input type="text" id="purgeConfirmInput" placeholder="Type the confirmation phrase..." autocomplete="off" spellcheck="false">
+            </div>
+            <div class="purge-modal-footer">
+              <button class="btn btn-outline-secondary" onclick="dzClosePurgeModal()">
+                <i class="bi bi-x-lg me-1"></i> Cancel
+              </button>
+              <button class="btn btn-danger" id="purgeExecuteBtn" onclick="dzExecutePurge()" disabled>
+                <i class="bi bi-trash3-fill me-1"></i> Delete Permanently
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2964,59 +3209,138 @@
       new bootstrap.Modal(modal).show();
     }
 
-    // DANGER ZONE: Data Purge Confirmation
-    function confirmDataPurge() {
-      // Multi-step confirmation process
-      const step1 = confirm(
-        "⚠️ DANGER ZONE WARNING ⚠️\n\n" +
-        "This will PERMANENTLY DELETE ALL student-related data including:\n" +
-        "• Student registrations and profiles\n" +
-        "• All appointments\n" +
-        "• Blood donations and requests\n" +
-        "• Feedback and login logs\n" +
-        "• Student user accounts\n\n" +
-        "This action CANNOT be undone!\n\n" +
-        "Are you absolutely sure you want to continue?"
-      );
+    // ═══════════════════════════════════════════════════════════════════
+    //  DANGER ZONE: Interactive Data Management
+    // ═══════════════════════════════════════════════════════════════════
 
-      if (!step1) {
-        return;
+    let dzPurgeAll = false; // Track if nuclear option was clicked
+
+    // Category → display name mapping
+    const dzCategoryNames = {
+      'registration': 'Student Registrations',
+      'appointment': 'Appointments',
+      'blood_donation': 'Blood Donations',
+      'blood_request': 'Blood Requests',
+      'feedback': 'Feedback Entries',
+      'login_log': 'Login Logs',
+      'donation': 'Monetary Donations',
+    };
+
+    // Category → backend deletion key mapping
+    const dzCategoryToDeleteKey = {
+      'registration': 'registrations',
+      'appointment': 'appointments',
+      'blood_donation': 'blood_donations',
+      'blood_request': 'blood_requests',
+      'feedback': 'feedback',
+      'login_log': 'login_logs',
+      'donation': 'donations',
+    };
+
+    function dzGetSelectedCards() {
+      return document.querySelectorAll('.dz-card.selected');
+    }
+
+    function dzGetSelectedCategories() {
+      return Array.from(dzGetSelectedCards()).map(c => c.dataset.category);
+    }
+
+    function dzUpdateToolbar() {
+      const count = dzGetSelectedCards().length;
+      document.getElementById('dzSelectedCount').textContent = `${count} categor${count === 1 ? 'y' : 'ies'} selected`;
+      document.getElementById('dzDownloadJsonBtn').disabled = count === 0;
+      document.getElementById('dzDownloadCsvBtn').disabled = count === 0;
+      document.getElementById('dzDeleteBtn').disabled = count === 0;
+    }
+
+    function dzToggleCard(card) {
+      card.classList.toggle('selected');
+      dzUpdateToolbar();
+    }
+
+    function dzSelectAll() {
+      document.querySelectorAll('.dz-card').forEach(c => c.classList.add('selected'));
+      dzUpdateToolbar();
+    }
+
+    function dzDeselectAll() {
+      document.querySelectorAll('.dz-card').forEach(c => c.classList.remove('selected'));
+      dzUpdateToolbar();
+    }
+
+    function dzDownloadSelected(format) {
+      const categories = dzGetSelectedCategories();
+      if (categories.length === 0) return;
+
+      if (categories.length === 1) {
+        // Single category – direct download
+        window.location.href = `/manage/export/${categories[0]}/?format=${format}`;
+      } else {
+        // Multiple categories – combined download
+        window.location.href = `/manage/export-selected/?categories=${categories.join(',')}&format=${format}`;
+      }
+    }
+
+    function dzOpenPurgeModal(isNuclear = false) {
+      dzPurgeAll = isNuclear;
+      const overlay = document.getElementById('purgeModalOverlay');
+      const list = document.getElementById('purgeItemsList');
+      const input = document.getElementById('purgeConfirmInput');
+      const execBtn = document.getElementById('purgeExecuteBtn');
+
+      input.value = '';
+      execBtn.disabled = true;
+
+      // Build items list
+      let items = [];
+      if (isNuclear) {
+        items = Object.values(dzCategoryNames);
+        items.push('Student User Accounts');
+        items.push('Student Profiles');
+      } else {
+        const cats = dzGetSelectedCategories();
+        if (cats.length === 0) return;
+        items = cats.map(c => dzCategoryNames[c] || c);
       }
 
-      // Second confirmation
-      const step2 = confirm(
-        "🚨 FINAL WARNING 🚨\n\n" +
-        "This is your LAST CHANCE to cancel!\n\n" +
-        "All student data will be PERMANENTLY ERASED.\n" +
-        "Make sure you have a database backup!\n\n" +
-        "Click OK to proceed with data purge, or Cancel to abort."
-      );
+      list.innerHTML = items.map(name =>
+        `<li><i class="bi bi-x-circle-fill me-2" style="color:#dc2626;"></i>${name}</li>`
+      ).join('');
 
-      if (!step2) {
-        return;
+      // Wire up real-time input validation
+      input.oninput = () => {
+        execBtn.disabled = input.value !== 'DELETE_ALL_STUDENT_DATA';
+      };
+
+      overlay.classList.add('active');
+      setTimeout(() => input.focus(), 300);
+    }
+
+    function dzClosePurgeModal() {
+      document.getElementById('purgeModalOverlay').classList.remove('active');
+      document.getElementById('purgeConfirmInput').value = '';
+      document.getElementById('purgeExecuteBtn').disabled = true;
+    }
+
+    function dzExecutePurge() {
+      const input = document.getElementById('purgeConfirmInput');
+      if (input.value !== 'DELETE_ALL_STUDENT_DATA') return;
+
+      const execBtn = document.getElementById('purgeExecuteBtn');
+      execBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Deleting...';
+      execBtn.disabled = true;
+
+      if (dzPurgeAll) {
+        document.getElementById('confirmationInput').value = 'DELETE_ALL_STUDENT_DATA';
+        document.getElementById('selectedDataInput').value = '';
+      } else {
+        const cats = dzGetSelectedCategories();
+        const deleteKeys = cats.map(c => dzCategoryToDeleteKey[c] || c);
+        document.getElementById('confirmationInput').value = 'CONFIRMED_SELECTIVE_DELETE';
+        document.getElementById('selectedDataInput').value = deleteKeys.join(',');
       }
 
-      // Text confirmation
-      const confirmation = prompt(
-        "🔥 DATA PURGE ACTIVATION 🔥\n\n" +
-        "To confirm this destructive action, type the following phrase EXACTLY:\n\n" +
-        "DELETE_ALL_STUDENT_DATA\n\n" +
-        "Type it below:"
-      );
-
-      if (confirmation === 'DELETE_ALL_STUDENT_DATA') {
-        // Show final loading state
-        const button = event.target;
-        const originalText = button.innerHTML;
-        button.innerHTML = '<i class="bi bi-hourglass-split"></i> PURGING DATA...';
-        button.disabled = true;
-
-        // Submit the form
-        document.getElementById('confirmationInput').value = confirmation;
-        document.getElementById('purgeForm').submit();
-      } else if (confirmation !== null) {
-        alert("❌ Incorrect confirmation phrase. Data purge cancelled for safety.");
-      }
+      document.getElementById('purgeForm').submit();
     }
 
     // Initialize dashboard by default

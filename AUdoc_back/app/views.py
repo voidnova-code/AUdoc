@@ -1,5 +1,7 @@
 import json
 import os
+import csv
+import io
 import time
 import razorpay
 import logging
@@ -15,7 +17,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Q, Case, When, Value, IntegerField
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -1364,6 +1366,16 @@ def admin_dashboard(request):
         'login_logs':     LoginLog.objects.order_by('-date', '-time')[:100],
         'staff_members':  StaffProfile.objects.order_by('name'),
 
+        # ── Danger zone total counts ──────────────────────
+        'total_registrations':    StudentRegistration.objects.count(),
+        'total_appointments':     Appointment.objects.count(),
+        'total_blood_donations':  BloodDonation.objects.count(),
+        'total_blood_requests':   BloodRequest.objects.count(),
+        'total_feedback':         HelpDesk.objects.count(),
+        'total_login_logs':       LoginLog.objects.count(),
+        'total_student_accounts': User.objects.filter(is_staff=False, is_superuser=False).count(),
+        'total_donations':        Donation.objects.count(),
+
         # ── misc ────────────────────────────────────────────
         'active_tab':    request.GET.get('tab', 'dashboard'),
         'dept_choices':  MEDICAL_DEPT_CHOICES,
@@ -1909,6 +1921,57 @@ def admin_clear_all_data(request):
 
             except Exception as e:
                 messages.error(request, f"❌ Critical error during data purge: {str(e)}")
+
+        elif confirmation == 'CONFIRMED_SELECTIVE_DELETE':
+            # ── Selective deletion: only delete chosen categories ──
+            selected_data = request.POST.get('selected_data', '')
+            categories = [c.strip() for c in selected_data.split(',') if c.strip()]
+
+            if not categories:
+                messages.error(request, "❌ No data categories selected for deletion.")
+                return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
+            try:
+                deletion_map = {
+                    'registrations': (StudentRegistration, 'Student Registrations'),
+                    'appointments': (Appointment, 'Appointments'),
+                    'blood_donations': (BloodDonation, 'Blood Donations'),
+                    'blood_requests': (BloodRequest, 'Blood Requests'),
+                    'feedback': (HelpDesk, 'Feedback Entries'),
+                    'login_logs': (LoginLog, 'Login Logs'),
+                    'donations': (Donation, 'Monetary Donations'),
+                }
+
+                total_deleted = 0
+                deleted_summary = []
+
+                # Delete dependent models first if parent is selected
+                if 'blood_requests' in categories:
+                    DonorResponse.objects.all().delete()
+                if 'appointments' in categories:
+                    TodaysAppointment.objects.all().delete()
+
+                for cat in categories:
+                    if cat in deletion_map:
+                        model_class, display_name = deletion_map[cat]
+                        count = model_class.objects.count()
+                        model_class.objects.all().delete()
+                        total_deleted += count
+                        deleted_summary.append(f"{count} {display_name}")
+
+                summary_text = ', '.join(deleted_summary) if deleted_summary else 'No records'
+                messages.success(
+                    request,
+                    f"🗑️ SELECTIVE DELETE COMPLETE: {total_deleted:,} records permanently deleted! "
+                    f"Deleted: {summary_text}."
+                )
+                log_security_event("selective_data_delete", request, {
+                    "categories": categories,
+                    "total_deleted": total_deleted,
+                }, level="warning")
+
+            except Exception as e:
+                messages.error(request, f"❌ Error during selective deletion: {str(e)}")
         else:
             messages.error(request, "❌ Incorrect confirmation phrase. Data purge cancelled for safety.")
 
@@ -2935,6 +2998,109 @@ def add_staff_member(request):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  DATA EXPORT & DOWNLOAD
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _get_record_as_dict(obj):
+    """Convert model instance to dictionary with serializable values."""
+    data = {}
+    for field in obj._meta.fields:
+        value = getattr(obj, field.name)
+        if isinstance(value, (datetime, date)):
+            data[field.name] = value.isoformat()
+        elif isinstance(value, Decimal):
+            data[field.name] = float(value)
+        else:
+            data[field.name] = str(value) if value is not None else ''
+    return data
+
+
+def _get_model_from_string(model_name):
+    """Get model class from string name."""
+    models_map = {
+        'registration': StudentRegistration,
+        'appointment': Appointment,
+        'blood_donation': BloodDonation,
+        'blood_request': BloodRequest,
+        'feedback': HelpDesk,
+        'login_log': LoginLog,
+        'donation': Donation,
+        'doctor': Doctor,
+        'staff': StaffProfile,
+    }
+    return models_map.get(model_name.lower())
+
+
+@_admin_required
+def admin_export_data(request, model_name):
+    """Export all records of a model as JSON or CSV."""
+    format_type = request.GET.get('format', 'json').lower()
+    model = _get_model_from_string(model_name)
+    if not model:
+        return JsonResponse({'error': 'Invalid model name'}, status=400)
+
+    objects = model.objects.all()
+    records = [_get_record_as_dict(obj) for obj in objects]
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    if format_type == 'csv':
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="{model_name}_{timestamp}.csv"'
+        if records:
+            writer = csv.DictWriter(response, fieldnames=records[0].keys())
+            writer.writeheader()
+            writer.writerows(records)
+        return response
+    else:
+        response = HttpResponse(
+            json.dumps(records, indent=2, ensure_ascii=False),
+            content_type='application/json; charset=utf-8',
+        )
+        response['Content-Disposition'] = f'attachment; filename="{model_name}_{timestamp}.json"'
+        return response
+
+
+@_admin_required
+def admin_export_selected(request):
+    """Export selected data categories as a combined JSON file."""
+    categories = request.GET.get('categories', '').split(',')
+    format_type = request.GET.get('format', 'json').lower()
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    export_data = {}
+    for cat in categories:
+        cat = cat.strip()
+        model = _get_model_from_string(cat)
+        if model:
+            objects = model.objects.all()
+            export_data[cat] = [_get_record_as_dict(obj) for obj in objects]
+
+    if not export_data:
+        return JsonResponse({'error': 'No valid categories selected'}, status=400)
+
+    if format_type == 'csv':
+        # For CSV, combine all into one sheet with a 'category' column
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="audoc_export_{timestamp}.csv"'
+        writer = None
+        for cat_name, records in export_data.items():
+            for record in records:
+                record['_category'] = cat_name
+                if writer is None:
+                    writer = csv.DictWriter(response, fieldnames=record.keys())
+                    writer.writeheader()
+                writer.writerow(record)
+        return response
+    else:
+        response = HttpResponse(
+            json.dumps(export_data, indent=2, ensure_ascii=False),
+            content_type='application/json; charset=utf-8',
+        )
+        response['Content-Disposition'] = f'attachment; filename="audoc_export_{timestamp}.json"'
+        return response
 
 
 # ══════════════════════════════════════════════════════════════════════════════
