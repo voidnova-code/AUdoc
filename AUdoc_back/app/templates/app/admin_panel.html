@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,63 +12,127 @@
   <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
   <style>
     :root {
-      --primary:      #4a7c59;
+      --primary: #4a7c59;
       --primary-dark: #2e5c3a;
-      --accent:       #e8f5ec;
-      --sidebar-w:    240px;
+      --accent: #e8f5ec;
+      --sidebar-w: 240px;
     }
 
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f4; color: #333; margin: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f4;
+      color: #333;
+      margin: 0;
+    }
 
     /* ── Sidebar ──────────────────────────────────────────── */
     .sidebar {
-      position: fixed; top: 0; left: 0;
-      width: var(--sidebar-w); height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-w);
+      height: 100vh;
       background: #0d2a1a;
-      display: flex; flex-direction: column;
-      overflow-y: auto; z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 100;
     }
+
     .sidebar-brand {
       padding: 20px 18px 16px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .sidebar-brand .logo-box {
-      width: 36px; height: 36px; background: var(--primary);
-      border-radius: 9px; display: flex; align-items: center;
-      justify-content: center; flex-shrink: 0;
-    }
-    .sidebar-brand .brand-name { color: #fff; font-weight: 700; font-size: 1rem; line-height: 1.1; }
-    .sidebar-brand .brand-sub  { color: #9abea8; font-size: .68rem; }
 
-    .sidebar-section { padding: 14px 12px 4px; font-size: .68rem; color: #5a8a6a; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
+    .sidebar-brand .logo-box {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand .brand-name {
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.1;
+    }
+
+    .sidebar-brand .brand-sub {
+      color: #9abea8;
+      font-size: .68rem;
+    }
+
+    .sidebar-section {
+      padding: 14px 12px 4px;
+      font-size: .68rem;
+      color: #5a8a6a;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-weight: 600;
+    }
 
     .sidebar nav a {
-      display: block; padding: 9px 16px; color: #9abea8;
-      text-decoration: none; border-radius: 6px;
-      margin: 2px 8px; transition: all .3s ease;
+      display: block;
+      padding: 9px 16px;
+      color: #9abea8;
+      text-decoration: none;
+      border-radius: 6px;
+      margin: 2px 8px;
+      transition: all .3s ease;
       transform: translateX(0);
     }
+
     .sidebar nav a:hover {
-      background: rgba(74,124,89,.15); color: #c4ddc9;
+      background: rgba(74, 124, 89, .15);
+      color: #c4ddc9;
       transform: translateX(5px);
     }
+
     .sidebar nav a.active {
-      background: var(--primary); color: #fff;
+      background: var(--primary);
+      color: #fff;
       transform: translateX(5px);
-      box-shadow: 0 4px 12px rgba(74,124,89,0.3);
+      box-shadow: 0 4px 12px rgba(74, 124, 89, 0.3);
     }
-    .sidebar nav a i { width: 16px; margin-right: 8px; }
+
+    .sidebar nav a i {
+      width: 16px;
+      margin-right: 8px;
+    }
 
     /* ── Enhanced Animations ──────────────────────────────────── */
     @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
     }
+
     @keyframes glow {
-      0%, 100% { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
-      50% { box-shadow: 0 8px 30px rgba(74,124,89,0.2); }
+
+      0%,
+      100% {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
+      }
+
+      50% {
+        box-shadow: 0 8px 30px rgba(74, 124, 89, 0.2);
+      }
     }
+
     .stat-card.updating {
       animation: glow 1s ease-in-out;
     }
@@ -76,24 +141,28 @@
     .alerts-container .alert {
       border: none;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
       margin-bottom: 10px;
     }
+
     .alert-success {
       background: linear-gradient(45deg, #d1edda, #c3e6cb);
       color: #155724;
       border-left: 4px solid #28a745;
     }
+
     .alert-danger {
       background: linear-gradient(45deg, #f8d7da, #f1b0b7);
       color: #721c24;
       border-left: 4px solid #dc3545;
     }
+
     .alert-warning {
       background: linear-gradient(45deg, #fff3cd, #ffeaa7);
       color: #856404;
       border-left: 4px solid #ffc107;
     }
+
     .alert-info {
       background: linear-gradient(45deg, #d1ecf1, #bee5eb);
       color: #0c5460;
@@ -108,6 +177,7 @@
       padding: 24px;
       margin: 20px 0;
     }
+
     .danger-header {
       color: #c53030;
       font-weight: 700;
@@ -117,11 +187,13 @@
       align-items: center;
       gap: 8px;
     }
+
     .danger-description {
       color: #742a2a;
       margin-bottom: 20px;
       line-height: 1.6;
     }
+
     .kill-button {
       background: linear-gradient(45deg, #e53e3e, #c53030);
       border: none;
@@ -133,12 +205,14 @@
       transition: all 0.3s ease;
       box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
     }
+
     .kill-button:hover {
       background: linear-gradient(45deg, #c53030, #9c2626);
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(229, 62, 62, 0.4);
       color: white;
     }
+
     .stats-warning {
       background: #fff5f5;
       border-left: 4px solid #fc8181;
@@ -146,33 +220,55 @@
       border-radius: 8px;
       margin: 16px 0;
     }
+
     .stat-item {
       display: flex;
       justify-content: space-between;
       padding: 8px 0;
       border-bottom: 1px solid #fed7d7;
     }
-    .stat-item:last-child { border-bottom: none; }
+
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+
     .stat-number {
       font-weight: 700;
       color: #c53030;
     }
 
     /* ── Main Content ──────────────────────────────────────── */
-    .content-wrapper { margin-left: var(--sidebar-w); min-height: 100vh; }
+    .content-wrapper {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+    }
+
     .content-header {
-      background: #fff; padding: 20px 24px 16px;
+      background: #fff;
+      padding: 20px 24px 16px;
       border-bottom: 1px solid #e9ecef;
     }
-    .content-header h1 { margin: 0; color: var(--primary); font-size: 1.6rem; font-weight: 600; }
-    .content-body { padding: 20px 24px; }
+
+    .content-header h1 {
+      margin: 0;
+      color: var(--primary);
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
+
+    .content-body {
+      padding: 20px 24px;
+    }
 
     /* ── Tab Navigation ──────────────────────────────────────── */
     .tab-navigation {
-      background: #fff; border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,.06);
-      margin-bottom: 20px; overflow: hidden;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .06);
+      margin-bottom: 20px;
+      overflow: hidden;
     }
+
     /* ── Tab Content ──────────────────────────────────────────── */
     .tab-content {
       display: none;
@@ -180,73 +276,161 @@
       transform: translateY(20px);
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
+
     .tab-content.active {
       display: block !important;
       opacity: 1 !important;
       transform: translateY(0) !important;
     }
-    .nav-tabs { border-bottom: 2px solid #f8f9fa; margin: 0; }
+
+    .nav-tabs {
+      border-bottom: 2px solid #f8f9fa;
+      margin: 0;
+    }
+
     .nav-tabs .nav-link {
-      border: none; border-radius: 0; color: #666;
-      font-weight: 500; padding: 14px 20px;
+      border: none;
+      border-radius: 0;
+      color: #666;
+      font-weight: 500;
+      padding: 14px 20px;
       border-bottom: 3px solid transparent;
     }
-    .nav-tabs .nav-link:hover { background: #f8f9fa; border-color: transparent; }
-    .nav-tabs .nav-link.active { color: var(--primary); border-bottom-color: var(--primary); background: #fff; }
+
+    .nav-tabs .nav-link:hover {
+      background: #f8f9fa;
+      border-color: transparent;
+    }
+
+    .nav-tabs .nav-link.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: #fff;
+    }
 
     /* ── Cards ─────────────────────────────────────────────── */
     .card {
-      border: none; border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,.06);
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .06);
       margin-bottom: 20px;
     }
-    .card-header { background: var(--accent); border: none; padding: 16px 20px; }
-    .card-title { margin: 0; color: var(--primary); font-weight: 600; }
+
+    .card-header {
+      background: var(--accent);
+      border: none;
+      padding: 16px 20px;
+    }
+
+    .card-title {
+      margin: 0;
+      color: var(--primary);
+      font-weight: 600;
+    }
 
     /* ── Tables ─────────────────────────────────────────────── */
-    .table { margin: 0; }
-    .table th {
-      background: var(--accent); color: var(--primary);
-      border: none; font-weight: 600; padding: 12px;
+    .table {
+      margin: 0;
     }
-    .table td { padding: 12px; border-top: 1px solid #f0f0f0; }
-    .table-responsive { border-radius: 8px; overflow: hidden; }
+
+    .table th {
+      background: var(--accent);
+      color: var(--primary);
+      border: none;
+      font-weight: 600;
+      padding: 12px;
+    }
+
+    .table td {
+      padding: 12px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .table-responsive {
+      border-radius: 8px;
+      overflow: hidden;
+    }
 
     /* ── Badges ─────────────────────────────────────────────── */
-    .status-pending { background: #fff3cd; color: #856404; }
-    .status-confirmed { background: #d1edda; color: #155724; }
-    .status-cancelled { background: #f8d7da; color: #721c24; }
-    .status-completed { background: #d4edda; color: #155724; }
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-confirmed {
+      background: #d1edda;
+      color: #155724;
+    }
+
+    .status-cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .status-completed {
+      background: #d4edda;
+      color: #155724;
+    }
 
     /* ── Form Controls ────────────────────────────────────── */
-    .form-label { font-weight: 600; color: #333; font-size: .95rem; }
-    .form-control, .form-select {
+    .form-label {
+      font-weight: 600;
+      color: #333;
+      font-size: .95rem;
+    }
+
+    .form-control,
+    .form-select {
       border: 1.5px solid #d5e8d9;
       border-radius: 8px;
       padding: 10px 14px;
       font-size: .93rem;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
-    .form-control:focus, .form-select:focus {
+
+    .form-control:focus,
+    .form-select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(74,124,89,.1);
+      box-shadow: 0 0 0 3px rgba(74, 124, 89, .1);
       outline: none;
     }
+
     .form-check-input {
       border: 1.5px solid #d5e8d9;
       border-radius: 4px;
     }
+
     .form-check-input:checked {
       background-color: var(--primary);
       border-color: var(--primary);
     }
-    .form-check-label { font-size: .93rem; color: #555; cursor: pointer; }
-    
+
+    .form-check-label {
+      font-size: .93rem;
+      color: #555;
+      cursor: pointer;
+    }
+
     /* ── Modal Styling ────────────────────────────────────── */
-    .modal-content { border: none; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
-    .modal-header { border-bottom: none; padding: 20px; }
-    .modal-body { padding: 20px; }
-    .modal-footer { border-top: none; padding: 16px 20px; }
+    .modal-content {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+    }
+
+    .modal-header {
+      border-bottom: none;
+      padding: 20px;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      border-top: none;
+      padding: 16px 20px;
+    }
 
     /* ── Detail Row Styling ────────────────────────────────── */
     .detail-row {
@@ -256,15 +440,18 @@
       padding: 14px 0;
       border-bottom: 1px solid #e9ecef;
     }
+
     .detail-row:last-child {
       border-bottom: none;
     }
+
     .detail-row label {
       font-weight: 600;
       color: #555;
       min-width: 140px;
       font-size: .93rem;
     }
+
     .detail-row span {
       color: #333;
       word-break: break-word;
@@ -274,26 +461,44 @@
     }
 
     /* ── Buttons ─────────────────────────────────────────────── */
-    .btn-primary { background: var(--primary); border-color: var(--primary); }
-    .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
-    .btn-sm { font-size: .8rem; padding: 4px 8px; }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+
+    .btn-sm {
+      font-size: .8rem;
+      padding: 4px 8px;
+    }
 
     /* ── Stats Cards ─────────────────────────────────────────── */
-    .stats-row { margin-bottom: 24px; }
+    .stats-row {
+      margin-bottom: 24px;
+    }
+
     .stat-card {
-      background: #fff; border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,.08);
-      padding: 24px; text-align: center;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
+      padding: 24px;
+      text-align: center;
       border-left: 4px solid var(--primary);
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
     }
+
     .stat-card:hover {
       transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 12px 30px rgba(74,124,89,0.2);
+      box-shadow: 0 12px 30px rgba(74, 124, 89, 0.2);
       border-left-color: #2e5c3a;
     }
+
     .stat-card::after {
       content: '';
       position: absolute;
@@ -301,49 +506,63 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(74,124,89,0.1), transparent);
+      background: linear-gradient(90deg, transparent, rgba(74, 124, 89, 0.1), transparent);
       transition: left 0.5s ease;
       z-index: 2;
       pointer-events: none;
     }
+
     .stat-card:hover::after {
       left: 100%;
     }
+
     .stat-card::before {
       content: '';
       position: absolute;
-      top: 0; right: 0;
-      width: 100px; height: 100px;
-      background: linear-gradient(45deg, rgba(74,124,89,0.1), rgba(74,124,89,0.05));
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(45deg, rgba(74, 124, 89, 0.1), rgba(74, 124, 89, 0.05));
       border-radius: 50%;
       transform: translate(30px, -30px);
       z-index: 0;
     }
+
     .stat-number {
-      font-size: 2.5rem; font-weight: 700;
-      color: var(--primary); margin: 0;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 0;
       animation: countUp 2s ease-out;
       position: relative;
       z-index: 3;
     }
+
     .stat-label {
-      color: #666; font-size: .9rem;
-      margin-top: 8px; font-weight: 500;
+      color: #666;
+      font-size: .9rem;
+      margin-top: 8px;
+      font-weight: 500;
       position: relative;
       z-index: 3;
     }
+
     .stat-icon {
       position: absolute;
-      top: 20px; right: 20px;
+      top: 20px;
+      right: 20px;
       font-size: 2rem;
-      color: rgba(74,124,89,0.2);
+      color: rgba(74, 124, 89, 0.2);
       transition: all 0.3s ease;
       z-index: 1;
     }
+
     .stat-card:hover .stat-icon {
-      color: rgba(74,124,89,0.4);
+      color: rgba(74, 124, 89, 0.4);
       transform: scale(1.15) rotate(10deg);
     }
+
     .stat-growth {
       font-size: 0.8rem;
       margin-top: 4px;
@@ -353,9 +572,21 @@
       position: relative;
       z-index: 3;
     }
-    .growth-positive { background: #d1edda; color: #155724; }
-    .growth-negative { background: #f8d7da; color: #721c24; }
-    .growth-neutral { background: #e2e3e5; color: #495057; }
+
+    .growth-positive {
+      background: #d1edda;
+      color: #155724;
+    }
+
+    .growth-negative {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .growth-neutral {
+      background: #e2e3e5;
+      color: #495057;
+    }
 
     /* ── Dashboard Enhancements ──────────────────────────────── */
     .dashboard-header {
@@ -366,12 +597,14 @@
       margin: -20px -24px 30px;
       text-align: center;
     }
+
     .dashboard-title {
       font-size: 2.5rem;
       font-weight: 700;
       margin: 0;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
+
     .dashboard-subtitle {
       opacity: 0.9;
       font-size: 1.1rem;
@@ -381,23 +614,27 @@
     .activity-card {
       background: #fff;
       border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
       padding: 20px;
       height: 100%;
       transition: all 0.3s ease;
     }
+
     .activity-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(0,0,0,.12);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .12);
     }
+
     .activity-header {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 20px;
     }
+
     .activity-icon {
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       background: var(--accent);
       border-radius: 10px;
       display: flex;
@@ -414,6 +651,7 @@
       overflow: hidden;
       margin: 10px 0;
     }
+
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, var(--primary), #5a8a6a);
@@ -430,13 +668,14 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
       border: 1px solid #f0f0f0;
       position: relative;
       overflow: hidden;
     }
+
     .nav-card::before {
       content: '';
       position: absolute;
@@ -444,17 +683,20 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
       transition: left 0.6s ease;
     }
+
     .nav-card:hover::before {
       left: 100%;
     }
+
     .nav-card:hover {
       transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 12px 24px rgba(0,0,0,.12);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, .12);
       border-color: #e0e0e0;
     }
+
     .nav-icon {
       width: 50px;
       height: 50px;
@@ -466,27 +708,32 @@
       color: white;
       flex-shrink: 0;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
     }
+
     .nav-card:hover .nav-icon {
       transform: scale(1.1) rotate(-5deg);
-      box-shadow: 0 6px 18px rgba(0,0,0,.2);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .2);
     }
+
     .nav-content {
       flex: 1;
       position: relative;
       z-index: 2;
     }
+
     .nav-title {
       font-weight: 600;
       color: #333;
       font-size: 0.95rem;
     }
+
     .nav-count {
       font-size: 0.8rem;
       color: #999;
       margin-top: 2px;
     }
+
     .metric-row {
       display: flex;
       justify-content: space-between;
@@ -494,45 +741,82 @@
       padding: 12px 0;
       border-bottom: 1px solid #f0f0f0;
     }
-    .metric-row:last-child { border-bottom: none; }
-    .metric-label { font-weight: 500; color: #666; }
-    .metric-value { font-weight: 700; color: var(--primary); }
+
+    .metric-row:last-child {
+      border-bottom: none;
+    }
+
+    .metric-label {
+      font-weight: 500;
+      color: #666;
+    }
+
+    .metric-value {
+      font-weight: 700;
+      color: var(--primary);
+    }
 
     /* ── Animations ───────────────────────────────────────────── */
     @keyframes countUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     @keyframes slideIn {
-      from { width: 0; }
-      to { width: var(--progress-width, 100%); }
+      from {
+        width: 0;
+      }
+
+      to {
+        width: var(--progress-width, 100%);
+      }
     }
+
     @keyframes toastSlideIn {
       from {
         transform: translateX(400px);
         opacity: 0;
       }
+
       to {
         transform: translateX(0);
         opacity: 1;
       }
     }
+
     @keyframes toastSlideOut {
       from {
         transform: translateX(0);
         opacity: 1;
       }
+
       to {
         transform: translateX(400px);
         opacity: 0;
       }
     }
+
     .fade-in-up {
       animation: fadeInUp 0.6s ease-out;
     }
+
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* ── Chart Container ──────────────────────────────────────── */
@@ -541,21 +825,40 @@
       height: 300px;
       margin: 20px 0;
     }
+
     .mini-chart {
       height: 150px;
     }
 
     /* ── Responsive ─────────────────────────────────────────── */
     @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); }
-      .content-wrapper { margin-left: 0; }
-      .sidebar.show { transform: translateX(0); }
-      .content-header { padding: 16px 20px 12px; }
-      .content-header h1 { font-size: 1.4rem; }
-      .content-body { padding: 16px 20px; }
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .content-wrapper {
+        margin-left: 0;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .content-header {
+        padding: 16px 20px 12px;
+      }
+
+      .content-header h1 {
+        font-size: 1.4rem;
+      }
+
+      .content-body {
+        padding: 16px 20px;
+      }
     }
   </style>
 </head>
+
 <body>
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
@@ -629,7 +932,8 @@
 
     <div class="sidebar-section" style="color: #dc3545;">Danger Zone</div>
     <nav>
-      <a href="#" data-tab="danger-zone" class="tab-link" style="color: #dc3545;" onmouseover="this.style.background='rgba(220,53,69,0.15)'" onmouseout="this.style.background=''">
+      <a href="#" data-tab="danger-zone" class="tab-link" style="color: #dc3545;"
+        onmouseover="this.style.background='rgba(220,53,69,0.15)'" onmouseout="this.style.background=''">
         <i class="bi bi-exclamation-triangle-fill"></i> Data Management
       </a>
     </nav>
@@ -652,8 +956,10 @@
       {% if messages %}
       <div class="alerts-container mb-3">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert" data-aos="fade-down">
-          <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert"
+          data-aos="fade-down">
+          <i
+            class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
           {{ message }}
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -674,7 +980,8 @@
         <!-- Enhanced Stats Cards -->
         <div class="row stats-row">
           <div class="col-md-3 mb-3">
-            <div class="stat-card clickable" onclick="showTab('registrations')" style="cursor: pointer;" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-card clickable" onclick="showTab('registrations')" style="cursor: pointer;"
+              data-aos="fade-up" data-aos-delay="100">
               <div class="stat-icon">
                 <i class="bi bi-person-plus-fill"></i>
               </div>
@@ -686,7 +993,8 @@
             </div>
           </div>
           <div class="col-md-3 mb-3">
-            <div class="stat-card clickable" onclick="showTab('appointments')" style="cursor: pointer;" data-aos="fade-up" data-aos-delay="200">
+            <div class="stat-card clickable" onclick="showTab('appointments')" style="cursor: pointer;"
+              data-aos="fade-up" data-aos-delay="200">
               <div class="stat-icon">
                 <i class="bi bi-calendar-check-fill"></i>
               </div>
@@ -698,7 +1006,8 @@
             </div>
           </div>
           <div class="col-md-3 mb-3">
-            <div class="stat-card clickable" onclick="showTab('doctors')" style="cursor: pointer;" data-aos="fade-up" data-aos-delay="300">
+            <div class="stat-card clickable" onclick="showTab('doctors')" style="cursor: pointer;" data-aos="fade-up"
+              data-aos-delay="300">
               <div class="stat-icon">
                 <i class="bi bi-person-badge-fill"></i>
               </div>
@@ -710,7 +1019,8 @@
             </div>
           </div>
           <div class="col-md-3 mb-3">
-            <div class="stat-card clickable" onclick="showTab('todays-appointments')" style="cursor: pointer;" data-aos="fade-up" data-aos-delay="400">
+            <div class="stat-card clickable" onclick="showTab('todays-appointments')" style="cursor: pointer;"
+              data-aos="fade-up" data-aos-delay="400">
               <div class="stat-icon">
                 <i class="bi bi-clock-fill"></i>
               </div>
@@ -725,7 +1035,9 @@
 
         <!-- Quick Navigation Cards -->
         <div class="quick-nav-section mb-4">
-          <h6 style="color: var(--primary); font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Quick Access</h6>
+          <h6
+            style="color: var(--primary); font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+            Quick Access</h6>
           <div class="row g-3">
             <div class="col-md-3 col-sm-6">
               <div class="nav-card" onclick="showTab('registrations')" data-aos="zoom-in" data-aos-delay="100">
@@ -923,17 +1235,24 @@
 
               <!-- Priority Alert Section -->
               {% if stat_pending_reg > 0 or stat_pending_appts > 0 %}
-              <div style="background: linear-gradient(135deg, #fff8e1 0%, #fffaf0 100%); border-left: 4px solid #f9a825; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+              <div
+                style="background: linear-gradient(135deg, #fff8e1 0%, #fffaf0 100%); border-left: 4px solid #f9a825; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
                 <i class="bi bi-exclamation-circle" style="color: #d39e00; font-size: 1.2rem; flex-shrink: 0;"></i>
                 <div style="font-size: 0.85rem; color: #664d03;">
-                  <strong>{% if stat_pending_reg > 0 %}{{ stat_pending_reg }} registration{{ stat_pending_reg|pluralize }}{% endif %}{% if stat_pending_appts > 0 %}{% if stat_pending_reg > 0 %}, {% endif %}{{ stat_pending_appts }} appointment{{ stat_pending_appts|pluralize }}{% endif %} awaiting action</strong>
+                  <strong>{% if stat_pending_reg > 0 %}{{ stat_pending_reg }} registration{{ stat_pending_reg|pluralize
+                    }}{% endif %}{% if stat_pending_appts > 0 %}{% if stat_pending_reg > 0 %}, {% endif %}{{
+                    stat_pending_appts }} appointment{{ stat_pending_appts|pluralize }}{% endif %} awaiting
+                    action</strong>
                 </div>
               </div>
               {% endif %}
 
               <!-- Primary Actions -->
               <div class="d-grid gap-2 mb-3">
-                <button class="btn d-flex align-items-center justify-content-between" onclick="showTab('registrations')" style="background: linear-gradient(135deg, #4a7c59 0%, #5a8a6a 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(74,124,89,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <button class="btn d-flex align-items-center justify-content-between" onclick="showTab('registrations')"
+                  style="background: linear-gradient(135deg, #4a7c59 0%, #5a8a6a 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(74,124,89,0.3)'"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                   <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
                     <i class="bi bi-person-check" style="font-size: 1.1rem;"></i>
                     <div style="text-align: left;">
@@ -941,10 +1260,15 @@
                       <small style="opacity: 0.85;">{{ stat_pending_reg }} pending</small>
                     </div>
                   </div>
-                  <span class="badge" style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Action</span>
+                  <span class="badge"
+                    style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Action</span>
                 </button>
 
-                <button class="btn d-flex align-items-center justify-content-between" onclick="showTab('todays-appointments')" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(40,167,69,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <button class="btn d-flex align-items-center justify-content-between"
+                  onclick="showTab('todays-appointments')"
+                  style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(40,167,69,0.3)'"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                   <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
                     <i class="bi bi-calendar-check" style="font-size: 1.1rem;"></i>
                     <div style="text-align: left;">
@@ -952,10 +1276,15 @@
                       <small style="opacity: 0.85;">{{ stat_todays_confirmed }} confirmed</small>
                     </div>
                   </div>
-                  <span class="badge" style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Live</span>
+                  <span class="badge"
+                    style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Live</span>
                 </button>
 
-                <button class="btn d-flex align-items-center justify-content-between" onclick="showTab('blood-donations')" style="background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(220,53,69,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <button class="btn d-flex align-items-center justify-content-between"
+                  onclick="showTab('blood-donations')"
+                  style="background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(220,53,69,0.3)'"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                   <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
                     <i class="bi bi-heart-pulse" style="font-size: 1.1rem;"></i>
                     <div style="text-align: left;">
@@ -963,30 +1292,45 @@
                       <small style="opacity: 0.85;">{{ stat_pending_blooddon }} donors pending</small>
                     </div>
                   </div>
-                  <span class="badge" style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Review</span>
+                  <span class="badge"
+                    style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Review</span>
                 </button>
               </div>
 
               <!-- Secondary Quick Access -->
               <hr style="margin: 12px 0; opacity: 0.3;">
-              <div style="font-size: 0.8rem; color: #999; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Secondary Shortcuts</div>
+              <div
+                style="font-size: 0.8rem; color: #999; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                Secondary Shortcuts</div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <button class="btn btn-sm" onclick="showTab('blood-requests')" style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
+                <button class="btn btn-sm" onclick="showTab('blood-requests')"
+                  style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;"
+                  onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'"
+                  onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
                   <i class="bi bi-droplet me-1"></i>
                   <div style="font-weight: 500;">Requests</div>
                   <small style="color: #999;">{{ stat_pending_bloodreq }}</small>
                 </button>
-                <button class="btn btn-sm" onclick="showTab('doctors')" style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
+                <button class="btn btn-sm" onclick="showTab('doctors')"
+                  style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;"
+                  onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'"
+                  onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
                   <i class="bi bi-person-badge me-1"></i>
                   <div style="font-weight: 500;">Doctors</div>
                   <small style="color: #999;">{{ stat_active_doctors }} active</small>
                 </button>
-                <button class="btn btn-sm" onclick="showTab('appointments')" style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
+                <button class="btn btn-sm" onclick="showTab('appointments')"
+                  style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;"
+                  onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'"
+                  onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
                   <i class="bi bi-calendar3 me-1"></i>
                   <div style="font-weight: 500;">All Appts</div>
                   <small style="color: #999;">{{ stat_pending_appts }}</small>
                 </button>
-                <button class="btn btn-sm" onclick="showTab('staff-members')" style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
+                <button class="btn btn-sm" onclick="showTab('staff-members')"
+                  style="background: #f8f9fa; border: 1px solid #e9ecef; color: #333; padding: 10px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease;"
+                  onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#dee2e6'"
+                  onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#e9ecef'">
                   <i class="bi bi-people me-1"></i>
                   <div style="font-weight: 500;">Staff</div>
                   <small style="color: #999;">{{ stat_staff }} members</small>
@@ -994,9 +1338,12 @@
               </div>
 
               <!-- Keyboard Shortcuts Hint -->
-              <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 10px; margin-top: 12px; font-size: 0.75rem; color: #666;">
+              <div
+                style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 10px; margin-top: 12px; font-size: 0.75rem; color: #666;">
                 <i class="bi bi-keyboard" style="color: var(--primary);"></i>
-                <strong> Pro Tip:</strong> Use keyboard shortcuts: <code style="background: white; padding: 2px 4px; border-radius: 3px; font-size: 0.7rem;">Alt+R</code> for registrations
+                <strong> Pro Tip:</strong> Use keyboard shortcuts: <code
+                  style="background: white; padding: 2px 4px; border-radius: 3px; font-size: 0.7rem;">Alt+R</code> for
+                registrations
               </div>
             </div>
           </div>
@@ -1072,16 +1419,17 @@
                     <td>{{ today_appt.appointment.appointment_time|time:"H:i" }}</td>
                     <td>
                       {% if today_appt.status == "CONFIRMED" %}
-                        <span class="badge status-confirmed">Confirmed</span>
+                      <span class="badge status-confirmed">Confirmed</span>
                       {% elif today_appt.status == "PENDING" %}
-                        <span class="badge status-pending">Pending</span>
+                      <span class="badge status-pending">Pending</span>
                       {% else %}
-                        <span class="badge status-cancelled">{{ today_appt.status|title }}</span>
+                      <span class="badge status-cancelled">{{ today_appt.status|title }}</span>
                       {% endif %}
                     </td>
                     <td>{{ today_appt.response_deadline|date:"H:i" }}</td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('todays', {{ today_appt.id }})">
+                      <button class="btn btn-sm btn-outline-primary"
+                        onclick="viewDetails('todays', '{{ today_appt.id }}')">
                         <i class="bi bi-eye"></i>
                       </button>
                     </td>
@@ -1129,25 +1477,27 @@
                     <td>{{ reg.phone }}</td>
                     <td>
                       {% if reg.status == "APPROVED" %}
-                        <span class="badge status-confirmed">Approved</span>
+                      <span class="badge status-confirmed">Approved</span>
                       {% elif reg.status == "PENDING" %}
-                        <span class="badge status-pending">Pending</span>
+                      <span class="badge status-pending">Pending</span>
                       {% else %}
-                        <span class="badge status-cancelled">Rejected</span>
+                      <span class="badge status-cancelled">Rejected</span>
                       {% endif %}
                     </td>
                     <td>{{ reg.registered_at|date:"M d, Y" }}</td>
                     <td>
                       {% if reg.status == "PENDING" %}
                       <div class="btn-group" role="group">
-                        <form method="POST" action="{% url 'admin_registration_action' reg.pk %}" style="display:inline;">
+                        <form method="POST" action="{% url 'admin_registration_action' reg.pk %}"
+                          style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="action" value="approve">
                           <button type="submit" class="btn btn-sm btn-success" title="Approve Registration">
                             <i class="bi bi-check"></i>
                           </button>
                         </form>
-                        <form method="POST" action="{% url 'admin_registration_action' reg.pk %}" style="display:inline;">
+                        <form method="POST" action="{% url 'admin_registration_action' reg.pk %}"
+                          style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="action" value="reject">
                           <button type="submit" class="btn btn-sm btn-danger" title="Reject Registration">
@@ -1156,7 +1506,8 @@
                         </form>
                       </div>
                       {% endif %}
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('registration', {{ reg.id }})">
+                      <button class="btn btn-sm btn-outline-primary"
+                        onclick="viewDetails('registration', {{ reg.id }})">
                         <i class="bi bi-eye"></i>
                       </button>
                     </td>
@@ -1207,33 +1558,36 @@
                     <td>{{ appointment.student_department }}</td>
                     <td>
                       {% if appointment.status == "CONFIRMED" %}
-                        <span class="badge status-confirmed">Confirmed</span>
+                      <span class="badge status-confirmed">Confirmed</span>
                       {% elif appointment.status == "PENDING" %}
-                        <span class="badge status-pending">Pending</span>
+                      <span class="badge status-pending">Pending</span>
                       {% elif appointment.status == "COMPLETED" %}
-                        <span class="badge status-completed">Completed</span>
+                      <span class="badge status-completed">Completed</span>
                       {% else %}
-                        <span class="badge status-cancelled">{{ appointment.status|title }}</span>
+                      <span class="badge status-cancelled">{{ appointment.status|title }}</span>
                       {% endif %}
                     </td>
                     <td>{{ appointment.created_at|date:"M d" }}</td>
                     <td>
                       <div class="btn-group" role="group">
-                        <form method="POST" action="{% url 'admin_appointment_status' appointment.pk %}" style="display:inline;">
+                        <form method="POST" action="{% url 'admin_appointment_status' appointment.pk %}"
+                          style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="status" value="CONFIRMED">
                           <button type="submit" class="btn btn-sm btn-success" title="Confirm Appointment">
                             <i class="bi bi-check"></i>
                           </button>
                         </form>
-                        <form method="POST" action="{% url 'admin_appointment_status' appointment.pk %}" style="display:inline;">
+                        <form method="POST" action="{% url 'admin_appointment_status' appointment.pk %}"
+                          style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="status" value="CANCELLED">
                           <button type="submit" class="btn btn-sm btn-danger" title="Cancel Appointment">
                             <i class="bi bi-x"></i>
                           </button>
                         </form>
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('appointment', {{ appointment.id }})">
+                        <button class="btn btn-sm btn-outline-primary"
+                          onclick="viewDetails('appointment', {{ appointment.id }})">
                           <i class="bi bi-eye"></i>
                         </button>
                       </div>
@@ -1285,24 +1639,26 @@
                     <td>{{ donor.health_condition }}</td>
                     <td>
                       {% if donor.status == "APPROVED" %}
-                        <span class="badge status-confirmed">Approved</span>
+                      <span class="badge status-confirmed">Approved</span>
                       {% elif donor.status == "PENDING" %}
-                        <span class="badge status-pending">Pending</span>
+                      <span class="badge status-pending">Pending</span>
                       {% else %}
-                        <span class="badge status-cancelled">{{ donor.status|title }}</span>
+                      <span class="badge status-cancelled">{{ donor.status|title }}</span>
                       {% endif %}
                     </td>
                     <td>
                       {% if donor.status == "PENDING" %}
                       <div class="btn-group" role="group">
-                        <form method="POST" action="{% url 'admin_blood_donation_status' donor.pk %}" style="display:inline;">
+                        <form method="POST" action="{% url 'admin_blood_donation_status' donor.pk %}"
+                          style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="status" value="APPROVED">
                           <button type="submit" class="btn btn-sm btn-success" title="Approve Blood Donor">
                             <i class="bi bi-check"></i>
                           </button>
                         </form>
-                        <form method="POST" action="{% url 'admin_blood_donation_status' donor.pk %}" style="display:inline;">
+                        <form method="POST" action="{% url 'admin_blood_donation_status' donor.pk %}"
+                          style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="status" value="REJECTED">
                           <button type="submit" class="btn btn-sm btn-danger" title="Reject Blood Donor">
@@ -1311,7 +1667,8 @@
                         </form>
                       </div>
                       {% endif %}
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('blood-donation', {{ donor.id }})">
+                      <button class="btn btn-sm btn-outline-primary"
+                        onclick="viewDetails('blood-donation', {{ donor.id }})">
                         <i class="bi bi-eye"></i>
                       </button>
                     </td>
@@ -1360,24 +1717,26 @@
                     <td>{{ request.urgency }}</td>
                     <td>
                       {% if request.status == "APPROVED" %}
-                        <span class="badge status-confirmed">Approved</span>
+                      <span class="badge status-confirmed">Approved</span>
                       {% elif request.status == "PENDING" %}
-                        <span class="badge status-pending">Pending</span>
+                      <span class="badge status-pending">Pending</span>
                       {% else %}
-                        <span class="badge status-cancelled">{{ request.status|title }}</span>
+                      <span class="badge status-cancelled">{{ request.status|title }}</span>
                       {% endif %}
                     </td>
                     <td>
                       {% if request.status == "PENDING" %}
                       <div class="btn-group" role="group">
-                        <form method="POST" action="{% url 'admin_blood_request_status' request.pk %}" style="display:inline;">
+                        <form method="POST" action="{% url 'admin_blood_request_status' request.pk %}"
+                          style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="status" value="APPROVED">
                           <button type="submit" class="btn btn-sm btn-success" title="Approve Blood Request">
                             <i class="bi bi-check"></i>
                           </button>
                         </form>
-                        <form method="POST" action="{% url 'admin_blood_request_status' request.pk %}" style="display:inline;">
+                        <form method="POST" action="{% url 'admin_blood_request_status' request.pk %}"
+                          style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="status" value="REJECTED">
                           <button type="submit" class="btn btn-sm btn-danger" title="Reject Blood Request">
@@ -1386,13 +1745,16 @@
                         </form>
                       </div>
                       {% endif %}
-                      <form method="POST" action="{% url 'admin_blood_request_delete' request.pk %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this blood request?');">
+                      <form method="POST" action="{% url 'admin_blood_request_delete' request.pk %}"
+                        style="display:inline;"
+                        onsubmit="return confirm('Are you sure you want to delete this blood request?');">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Blood Request">
                           <i class="bi bi-trash"></i>
                         </button>
                       </form>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('blood-request', {{ request.id }})">
+                      <button class="btn btn-sm btn-outline-primary"
+                        onclick="viewDetails('blood-request', {{ request.id }})">
                         <i class="bi bi-eye"></i>
                       </button>
                     </td>
@@ -1446,19 +1808,21 @@
                     <td>{{ doctor.available_time }}</td>
                     <td>
                       {% if doctor.is_available %}
-                        <span class="badge status-confirmed">Active</span>
+                      <span class="badge status-confirmed">Active</span>
                       {% else %}
-                        <span class="badge status-cancelled">Inactive</span>
+                      <span class="badge status-cancelled">Inactive</span>
                       {% endif %}
                     </td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('doctor', {{ doctor.id }})">
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('doctor', {{doctor.id }})">
                         <i class="bi bi-eye"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-secondary" onclick="editDoctor({{ doctor.id }}, '{{ doctor.name }}', '{{ doctor.email }}', '{{ doctor.phone }}', '{{ doctor.specialized_in }}', '{{ doctor.available_days }}', '{{ doctor.available_time }}', {{ doctor.is_available|lower }})">
+                      <button class="btn btn-sm btn-outline-secondary"
+                        onclick="editDoctor({{ doctor.id }}, '{{ doctor.name }}', '{{ doctor.email }}', '{{ doctor.phone }}', '{{ doctor.specialized_in }}', '{{ doctor.available_days }}', '{{ doctor.available_time }}', {{ doctor.is_available|lower }})">
                         <i class="bi bi-pencil"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-danger" onclick="deleteDoctor({{ doctor.id }}, '{{ doctor.name }}')">
+                      <button class="btn btn-sm btn-outline-danger"
+                        onclick="deleteDoctor({{ doctor.id }}, '{{ doctor.name }}')">
                         <i class="bi bi-trash"></i>
                       </button>
                     </td>
@@ -1505,19 +1869,22 @@
                     <td>{{ staff.phone }}</td>
                     <td>
                       {% if staff.is_doctor %}
-                        <span class="badge status-confirmed">Yes</span>
+                      <span class="badge status-confirmed">Yes</span>
                       {% else %}
-                        <span class="badge status-pending">No</span>
+                      <span class="badge status-pending">No</span>
                       {% endif %}
                     </td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('staff', '{{ staff.staff_id }}')">
+                      <button class="btn btn-sm btn-outline-primary"
+                        onclick="viewDetails('staff', '{{ staff.staff_id }}')">
                         <i class="bi bi-eye"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-secondary" onclick="editStaff({{ staff.id }}, '{{ staff.staff_id }}', '{{ staff.name }}', '{{ staff.email }}', '{{ staff.phone }}', {{ staff.is_doctor|lower }})">
+                      <button class="btn btn-sm btn-outline-secondary"
+                        onclick="editStaff({{ staff.id }}, '{{ staff.staff_id }}', '{{ staff.name }}', '{{ staff.email }}', '{{ staff.phone }}', {{ staff.is_doctor|lower }})">
                         <i class="bi bi-pencil"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-danger" onclick="deleteStaff({{ staff.id }}, '{{ staff.name }}')">
+                      <button class="btn btn-sm btn-outline-danger"
+                        onclick="deleteStaff({{ staff.id }}, '{{ staff.name }}')">
                         <i class="bi bi-trash"></i>
                       </button>
                     </td>
@@ -1563,14 +1930,15 @@
                     <td>₹{{ donation.amount }}</td>
                     <td>
                       {% if donation.is_paid %}
-                        <span class="badge status-confirmed">Paid</span>
+                      <span class="badge status-confirmed">Paid</span>
                       {% else %}
-                        <span class="badge status-pending">Pending</span>
+                      <span class="badge status-pending">Pending</span>
                       {% endif %}
                     </td>
                     <td>{{ donation.donated_at|date:"M d, Y H:i" }}</td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('donation', {{ donation.id }})">
+                      <button class="btn btn-sm btn-outline-primary"
+                        onclick="viewDetails('donation', {{ donation.id }})">
                         <i class="bi bi-eye"></i>
                       </button>
                       {% if not donation.is_paid %}
@@ -1616,13 +1984,12 @@
                     <td>
                       <div class="text-warning">
                         {% for i in "12345"|make_list %}
-                          {% if forloop.counter <= fb.stars %}
-                            <i class="bi bi-star-fill"></i>
+                        {% if forloop.counter <= fb.stars %} <i class="bi bi-star-fill"></i>
                           {% else %}
-                            <i class="bi bi-star"></i>
+                          <i class="bi bi-star"></i>
                           {% endif %}
-                        {% endfor %}
-                        <span class="ms-1">{{ fb.stars }}/5</span>
+                          {% endfor %}
+                          <span class="ms-1">{{ fb.stars }}/5</span>
                       </div>
                     </td>
                     <td>
@@ -1681,9 +2048,9 @@
                     </td>
                     <td>
                       {% if log.is_verified %}
-                        <span class="badge status-confirmed">Verified</span>
+                      <span class="badge status-confirmed">Verified</span>
                       {% else %}
-                        <span class="badge status-pending">Unverified</span>
+                      <span class="badge status-pending">Unverified</span>
                       {% endif %}
                     </td>
                     <td>
@@ -1712,121 +2079,352 @@
         <style>
           .dz-header-banner {
             background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #450a0a 100%);
-            border-radius: 16px; padding: 32px; margin-bottom: 24px;
-            color: #fff; text-align: center; position: relative; overflow: hidden;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            color: #fff;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
           }
+
           .dz-header-banner::before {
-            content: ''; position: absolute; top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,.02) 20px, rgba(255,255,255,.02) 40px);
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255, 255, 255, .02) 20px, rgba(255, 255, 255, .02) 40px);
             animation: dangerStripes 20s linear infinite;
           }
-          @keyframes dangerStripes { from { transform: translateX(0); } to { transform: translateX(56px); } }
-          .dz-header-banner h2 { margin: 0; font-size: 1.6rem; font-weight: 800; position: relative; z-index: 2; letter-spacing: .5px; }
-          .dz-header-banner p { margin: 8px 0 0; opacity: .85; font-size: .9rem; position: relative; z-index: 2; }
+
+          @keyframes dangerStripes {
+            from {
+              transform: translateX(0);
+            }
+
+            to {
+              transform: translateX(56px);
+            }
+          }
+
+          .dz-header-banner h2 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+            position: relative;
+            z-index: 2;
+            letter-spacing: .5px;
+          }
+
+          .dz-header-banner p {
+            margin: 8px 0 0;
+            opacity: .85;
+            font-size: .9rem;
+            position: relative;
+            z-index: 2;
+          }
 
           .dz-toolbar {
-            display: flex; gap: 10px; flex-wrap: wrap;
-            align-items: center; margin-bottom: 20px;
-            padding: 14px 18px; background: #fff; border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.06); border: 1px solid #fecaca;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 14px 18px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+            border: 1px solid #fecaca;
           }
-          .dz-toolbar .btn { font-size: .82rem; padding: 7px 14px; border-radius: 8px; font-weight: 600; }
 
-          .dz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+          .dz-toolbar .btn {
+            font-size: .82rem;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+          }
+
+          .dz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+          }
 
           .dz-card {
-            background: #fff; border-radius: 14px; padding: 0; overflow: hidden;
-            border: 2px solid #e5e7eb; transition: all .3s cubic-bezier(.23,1,.32,1);
-            cursor: pointer; position: relative;
+            background: #fff;
+            border-radius: 14px;
+            padding: 0;
+            overflow: hidden;
+            border: 2px solid #e5e7eb;
+            transition: all .3s cubic-bezier(.23, 1, .32, 1);
+            cursor: pointer;
+            position: relative;
           }
-          .dz-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,.1); }
-          .dz-card.selected { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.15), 0 8px 24px rgba(220,38,38,.12); }
-          .dz-card.selected .dz-card-check { background: #dc2626; color: #fff; border-color: #dc2626; }
 
-          .dz-card-top { padding: 20px 20px 14px; display: flex; align-items: flex-start; gap: 14px; }
+          .dz-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, .1);
+          }
+
+          .dz-card.selected {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, .15), 0 8px 24px rgba(220, 38, 38, .12);
+          }
+
+          .dz-card.selected .dz-card-check {
+            background: #dc2626;
+            color: #fff;
+            border-color: #dc2626;
+          }
+
+          .dz-card-top {
+            padding: 20px 20px 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+          }
+
           .dz-card-icon {
-            width: 48px; height: 48px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
           }
-          .dz-card-info { flex: 1; }
-          .dz-card-info h6 { margin: 0; font-weight: 700; font-size: .95rem; color: #1f2937; }
+
+          .dz-card-info {
+            flex: 1;
+          }
+
+          .dz-card-info h6 {
+            margin: 0;
+            font-weight: 700;
+            font-size: .95rem;
+            color: #1f2937;
+          }
+
           .dz-card-info .dz-count {
-            font-size: 1.8rem; font-weight: 800; color: #111827; margin: 4px 0 2px; line-height: 1;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #111827;
+            margin: 4px 0 2px;
+            line-height: 1;
           }
-          .dz-card-info .dz-label { font-size: .75rem; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; }
+
+          .dz-card-info .dz-label {
+            font-size: .75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+          }
+
           .dz-card-check {
-            width: 26px; height: 26px; border-radius: 7px;
-            border: 2px solid #d1d5db; display: flex;
-            align-items: center; justify-content: center;
-            transition: all .2s ease; flex-shrink: 0;
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            border: 2px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s ease;
+            flex-shrink: 0;
           }
-          .dz-card-check i { font-size: .8rem; }
+
+          .dz-card-check i {
+            font-size: .8rem;
+          }
 
           .dz-card-actions {
-            display: flex; border-top: 1px solid #f3f4f6;
+            display: flex;
+            border-top: 1px solid #f3f4f6;
             background: #fafafa;
           }
+
           .dz-card-actions a {
-            flex: 1; padding: 10px 12px; text-align: center; font-size: .78rem;
-            color: #6b7280; text-decoration: none; font-weight: 600;
-            transition: all .2s ease; display: flex; align-items: center;
-            justify-content: center; gap: 5px;
+            flex: 1;
+            padding: 10px 12px;
+            text-align: center;
+            font-size: .78rem;
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all .2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
           }
-          .dz-card-actions a:hover { background: #f0fdf4; color: #15803d; }
-          .dz-card-actions a.dl-csv:hover { background: #eff6ff; color: #1d4ed8; }
-          .dz-card-actions a + a { border-left: 1px solid #f3f4f6; }
+
+          .dz-card-actions a:hover {
+            background: #f0fdf4;
+            color: #15803d;
+          }
+
+          .dz-card-actions a.dl-csv:hover {
+            background: #eff6ff;
+            color: #1d4ed8;
+          }
+
+          .dz-card-actions a+a {
+            border-left: 1px solid #f3f4f6;
+          }
 
           .dz-nuclear {
             background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-            border: 2px solid #fca5a5; border-radius: 14px;
-            padding: 28px; text-align: center; margin-top: 8px;
+            border: 2px solid #fca5a5;
+            border-radius: 14px;
+            padding: 28px;
+            text-align: center;
+            margin-top: 8px;
           }
-          .dz-nuclear h5 { color: #991b1b; font-weight: 800; margin-bottom: 8px; }
-          .dz-nuclear p { color: #7f1d1d; margin-bottom: 20px; font-size: .9rem; line-height: 1.6; }
+
+          .dz-nuclear h5 {
+            color: #991b1b;
+            font-weight: 800;
+            margin-bottom: 8px;
+          }
+
+          .dz-nuclear p {
+            color: #7f1d1d;
+            margin-bottom: 20px;
+            font-size: .9rem;
+            line-height: 1.6;
+          }
 
           .dz-security-note {
-            background: #fff; border-radius: 10px; border: 1px solid #fca5a5;
-            padding: 16px 20px; margin-top: 20px;
-            display: flex; align-items: flex-start; gap: 12px;
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #fca5a5;
+            padding: 16px 20px;
+            margin-top: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
           }
-          .dz-security-note i { color: #dc2626; font-size: 1.2rem; margin-top: 2px; flex-shrink: 0; }
-          .dz-security-note small { color: #7f1d1d; line-height: 1.5; }
+
+          .dz-security-note i {
+            color: #dc2626;
+            font-size: 1.2rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+          }
+
+          .dz-security-note small {
+            color: #7f1d1d;
+            line-height: 1.5;
+          }
 
           /* Purge Confirmation Modal */
           .purge-modal-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6);
-            backdrop-filter: blur(4px); z-index: 9999;
-            align-items: center; justify-content: center; padding: 20px;
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
           }
-          .purge-modal-overlay.active { display: flex; }
+
+          .purge-modal-overlay.active {
+            display: flex;
+          }
+
           .purge-modal {
-            background: #fff; border-radius: 20px; max-width: 520px; width: 100%;
-            box-shadow: 0 25px 60px rgba(0,0,0,.3); overflow: hidden;
+            background: #fff;
+            border-radius: 20px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, .3);
+            overflow: hidden;
             animation: purgeModalIn .3s ease;
           }
-          @keyframes purgeModalIn { from { opacity: 0; transform: scale(.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+          @keyframes purgeModalIn {
+            from {
+              opacity: 0;
+              transform: scale(.9) translateY(20px);
+            }
+
+            to {
+              opacity: 1;
+              transform: scale(1) translateY(0);
+            }
+          }
+
           .purge-modal-header {
             background: linear-gradient(135deg, #dc2626, #991b1b);
-            padding: 24px 28px; color: #fff; text-align: center;
+            padding: 24px 28px;
+            color: #fff;
+            text-align: center;
           }
-          .purge-modal-header h4 { margin: 0; font-weight: 800; }
-          .purge-modal-body { padding: 28px; }
+
+          .purge-modal-header h4 {
+            margin: 0;
+            font-weight: 800;
+          }
+
+          .purge-modal-body {
+            padding: 28px;
+          }
+
           .purge-modal-body .purge-summary {
-            background: #fef2f2; border-radius: 10px; padding: 16px;
-            margin-bottom: 20px; border: 1px solid #fecaca;
+            background: #fef2f2;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #fecaca;
           }
-          .purge-modal-body .purge-summary li { padding: 4px 0; color: #991b1b; font-size: .9rem; }
-          .purge-modal-body label { font-weight: 700; font-size: .9rem; color: #374151; display: block; margin-bottom: 8px; }
+
+          .purge-modal-body .purge-summary li {
+            padding: 4px 0;
+            color: #991b1b;
+            font-size: .9rem;
+          }
+
+          .purge-modal-body label {
+            font-weight: 700;
+            font-size: .9rem;
+            color: #374151;
+            display: block;
+            margin-bottom: 8px;
+          }
+
           .purge-modal-body input[type="text"] {
-            width: 100%; padding: 12px 16px; border: 2px solid #d1d5db;
-            border-radius: 10px; font-size: .95rem; font-family: monospace;
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            font-size: .95rem;
+            font-family: monospace;
             transition: border-color .2s;
           }
-          .purge-modal-body input[type="text"]:focus { outline: none; border-color: #dc2626; }
-          .purge-modal-footer { padding: 0 28px 24px; display: flex; gap: 12px; }
-          .purge-modal-footer .btn { flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; font-size: .95rem; }
+
+          .purge-modal-body input[type="text"]:focus {
+            outline: none;
+            border-color: #dc2626;
+          }
+
+          .purge-modal-footer {
+            padding: 0 28px 24px;
+            display: flex;
+            gap: 12px;
+          }
+
+          .purge-modal-footer .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: .95rem;
+          }
         </style>
 
         <!-- Header Banner -->
@@ -1848,7 +2446,8 @@
           <button class="btn btn-success" onclick="dzDownloadSelected('json')" id="dzDownloadJsonBtn" disabled>
             <i class="bi bi-filetype-json me-1"></i> Download JSON
           </button>
-          <button class="btn text-white" style="background: #1d4ed8;" onclick="dzDownloadSelected('csv')" id="dzDownloadCsvBtn" disabled>
+          <button class="btn text-white" style="background: #1d4ed8;" onclick="dzDownloadSelected('csv')"
+            id="dzDownloadCsvBtn" disabled>
             <i class="bi bi-filetype-csv me-1"></i> Download CSV
           </button>
           <button class="btn btn-danger" onclick="dzOpenPurgeModal()" id="dzDeleteBtn" disabled>
@@ -1861,7 +2460,8 @@
 
           <div class="dz-card" data-category="registration" onclick="dzToggleCard(this)">
             <div class="dz-card-top">
-              <div class="dz-card-icon" style="background: #fef3c7; color: #d97706;"><i class="bi bi-person-plus-fill"></i></div>
+              <div class="dz-card-icon" style="background: #fef3c7; color: #d97706;"><i
+                  class="bi bi-person-plus-fill"></i></div>
               <div class="dz-card-info">
                 <h6>Student Registrations</h6>
                 <div class="dz-count">{{ total_registrations }}</div>
@@ -1870,14 +2470,17 @@
               <div class="dz-card-check"><i class="bi bi-check2"></i></div>
             </div>
             <div class="dz-card-actions">
-              <a href="{% url 'admin_export_data' 'registration' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
-              <a href="{% url 'admin_export_data' 'registration' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+              <a href="{% url 'admin_export_data' 'registration' %}?format=json" onclick="event.stopPropagation()"><i
+                  class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'registration' %}?format=csv" class="dl-csv"
+                onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
             </div>
           </div>
 
           <div class="dz-card" data-category="appointment" onclick="dzToggleCard(this)">
             <div class="dz-card-top">
-              <div class="dz-card-icon" style="background: #d1fae5; color: #059669;"><i class="bi bi-calendar-check-fill"></i></div>
+              <div class="dz-card-icon" style="background: #d1fae5; color: #059669;"><i
+                  class="bi bi-calendar-check-fill"></i></div>
               <div class="dz-card-info">
                 <h6>Appointments</h6>
                 <div class="dz-count">{{ total_appointments }}</div>
@@ -1886,14 +2489,17 @@
               <div class="dz-card-check"><i class="bi bi-check2"></i></div>
             </div>
             <div class="dz-card-actions">
-              <a href="{% url 'admin_export_data' 'appointment' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
-              <a href="{% url 'admin_export_data' 'appointment' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+              <a href="{% url 'admin_export_data' 'appointment' %}?format=json" onclick="event.stopPropagation()"><i
+                  class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'appointment' %}?format=csv" class="dl-csv"
+                onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
             </div>
           </div>
 
           <div class="dz-card" data-category="blood_donation" onclick="dzToggleCard(this)">
             <div class="dz-card-top">
-              <div class="dz-card-icon" style="background: #fce7f3; color: #db2777;"><i class="bi bi-heart-pulse-fill"></i></div>
+              <div class="dz-card-icon" style="background: #fce7f3; color: #db2777;"><i
+                  class="bi bi-heart-pulse-fill"></i></div>
               <div class="dz-card-info">
                 <h6>Blood Donations</h6>
                 <div class="dz-count">{{ total_blood_donations }}</div>
@@ -1902,14 +2508,17 @@
               <div class="dz-card-check"><i class="bi bi-check2"></i></div>
             </div>
             <div class="dz-card-actions">
-              <a href="{% url 'admin_export_data' 'blood_donation' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
-              <a href="{% url 'admin_export_data' 'blood_donation' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+              <a href="{% url 'admin_export_data' 'blood_donation' %}?format=json" onclick="event.stopPropagation()"><i
+                  class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'blood_donation' %}?format=csv" class="dl-csv"
+                onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
             </div>
           </div>
 
           <div class="dz-card" data-category="blood_request" onclick="dzToggleCard(this)">
             <div class="dz-card-top">
-              <div class="dz-card-icon" style="background: #fee2e2; color: #dc2626;"><i class="bi bi-droplet-fill"></i></div>
+              <div class="dz-card-icon" style="background: #fee2e2; color: #dc2626;"><i class="bi bi-droplet-fill"></i>
+              </div>
               <div class="dz-card-info">
                 <h6>Blood Requests</h6>
                 <div class="dz-count">{{ total_blood_requests }}</div>
@@ -1918,14 +2527,17 @@
               <div class="dz-card-check"><i class="bi bi-check2"></i></div>
             </div>
             <div class="dz-card-actions">
-              <a href="{% url 'admin_export_data' 'blood_request' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
-              <a href="{% url 'admin_export_data' 'blood_request' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+              <a href="{% url 'admin_export_data' 'blood_request' %}?format=json" onclick="event.stopPropagation()"><i
+                  class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'blood_request' %}?format=csv" class="dl-csv"
+                onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
             </div>
           </div>
 
           <div class="dz-card" data-category="feedback" onclick="dzToggleCard(this)">
             <div class="dz-card-top">
-              <div class="dz-card-icon" style="background: #ede9fe; color: #7c3aed;"><i class="bi bi-chat-square-text-fill"></i></div>
+              <div class="dz-card-icon" style="background: #ede9fe; color: #7c3aed;"><i
+                  class="bi bi-chat-square-text-fill"></i></div>
               <div class="dz-card-info">
                 <h6>Feedback Entries</h6>
                 <div class="dz-count">{{ total_feedback }}</div>
@@ -1934,14 +2546,17 @@
               <div class="dz-card-check"><i class="bi bi-check2"></i></div>
             </div>
             <div class="dz-card-actions">
-              <a href="{% url 'admin_export_data' 'feedback' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
-              <a href="{% url 'admin_export_data' 'feedback' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+              <a href="{% url 'admin_export_data' 'feedback' %}?format=json" onclick="event.stopPropagation()"><i
+                  class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'feedback' %}?format=csv" class="dl-csv"
+                onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
             </div>
           </div>
 
           <div class="dz-card" data-category="login_log" onclick="dzToggleCard(this)">
             <div class="dz-card-top">
-              <div class="dz-card-icon" style="background: #e0f2fe; color: #0284c7;"><i class="bi bi-clock-history"></i></div>
+              <div class="dz-card-icon" style="background: #e0f2fe; color: #0284c7;"><i class="bi bi-clock-history"></i>
+              </div>
               <div class="dz-card-info">
                 <h6>Login Logs</h6>
                 <div class="dz-count">{{ total_login_logs }}</div>
@@ -1950,14 +2565,17 @@
               <div class="dz-card-check"><i class="bi bi-check2"></i></div>
             </div>
             <div class="dz-card-actions">
-              <a href="{% url 'admin_export_data' 'login_log' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
-              <a href="{% url 'admin_export_data' 'login_log' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+              <a href="{% url 'admin_export_data' 'login_log' %}?format=json" onclick="event.stopPropagation()"><i
+                  class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'login_log' %}?format=csv" class="dl-csv"
+                onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
             </div>
           </div>
 
           <div class="dz-card" data-category="donation" onclick="dzToggleCard(this)">
             <div class="dz-card-top">
-              <div class="dz-card-icon" style="background: #ecfdf5; color: #10b981;"><i class="bi bi-cash-coin"></i></div>
+              <div class="dz-card-icon" style="background: #ecfdf5; color: #10b981;"><i class="bi bi-cash-coin"></i>
+              </div>
               <div class="dz-card-info">
                 <h6>Monetary Donations</h6>
                 <div class="dz-count">{{ total_donations }}</div>
@@ -1966,8 +2584,10 @@
               <div class="dz-card-check"><i class="bi bi-check2"></i></div>
             </div>
             <div class="dz-card-actions">
-              <a href="{% url 'admin_export_data' 'donation' %}?format=json" onclick="event.stopPropagation()"><i class="bi bi-download"></i> JSON</a>
-              <a href="{% url 'admin_export_data' 'donation' %}?format=csv" class="dl-csv" onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+              <a href="{% url 'admin_export_data' 'donation' %}?format=json" onclick="event.stopPropagation()"><i
+                  class="bi bi-download"></i> JSON</a>
+              <a href="{% url 'admin_export_data' 'donation' %}?format=csv" class="dl-csv"
+                onclick="event.stopPropagation()"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
             </div>
           </div>
 
@@ -1977,7 +2597,8 @@
         <div class="dz-nuclear" data-aos="fade-up" data-aos-delay="300">
           <h5><i class="bi bi-radioactive me-2"></i> NUCLEAR OPTION: PURGE ALL STUDENT DATA</h5>
           <p>
-            This will permanently delete <strong>ALL</strong> student-related data including registrations, appointments,
+            This will permanently delete <strong>ALL</strong> student-related data including registrations,
+            appointments,
             blood donations/requests, feedback, login logs, and user accounts.
             <strong>Doctors and staff data will be preserved.</strong>
           </p>
@@ -2015,9 +2636,12 @@
                 <ul id="purgeItemsList" class="mt-2 mb-0" style="list-style: none; padding-left: 0;"></ul>
               </div>
               <label for="purgeConfirmInput">
-                Type <code style="color: #dc2626; background: #fef2f2; padding: 2px 8px; border-radius: 4px;">DELETE_ALL_STUDENT_DATA</code> to confirm:
+                Type <code
+                  style="color: #dc2626; background: #fef2f2; padding: 2px 8px; border-radius: 4px;">DELETE_ALL_STUDENT_DATA</code>
+                to confirm:
               </label>
-              <input type="text" id="purgeConfirmInput" placeholder="Type the confirmation phrase..." autocomplete="off" spellcheck="false">
+              <input type="text" id="purgeConfirmInput" placeholder="Type the confirmation phrase..." autocomplete="off"
+                spellcheck="false">
             </div>
             <div class="purge-modal-footer">
               <button class="btn btn-outline-secondary" onclick="dzClosePurgeModal()">
@@ -2042,7 +2666,8 @@
           <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Details</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body" id="viewDetailsContent" style="background: #f8f9fa; max-height: 70vh; overflow-y: auto;">
+        <div class="modal-body" id="viewDetailsContent"
+          style="background: #f8f9fa; max-height: 70vh; overflow-y: auto;">
           <!-- Content populated by JavaScript -->
         </div>
         <div class="modal-footer" style="background: #f8f9fa;">
@@ -2069,12 +2694,14 @@
 
             <div class="mb-3">
               <label class="form-label"><strong>Staff ID</strong></label>
-              <input type="text" id="staffId" class="form-control" placeholder="Auto-generated" readonly disabled style="background-color: #e9ecef;">
+              <input type="text" id="staffId" class="form-control" placeholder="Auto-generated" readonly disabled
+                style="background-color: #e9ecef;">
             </div>
 
             <div class="mb-3">
               <label class="form-label"><strong>Name</strong></label>
-              <input type="text" id="staffName" name="name" class="form-control" placeholder="Enter staff member name" required>
+              <input type="text" id="staffName" name="name" class="form-control" placeholder="Enter staff member name"
+                required>
             </div>
 
             <div class="row">
@@ -2121,10 +2748,11 @@
           {% csrf_token %}
           <div class="modal-body" style="background: #f8f9fa; max-height: 70vh; overflow-y: auto;">
             <input type="hidden" id="doctorPk" name="pk" value="">
-            
+
             <div class="mb-3">
               <label class="form-label"><strong>Doctor Name</strong></label>
-              <input type="text" id="doctorName" name="name" class="form-control" placeholder="Enter doctor name" required>
+              <input type="text" id="doctorName" name="name" class="form-control" placeholder="Enter doctor name"
+                required>
             </div>
 
             <div class="row">
@@ -2140,17 +2768,20 @@
 
             <div class="mb-3">
               <label class="form-label"><strong>Specialization</strong></label>
-              <input type="text" id="doctorSpec" name="specialized_in" class="form-control" placeholder="e.g., Cardiology, Orthopedics">
+              <input type="text" id="doctorSpec" name="specialized_in" class="form-control"
+                placeholder="e.g., Cardiology, Orthopedics">
             </div>
 
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label"><strong>Available Days</strong></label>
-                <input type="text" id="doctorDays" name="available_days" class="form-control" placeholder="e.g., Monday, Tuesday, Wednesday">
+                <input type="text" id="doctorDays" name="available_days" class="form-control"
+                  placeholder="e.g., Monday, Tuesday, Wednesday">
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label"><strong>Available Time</strong></label>
-                <input type="text" id="doctorTime" name="available_time" class="form-control" placeholder="e.g., 09:00 AM - 05:00 PM">
+                <input type="text" id="doctorTime" name="available_time" class="form-control"
+                  placeholder="e.g., 09:00 AM - 05:00 PM">
               </div>
             </div>
 
@@ -2193,7 +2824,7 @@
       document.getElementById('staffEmail').value = email;
       document.getElementById('staffPhone').value = phone;
       document.getElementById('staffIsDoctor').checked = is_doctor;
-      
+
       // Show the modal
       new bootstrap.Modal(document.getElementById('editStaffModal')).show();
     }
@@ -2219,19 +2850,19 @@
           method: 'POST',
           headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
-                          document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
+              document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
           }
         })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert('✅ Doctor deleted successfully');
-            location.reload();
-          } else {
-            alert('❌ ' + data.message);
-          }
-        })
-        .catch(error => alert('Error: ' + error.message));
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('✅ Doctor deleted successfully');
+              location.reload();
+            } else {
+              alert('❌ ' + data.message);
+            }
+          })
+          .catch(error => alert('Error: ' + error.message));
       }
     }
 
@@ -2241,19 +2872,19 @@
           method: 'POST',
           headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
-                          document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
+              document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
           }
         })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert('✅ Staff member deleted successfully');
-            location.reload();
-          } else {
-            alert('❌ ' + data.message);
-          }
-        })
-        .catch(error => alert('Error: ' + error.message));
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('✅ Staff member deleted successfully');
+              location.reload();
+            } else {
+              alert('❌ ' + data.message);
+            }
+          })
+          .catch(error => alert('Error: ' + error.message));
       }
     }
 
@@ -2299,78 +2930,78 @@
       new Chart(ctx, {
         type: 'line',
         data: {
-          labels: {{ day_labels|safe }},
-          datasets: [{
-            label: 'Appointments',
-            data: {{ weekly_appointments|safe }},
-            borderColor: '#4a7c59',
-            backgroundColor: 'rgba(74, 124, 89, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#4a7c59',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 5,
-            pointHoverRadius: 7
+          labels: {{ day_labels| safe }},
+    datasets: [{
+      label: 'Appointments',
+      data: {{ weekly_appointments| safe }},
+      borderColor: '#4a7c59',
+      backgroundColor: 'rgba(74, 124, 89, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#4a7c59',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7
           }, {
-            label: 'Registrations',
-            data: {{ weekly_registrations|safe }},
-            borderColor: '#5a8a6a',
-            backgroundColor: 'rgba(90, 138, 106, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#5a8a6a',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 5,
-            pointHoverRadius: 7
+      label: 'Registrations',
+      data: {{ weekly_registrations| safe }},
+      borderColor: '#5a8a6a',
+      backgroundColor: 'rgba(90, 138, 106, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#5a8a6a',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
+    options: {
+      responsive: true,
+        maintainAspectRatio: false,
           plugins: {
-            legend: {
-              position: 'top',
-              labels: {
-                usePointStyle: true,
-                padding: 20,
+        legend: {
+          position: 'top',
+            labels: {
+            usePointStyle: true,
+              padding: 20,
                 font: { size: 13, weight: 'bold' }
-              }
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              padding: 12,
-              titleFont: { size: 14, weight: 'bold' },
-              bodyFont: { size: 12 },
-              borderColor: '#4a7c59',
-              borderWidth: 2,
-              displayColors: true
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(0,0,0,0.05)',
-                drawBorder: false
-              },
-              ticks: { font: { size: 11 } }
-            },
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 11 } }
-            }
-          },
-          elements: {
-            point: {
-              radius: 6,
-              hoverRadius: 8
-            }
           }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+              titleFont: { size: 14, weight: 'bold' },
+          bodyFont: { size: 12 },
+          borderColor: '#4a7c59',
+            borderWidth: 2,
+              displayColors: true
         }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+            grid: {
+            color: 'rgba(0,0,0,0.05)',
+              drawBorder: false
+          },
+          ticks: { font: { size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11 } }
+        }
+      },
+      elements: {
+        point: {
+          radius: 6,
+            hoverRadius: 8
+        }
+      }
+    }
       });
     }
 
@@ -2382,48 +3013,48 @@
       new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: {{ dept_labels|safe }},
-          datasets: [{
-            data: {{ dept_data|safe }},
-            backgroundColor: [
-              '#4a7c59',
-              '#5a8a6a',
-              '#6b9b7a',
-              '#7cac8b',
-              '#8dbd9c'
-            ],
-            borderWidth: 0,
-            hoverOffset: 8
+          labels: {{ dept_labels| safe }},
+    datasets: [{
+      data: {{ dept_data| safe }},
+      backgroundColor: [
+      '#4a7c59',
+      '#5a8a6a',
+      '#6b9b7a',
+      '#7cac8b',
+      '#8dbd9c'
+    ],
+      borderWidth: 0,
+      hoverOffset: 8
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
+    options: {
+      responsive: true,
+        maintainAspectRatio: false,
           plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                usePointStyle: true,
-                padding: 15,
+        legend: {
+          position: 'bottom',
+            labels: {
+            usePointStyle: true,
+              padding: 15,
                 font: { size: 12, weight: '600' }
-              }
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              padding: 12,
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
               titleFont: { size: 13, weight: 'bold' },
-              bodyFont: { size: 12 },
-              borderColor: '#4a7c59',
-              borderWidth: 2,
+          bodyFont: { size: 12 },
+          borderColor: '#4a7c59',
+            borderWidth: 2,
               callbacks: {
-                label: function(context) {
-                  return context.label + ': ' + context.parsed + ' appointments';
-                }
-              }
+            label: function(context) {
+              return context.label + ': ' + context.parsed + ' appointments';
             }
-          },
-          cutout: '70%'
+          }
         }
+      },
+      cutout: '70%'
+    }
       });
     }
 
@@ -2586,7 +3217,7 @@
     }
 
     // Initialize everything when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // Initialize charts
       setTimeout(() => {
         initializeWeeklyChart();
@@ -2610,16 +3241,16 @@
 
       // Enhanced sidebar interactions
       document.querySelectorAll('.tab-link').forEach(link => {
-        link.addEventListener('mouseenter', function() {
+        link.addEventListener('mouseenter', function () {
           this.style.transform = 'translateX(5px)';
         });
-        link.addEventListener('mouseleave', function() {
+        link.addEventListener('mouseleave', function () {
           this.style.transform = 'translateX(0)';
         });
       });
 
       // Keyboard shortcuts for quick navigation
-      document.addEventListener('keydown', function(e) {
+      document.addEventListener('keydown', function (e) {
         // Alt+R for Registrations
         if (e.altKey && e.key === 'r') {
           e.preventDefault();
@@ -2661,7 +3292,7 @@
 
     // Tab switching functionality (enhanced version)
     document.querySelectorAll('.tab-link').forEach(link => {
-      link.addEventListener('click', function(e) {
+      link.addEventListener('click', function (e) {
         e.preventDefault();
         const tabName = this.getAttribute('data-tab');
         showTab(tabName);
@@ -2700,7 +3331,7 @@
 
     // View details function (enhanced with modal-like effect)
     function viewDetails(type, id) {
-      switch(type) {
+      switch (type) {
         case 'doctor':
           showDoctorDetails(id);
           break;
@@ -2744,11 +3375,11 @@
         alert('Could not find doctor information');
         return;
       }
-      
+
       const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
-      
+
       content.innerHTML = `
         <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-person-badge-fill me-2"></i>Doctor Details</h5>
         
@@ -2792,7 +3423,7 @@
           <span>${cells[7]?.textContent || 'N/A'}</span>
         </div>
       `;
-      
+
       new bootstrap.Modal(modal).show();
     }
 
@@ -2803,11 +3434,11 @@
         alert('Could not find staff information');
         return;
       }
-      
+
       const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
-      
+
       content.innerHTML = `
         <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-person-fill me-2"></i>Staff Member Details</h5>
         
@@ -2836,7 +3467,7 @@
           <span>${cells[4]?.textContent || 'N/A'}</span>
         </div>
       `;
-      
+
       new bootstrap.Modal(modal).show();
     }
 
@@ -2847,11 +3478,11 @@
         alert('Could not find donation information');
         return;
       }
-      
+
       const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
-      
+
       content.innerHTML = `
         <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-heart-fill me-2"></i>Donation Details</h5>
         
@@ -2890,7 +3521,7 @@
           <span>${cells[6]?.textContent || 'N/A'}</span>
         </div>
       `;
-      
+
       new bootstrap.Modal(modal).show();
     }
 
@@ -2901,11 +3532,11 @@
         alert('Could not find feedback information');
         return;
       }
-      
+
       const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
-      
+
       content.innerHTML = `
         <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-chat-quote me-2"></i>Feedback Details</h5>
         
@@ -2931,7 +3562,7 @@
           <span>${cells[3]?.textContent || 'N/A'}</span>
         </div>
       `;
-      
+
       new bootstrap.Modal(modal).show();
     }
 
@@ -2942,11 +3573,11 @@
         alert('Could not find appointment information');
         return;
       }
-      
+
       const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
-      
+
       content.innerHTML = `
         <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-calendar-check-fill me-2"></i>Appointment Details</h5>
         
@@ -2990,7 +3621,7 @@
           <span>${cells[7]?.textContent || 'N/A'}</span>
         </div>
       `;
-      
+
       new bootstrap.Modal(modal).show();
     }
 
@@ -3001,11 +3632,11 @@
         alert('Could not find registration information');
         return;
       }
-      
+
       const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
-      
+
       content.innerHTML = `
         <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-person-check-fill me-2"></i>Registration Details</h5>
         
@@ -3044,7 +3675,7 @@
           <span>${cells[6]?.textContent || 'N/A'}</span>
         </div>
       `;
-      
+
       new bootstrap.Modal(modal).show();
     }
 
@@ -3055,11 +3686,11 @@
         alert('Could not find blood donor information');
         return;
       }
-      
+
       const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
-      
+
       content.innerHTML = `
         <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-droplet-fill me-2"></i>Blood Donor Details</h5>
         
@@ -3105,7 +3736,7 @@
           <span>${cells[7]?.textContent || 'N/A'}</span>
         </div>
       `;
-      
+
       new bootstrap.Modal(modal).show();
     }
 
@@ -3116,11 +3747,11 @@
         alert('Could not find blood request information');
         return;
       }
-      
+
       const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
-      
+
       content.innerHTML = `
         <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-heart-pulse me-2"></i>Blood Request Details</h5>
         
@@ -3161,7 +3792,7 @@
           <span>${cells[6]?.textContent || 'N/A'}</span>
         </div>
       `;
-      
+
       new bootstrap.Modal(modal).show();
     }
 
@@ -3172,11 +3803,11 @@
         alert('Could not find login log information');
         return;
       }
-      
+
       const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
-      
+
       content.innerHTML = `
         <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-clock-history me-2"></i>Login Log Details</h5>
         
@@ -3205,7 +3836,7 @@
           <span>${cells[4]?.textContent || 'N/A'}</span>
         </div>
       `;
-      
+
       new bootstrap.Modal(modal).show();
     }
 
@@ -3347,7 +3978,7 @@
     showTab('dashboard');
 
     // Debug function for testing danger zone
-    window.testDangerZone = function() {
+    window.testDangerZone = function () {
       console.log('Testing danger zone...');
       showTab('danger-zone');
       setTimeout(() => {
@@ -3359,7 +3990,7 @@
     };
 
     // Add keyboard shortcut for testing (Ctrl+D)
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.ctrlKey && e.key === 'd') {
         e.preventDefault();
         testDangerZone();
@@ -3394,7 +4025,7 @@
               <select class="form-control" name="specialized_in" required>
                 <option value="">Select Specialization</option>
                 {% for value, label in dept_choices %}
-                  <option value="{{ value }}">{{ label }}</option>
+                <option value="{{ value }}">{{ label }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -3404,33 +4035,40 @@
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-monday" name="available_days" value="Monday" required>
+                      <input type="checkbox" class="form-check-input" id="day-monday" name="available_days"
+                        value="Monday" required>
                       <label class="form-check-label" for="day-monday">Monday</label>
                     </div>
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-tuesday" name="available_days" value="Tuesday">
+                      <input type="checkbox" class="form-check-input" id="day-tuesday" name="available_days"
+                        value="Tuesday">
                       <label class="form-check-label" for="day-tuesday">Tuesday</label>
                     </div>
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-wednesday" name="available_days" value="Wednesday">
+                      <input type="checkbox" class="form-check-input" id="day-wednesday" name="available_days"
+                        value="Wednesday">
                       <label class="form-check-label" for="day-wednesday">Wednesday</label>
                     </div>
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-thursday" name="available_days" value="Thursday">
+                      <input type="checkbox" class="form-check-input" id="day-thursday" name="available_days"
+                        value="Thursday">
                       <label class="form-check-label" for="day-thursday">Thursday</label>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-friday" name="available_days" value="Friday">
+                      <input type="checkbox" class="form-check-input" id="day-friday" name="available_days"
+                        value="Friday">
                       <label class="form-check-label" for="day-friday">Friday</label>
                     </div>
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-saturday" name="available_days" value="Saturday">
+                      <input type="checkbox" class="form-check-input" id="day-saturday" name="available_days"
+                        value="Saturday">
                       <label class="form-check-label" for="day-saturday">Saturday</label>
                     </div>
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-sunday" name="available_days" value="Sunday">
+                      <input type="checkbox" class="form-check-input" id="day-sunday" name="available_days"
+                        value="Sunday">
                       <label class="form-check-label" for="day-sunday">Sunday</label>
                     </div>
                   </div>
@@ -3439,7 +4077,8 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Available Time *</label>
-              <input type="text" class="form-control" name="available_time" placeholder="e.g. 9:00 AM – 5:00 PM" required>
+              <input type="text" class="form-control" name="available_time" placeholder="e.g. 9:00 AM – 5:00 PM"
+                required>
             </div>
             <div class="mb-3">
               <label class="form-label">Profile Photo (Optional)</label>
@@ -3522,7 +4161,7 @@
           method: 'POST',
           headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
-                          document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
+              document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
           },
           body: formData
         });
@@ -3552,7 +4191,7 @@
           method: 'POST',
           headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
-                          document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
+              document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
           },
           body: formData
         });
@@ -3573,4 +4212,5 @@
     });
   </script>
 </body>
+
 </html>
