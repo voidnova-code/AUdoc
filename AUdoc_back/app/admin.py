@@ -202,12 +202,11 @@ class AppointmentAdmin(admin.ModelAdmin):
         "medical_department", "doctor", "appointment_date", "appointment_time",
         "status", "was_no_show", "created_at",
     )
-    list_filter  = ("status", "was_no_show", "medical_department", "student_department", "appointment_date")
+    list_filter  = ("status", "was_no_show", "medical_department", "student_department", "created_at")
     search_fields = ("student_id", "student_name", "email", "phone")
-    ordering     = ("-appointment_date", "-appointment_time")
+    ordering     = ("-created_at",)
     readonly_fields = ("created_at", "reminder_24h_sent_at", "reminder_2h_sent_at", "actual_completion_date")
     list_editable = ("status",)
-    date_hierarchy  = "appointment_date"
     fieldsets = (
         ("Student Information", {
             "fields": ("student_id", "student_name", "phone", "email", "student_department"),

@@ -2379,7 +2379,8 @@ def api_appointments(request):
     student_id = request.user.username
 
     if request.method == "GET":
-        appointments = Appointment.objects.filter(student_id=student_id).select_related("doctor").order_by("-created_at")
+        # Fetch all appointments for this student
+        appointments = Appointment.objects.filter(student_id=student_id).select_related("doctor").order_by("-appointment_date", "-created_at")
         apt_list = []
         for apt in appointments:
             queue_position = None
