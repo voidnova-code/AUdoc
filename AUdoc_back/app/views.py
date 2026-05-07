@@ -636,6 +636,7 @@ def appointment(request):
     student_email = getattr(request.user, "email", "") if request.user.is_authenticated else ""
     student_username = getattr(request.user, "username", "") if request.user.is_authenticated else ""
     initial = {}
+    post_data = request.POST.copy() if request.method == "POST" else None
     try:
         profile = request.user.student_profile
         student_id = profile.student_id
@@ -653,6 +654,26 @@ def appointment(request):
                 "student_name": request.user.get_full_name() or student_username,
                 "email": student_email,
             }
+
+    if post_data is not None:
+        # Fill missing fields from the authenticated account so Google-auth users
+        # without a StudentProfile can still submit a valid appointment.
+        if not post_data.get("student_id"):
+            post_data["student_id"] = initial.get("student_id", student_username)
+        if not post_data.get("student_name"):
+            post_data["student_name"] = initial.get("student_name", student_username)
+        if not post_data.get("email"):
+            post_data["email"] = initial.get("email", student_email)
+        if not post_data.get("phone") and request.user.is_authenticated:
+            try:
+                post_data["phone"] = request.user.student_profile.phone
+            except Exception:
+                pass
+        if not post_data.get("student_department") and request.user.is_authenticated:
+            try:
+                post_data["student_department"] = request.user.student_profile.department
+            except Exception:
+                pass
 
     session_student_id = request.session.get("last_appointment_student_id")
     appointment_lookup_ids = [
@@ -694,7 +715,7 @@ def appointment(request):
         .order_by("-appointment_date", "-appointment_time")
     )
 
-    form = AppointmentForm(request.POST or None, initial=initial)
+    form = AppointmentForm(post_data or None, initial=initial)
 
     if request.method == "POST" and form.is_valid():
         # Check restriction again before creating
@@ -724,6 +745,8 @@ def appointment(request):
             "Your appointment has been booked and confirmed!",
         )
         return redirect("appointment")
+    elif request.method == "POST":
+        messages.error(request, "Please correct the highlighted appointment fields and try again.")
 
     doctors = Doctor.objects.filter(is_available=True).order_by("specialized_in", "name")
     return render(request, "app/appointment.html", {
@@ -2475,6 +2498,10 @@ def api_appointments(request):
         if not student_id:
             return JsonResponse({"error": "student_id is required"}, status=400)
 
+        student_name = sanitize_string(data.get("student_name", ""), max_length=150) or request.user.get_full_name() or student_username
+        phone = sanitize_string(data.get("phone", ""), max_length=20)
+        email = sanitize_string(data.get("email", ""), max_length=254) or request.user.email
+
         # Check for existing appointment
         existing = Appointment.objects.filter(
             student_id=student_id,
@@ -2489,9 +2516,9 @@ def api_appointments(request):
         # Create appointment
         appointment = Appointment.objects.create(
             student_id=student_id,
-            student_name=data["student_name"],
-            phone=data["phone"],
-            email=data["email"],
+            student_name=student_name,
+            phone=phone,
+            email=email,
             student_department=student_department,
             medical_department=data["medical_department"],
             doctor=doctor,

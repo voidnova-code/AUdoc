@@ -389,6 +389,19 @@
         <form method="post" novalidate>
           {% csrf_token %}
 
+          {% if form.errors %}
+            <div class="alert alert-danger rounded-3 mb-4">
+              <div class="fw-semibold mb-1">Please fix the highlighted issues below.</div>
+              <ul class="mb-0 ps-3">
+                {% for field, errors in form.errors.items %}
+                  {% for error in errors %}
+                    <li>{{ field|title }}: {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
           <!-- ── Personal Information ── -->
           <p class="section-label">Personal Information</p>
           <div class="row g-3 mb-4">
