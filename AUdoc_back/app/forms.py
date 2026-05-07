@@ -122,10 +122,6 @@ class AppointmentForm(forms.Form):
         label="Preferred Date",
         widget=forms.DateInput(attrs={"type": "date"}),
     )
-    appointment_time = forms.ChoiceField(
-        choices=[("", "— Select a time slot —")] + list(TIME_SLOT_CHOICES),
-        label="Preferred Time Slot",
-    )
     problem_description = forms.CharField(
         label="Description of Problem",
         widget=forms.Textarea(attrs={"rows": 4, "placeholder": "Briefly describe your symptoms or reason for visit"}),
@@ -148,12 +144,6 @@ class AppointmentForm(forms.Form):
         if date < timezone.localdate():
             raise forms.ValidationError("Appointment date cannot be in the past.")
         return date
-
-    def clean_appointment_time(self):
-        slot = self.cleaned_data["appointment_time"]
-        if not slot:
-            raise forms.ValidationError("Please select a time slot.")
-        return slot
 
     def clean(self):
         cleaned = super().clean()

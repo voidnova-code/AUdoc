@@ -305,7 +305,7 @@
                   {% if appt.doctor %}{{ appt.doctor.name }}{% else %}{{ appt.get_medical_department_display }}{% endif %}
                 </div>
                 <div class="text-muted small mt-1">
-                  <i class="bi bi-clock me-1"></i>{{ appt.appointment_time }}
+                  <i class="bi bi-clock me-1"></i>{{ appt.appointment_time|default:"Any time" }}
                   &nbsp;·&nbsp;
                   <i class="bi bi-building-cross me-1"></i>{{ appt.get_medical_department_display }}
                 </div>
@@ -340,7 +340,7 @@
                   {% if appt.doctor %}{{ appt.doctor.name }}{% else %}{{ appt.get_medical_department_display }}{% endif %}
                 </div>
                 <div class="text-muted small mt-1">
-                  <i class="bi bi-clock me-1"></i>{{ appt.appointment_time }}
+                  <i class="bi bi-clock me-1"></i>{{ appt.appointment_time|default:"Any time" }}
                   &nbsp;·&nbsp;
                   <i class="bi bi-building-cross me-1"></i>{{ appt.get_medical_department_display }}
                 </div>

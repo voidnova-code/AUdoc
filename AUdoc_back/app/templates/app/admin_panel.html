@@ -1416,7 +1416,7 @@
                     <td>{{ today_appt.appointment.student_name }}</td>
                     <td>{{ today_appt.appointment.student_department }}</td>
                     <td>{{ today_appt.appointment.doctor.name }}</td>
-                    <td>{{ today_appt.appointment.appointment_time|time:"H:i" }}</td>
+                    <td>{{ today_appt.appointment.appointment_time|default:"Any time" }}</td>
                     <td>
                       {% if today_appt.status == "CONFIRMED" %}
                       <span class="badge status-confirmed">Confirmed</span>
@@ -1553,7 +1553,7 @@
                     <td>{{ appointment.doctor.name }}</td>
                     <td>
                       {{ appointment.appointment_date }}<br>
-                      <small class="text-muted">{{ appointment.appointment_time|time:"H:i" }}</small>
+                      <small class="text-muted">{{ appointment.appointment_time|default:"Any time" }}</small>
                     </td>
                     <td>{{ appointment.student_department }}</td>
                     <td>

@@ -735,7 +735,7 @@ def appointment(request):
             medical_department=cd["medical_department"],
             doctor=cd.get("doctor"),
             appointment_date=cd["appointment_date"],
-            appointment_time=cd["appointment_time"],
+            appointment_time=cd.get("appointment_time") or None,
             problem_description=cd["problem_description"],
             status="CONFIRMED",
         )
@@ -2466,7 +2466,7 @@ def api_appointments(request):
         except (json.JSONDecodeError, ValueError):
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-        required = ["student_name", "phone", "email", "medical_department", "appointment_date", "appointment_time", "problem_description"]
+        required = ["student_name", "phone", "email", "medical_department", "appointment_date", "problem_description"]
         for field in required:
             if data.get(field) in [None, ""]:
                 return JsonResponse({"error": f"{field} is required"}, status=400)
@@ -2503,12 +2503,16 @@ def api_appointments(request):
         email = sanitize_string(data.get("email", ""), max_length=254) or request.user.email
 
         # Check for existing appointment
-        existing = Appointment.objects.filter(
-            student_id=student_id,
-            doctor=doctor,
-            appointment_date=apt_date,
-            appointment_time=data["appointment_time"],
-        ).exclude(status="CANCELLED").first()
+        requested_time = data.get("appointment_time") or None
+        existing_filter = {
+            "student_id": student_id,
+            "doctor": doctor,
+            "appointment_date": apt_date,
+        }
+        if requested_time:
+            existing_filter["appointment_time"] = requested_time
+
+        existing = Appointment.objects.filter(**existing_filter).exclude(status="CANCELLED").first()
 
         if existing:
             return JsonResponse({"error": "You already have an appointment at this time"}, status=400)
@@ -2523,7 +2527,7 @@ def api_appointments(request):
             medical_department=data["medical_department"],
             doctor=doctor,
             appointment_date=apt_date,
-            appointment_time=data["appointment_time"],
+            appointment_time=requested_time,
             problem_description=data["problem_description"],
             status="PENDING",
         )
