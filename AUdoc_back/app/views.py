@@ -633,19 +633,35 @@ def appointment(request):
 
     # Resolve the student_id for this user
     student_id = None
+    student_email = getattr(request.user, "email", "") if request.user.is_authenticated else ""
+    student_username = getattr(request.user, "username", "") if request.user.is_authenticated else ""
     initial = {}
     try:
         profile = request.user.student_profile
         student_id = profile.student_id
         initial = {
-            "student_id":         profile.student_id,
-            "student_name":       request.user.get_full_name(),
+            "student_id":         profile.student_id or student_username,
+            "student_name":       request.user.get_full_name() or student_username,
             "phone":              profile.phone,
-            "email":              request.user.email,
+            "email":              student_email,
             "student_department": profile.department,
         }
     except Exception:
-        pass
+        if request.user.is_authenticated:
+            initial = {
+                "student_id": student_username,
+                "student_name": request.user.get_full_name() or student_username,
+                "email": student_email,
+            }
+
+    session_student_id = request.session.get("last_appointment_student_id")
+    appointment_lookup_ids = [
+        value for value in [
+            student_id,
+            session_student_id,
+            student_username,
+        ] if value
+    ]
 
     # Auto-complete any past PENDING/CONFIRMED appointments for this student
     if student_id:
@@ -662,7 +678,10 @@ def appointment(request):
         restriction_info = is_student_restricted_from_booking(student_id)
 
     # Split this user's appointments into upcoming and history
-    base_qs = Appointment.objects.filter(student_id=student_id) if student_id else Appointment.objects.none()
+    if appointment_lookup_ids:
+        base_qs = Appointment.objects.filter(student_id__in=appointment_lookup_ids)
+    else:
+        base_qs = Appointment.objects.none()
     upcoming_appointments = (
         base_qs
         .filter(appointment_date__gte=today_date)
@@ -699,6 +718,7 @@ def appointment(request):
             problem_description=cd["problem_description"],
             status="CONFIRMED",
         )
+        request.session["last_appointment_student_id"] = cd["student_id"]
         messages.success(
             request,
             "Your appointment has been booked and confirmed!",
@@ -2376,11 +2396,19 @@ def api_appointments(request):
     if not request.user.is_authenticated:
         return JsonResponse({"error": "Authentication required"}, status=401)
 
-    student_id = request.user.username
+    student_username = request.user.username
+    student_profile_id = None
+    try:
+        student_profile_id = request.user.student_profile.student_id
+    except StudentProfile.DoesNotExist:
+        student_profile_id = None
+
+    session_student_id = request.session.get("last_appointment_student_id")
+    lookup_ids = [value for value in [student_profile_id, session_student_id, student_username] if value]
 
     if request.method == "GET":
         # Fetch all appointments for this student
-        appointments = Appointment.objects.filter(student_id=student_id).select_related("doctor").order_by("-appointment_date", "-created_at")
+        appointments = Appointment.objects.filter(student_id__in=lookup_ids).select_related("doctor").order_by("-appointment_date", "-created_at") if lookup_ids else Appointment.objects.none()
         apt_list = []
         for apt in appointments:
             queue_position = None
@@ -2443,6 +2471,10 @@ def api_appointments(request):
             except StudentProfile.DoesNotExist:
                 return JsonResponse({"error": "student_department is required"}, status=400)
 
+        student_id = sanitize_string(data.get("student_id", ""), max_length=50) or student_profile_id or student_username
+        if not student_id:
+            return JsonResponse({"error": "student_id is required"}, status=400)
+
         # Check for existing appointment
         existing = Appointment.objects.filter(
             student_id=student_id,
@@ -2468,6 +2500,7 @@ def api_appointments(request):
             problem_description=data["problem_description"],
             status="PENDING",
         )
+        request.session["last_appointment_student_id"] = student_id
 
         return JsonResponse({
             "success": True,
