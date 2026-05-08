@@ -13,6 +13,7 @@ def _get_client_ip(request):
 @receiver(user_logged_in)
 def log_user_login(sender, request, user, **kwargs):
     from .models import LoginLog
+    from allauth.socialaccount.models import SocialAccount
 
     # Skip logging for superusers / admin accounts
     if user.is_superuser:
@@ -20,20 +21,32 @@ def log_user_login(sender, request, user, **kwargs):
 
     now = timezone.localtime(timezone.now())
     is_verified = False
+    session = getattr(request, "session", None)
 
     # Student OTP login flow.
-    if request.session.get("otp_login_verified", False):
+    if session and session.pop("otp_login_verified", False):
         is_verified = True
-        del request.session["otp_login_verified"]
 
     # Successful Google OAuth login flow.
-    elif request.session.get("social_login_verified", False):
+    elif session and session.pop("social_login_verified", False):
         is_verified = True
-        del request.session["social_login_verified"]
 
     # Staff/doctor credential login flow (staff_id + password or Django auth for staff accounts).
     elif user.is_staff:
         is_verified = True
+
+    # Robust fallback for Google OAuth users if session flags are unavailable.
+    elif SocialAccount.objects.filter(user=user, provider="google").exists():
+        is_verified = True
+
+    # Fallback for users linked via stored student OAuth metadata.
+    else:
+        try:
+            profile = user.student_profile
+            if profile.oauth_provider == "google" and profile.oauth_id:
+                is_verified = True
+        except Exception:
+            pass
 
     LoginLog.objects.create(
         user=user,
