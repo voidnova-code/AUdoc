@@ -29,6 +29,8 @@ class GoogleStudentSocialAccountAdapter(DefaultSocialAccountAdapter):
             profile.oauth_id = google_id
             profile.oauth_provider = "google"
             profile.save()
+            # Used by login-log signal to mark successful Google logins as verified.
+            request.session["social_login_verified"] = True
             log_security_event("google_login_success", request, {"email": email}, level="info")
 
             # Connect the social account to existing user

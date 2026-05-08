@@ -19,9 +19,21 @@ def log_user_login(sender, request, user, **kwargs):
         return
 
     now = timezone.localtime(timezone.now())
-    is_verified = bool(request.session.get("otp_login_verified", False))
-    if is_verified:
+    is_verified = False
+
+    # Student OTP login flow.
+    if request.session.get("otp_login_verified", False):
+        is_verified = True
         del request.session["otp_login_verified"]
+
+    # Successful Google OAuth login flow.
+    elif request.session.get("social_login_verified", False):
+        is_verified = True
+        del request.session["social_login_verified"]
+
+    # Staff/doctor credential login flow (staff_id + password or Django auth for staff accounts).
+    elif user.is_staff:
+        is_verified = True
 
     LoginLog.objects.create(
         user=user,
