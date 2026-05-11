@@ -84,6 +84,11 @@ class StudentRegistrationForm(forms.Form):
 
 
 class AppointmentForm(forms.Form):
+    BOOKING_METHOD_CHOICES = [
+        ("doctor", "Choose a Doctor (auto-assign closest date)"),
+        ("date", "Choose a Date (any available doctor)"),
+    ]
+
     student_id = forms.CharField(
         max_length=50,
         label="Student ID",
@@ -111,16 +116,23 @@ class AppointmentForm(forms.Form):
         choices=[("", "— Select medical department —")] + list(MEDICAL_DEPT_CHOICES),
         label="Medical Department",
     )
+    booking_method = forms.ChoiceField(
+        choices=BOOKING_METHOD_CHOICES,
+        label="Booking Method",
+        widget=forms.RadioSelect(),
+        initial="doctor",
+    )
     doctor = forms.ModelChoiceField(
         queryset=Doctor.objects.filter(is_available=True),
         required=False,
-        empty_label="— Any available doctor —",
-        label="Preferred Doctor",
-        help_text="Optional — leave blank and we will assign an available doctor.",
+        empty_label="— Select a doctor —",
+        label="Doctor",
+        help_text="Select the doctor you prefer to see.",
     )
     appointment_date = forms.DateField(
         label="Preferred Date",
         widget=forms.DateInput(attrs={"type": "date"}),
+        required=False,
     )
     problem_description = forms.CharField(
         label="Description of Problem",
@@ -139,16 +151,21 @@ class AppointmentForm(forms.Form):
             raise forms.ValidationError("Please select a medical department.")
         return dept
 
-    def clean_appointment_date(self):
-        date = self.cleaned_data["appointment_date"]
-        if date < timezone.localdate():
-            raise forms.ValidationError("Appointment date cannot be in the past.")
-        return date
-
     def clean(self):
         cleaned = super().clean()
-        student_id = cleaned.get("student_id")
+        booking_method = cleaned.get("booking_method")
+        doctor = cleaned.get("doctor")
         appointment_date = cleaned.get("appointment_date")
+        student_id = cleaned.get("student_id")
+
+        if booking_method == "doctor":
+            if not doctor:
+                self.add_error("doctor", "Please select a doctor.")
+        elif booking_method == "date":
+            if not appointment_date:
+                self.add_error("appointment_date", "Please select a date.")
+            elif appointment_date < timezone.localdate():
+                self.add_error("appointment_date", "Appointment date cannot be in the past.")
 
         if student_id and appointment_date:
             if Appointment.objects.filter(

@@ -726,6 +726,21 @@ def appointment(request):
                 return redirect("appointment")
 
         cd = form.cleaned_data
+        booking_method = cd.get("booking_method")
+        appointment_date = cd.get("appointment_date")
+        doctor = cd.get("doctor")
+
+        # If booking by doctor, find the next available date
+        if booking_method == "doctor" and doctor:
+            from app.doctor_availability import get_doctor_next_available_date
+            appointment_date = get_doctor_next_available_date(doctor.id, today_date)
+            if not appointment_date:
+                messages.error(
+                    request,
+                    f"Doctor {doctor.name} has no available dates in the next 30 days. Please choose another doctor or select a date.",
+                )
+                return redirect("appointment")
+
         Appointment.objects.create(
             student_id=cd["student_id"],
             student_name=cd["student_name"],
@@ -733,16 +748,19 @@ def appointment(request):
             email=cd["email"],
             student_department=cd["student_department"],
             medical_department=cd["medical_department"],
-            doctor=cd.get("doctor"),
-            appointment_date=cd["appointment_date"],
+            doctor=doctor,
+            appointment_date=appointment_date,
             appointment_time=cd.get("appointment_time") or None,
             problem_description=cd["problem_description"],
             status="CONFIRMED",
         )
         request.session["last_appointment_student_id"] = cd["student_id"]
+
+        date_str = appointment_date.strftime("%B %d, %Y")
+        doctor_str = f" with Dr. {doctor.name}" if doctor else ""
         messages.success(
             request,
-            "Your appointment has been booked and confirmed!",
+            f"Your appointment has been booked and confirmed for {date_str}{doctor_str}!",
         )
         return redirect("appointment")
     elif request.method == "POST":

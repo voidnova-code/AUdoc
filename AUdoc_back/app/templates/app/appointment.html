@@ -532,45 +532,46 @@
 
           <!-- ── Appointment Scheduling ── -->
           <p class="section-label">Appointment Scheduling</p>
-          <div class="row g-3 mb-4">
 
-            <div class="col-sm-6">
-              <label class="form-label" for="id_appointment_date">
-                Preferred Date <span class="text-danger">*</span>
-              </label>
-              <div class="input-group">
-                <input
-                  type="date"
-                  name="appointment_date"
-                  id="id_appointment_date"
-                  class="form-control{% if form.appointment_date.errors %} is-invalid{% endif %}"
-                  value="{{ form.appointment_date.value|default_if_none:'' }}"
-                  min="{{ today_str }}"
-                  required
-                />
-                <button type="button" class="btn btn-outline-primary" id="btn-today"
-                  onclick="document.getElementById('id_appointment_date').value='{{ today_str }}';"
-                  title="Set to today">
-                  Today
-                </button>
+          <!-- Booking Method Selection -->
+          <div class="mb-4 p-3 rounded-3" style="background:#f5f9f7; border:1px solid #d5e8d9;">
+            <p class="fw-bold mb-3" style="color:#0d2a1a; font-size:0.95rem;">
+              <i class="bi bi-question-circle me-2"></i>How would you like to book?
+            </p>
+            <div class="d-flex gap-3">
+              <div class="form-check">
+                <input type="radio" id="method-doctor" name="booking_method" value="doctor"
+                  class="form-check-input" checked />
+                <label class="form-check-label" for="method-doctor">
+                  <strong>Choose a Doctor</strong>
+                  <br/>
+                  <small class="text-muted">We'll assign the closest available date</small>
+                </label>
               </div>
-              {% for err in form.appointment_date.errors %}
-                <div class="text-danger" style="font-size:.82rem;">{{ err }}</div>
-              {% endfor %}
+              <div class="form-check">
+                <input type="radio" id="method-date" name="booking_method" value="date"
+                  class="form-check-input" />
+                <label class="form-check-label" for="method-date">
+                  <strong>Choose a Date</strong>
+                  <br/>
+                  <small class="text-muted">Pick any available date</small>
+                </label>
+              </div>
             </div>
+          </div>
 
-
-
+          <!-- Doctor Selection (shown when "Choose Doctor" is selected) -->
+          <div id="doctor-section" class="row g-3 mb-4">
             <div class="col-12">
               <label class="form-label" for="id_doctor">
-                Preferred Doctor <span class="text-muted fw-normal">(optional)</span>
+                Doctor <span class="text-danger">*</span>
               </label>
               <select
                 name="doctor"
                 id="id_doctor"
                 class="form-select{% if form.doctor.errors %} is-invalid{% endif %}"
               >
-                <option value="">— Any available doctor —</option>
+                <option value="">— Select a doctor —</option>
                 {% for doc in doctors %}
                   <option
                     value="{{ doc.pk }}"
@@ -586,10 +587,36 @@
               {% endfor %}
               <div class="form-text">
                 <i class="bi bi-info-circle me-1"></i>
-                Selecting a medical department above will filter this list automatically.
+                The appointment will be scheduled for the doctor's next available date.
               </div>
             </div>
+          </div>
 
+          <!-- Date Selection (shown when "Choose Date" is selected) -->
+          <div id="date-section" class="row g-3 mb-4" style="display:none;">
+            <div class="col-sm-6">
+              <label class="form-label" for="id_appointment_date">
+                Preferred Date <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <input
+                  type="date"
+                  name="appointment_date"
+                  id="id_appointment_date"
+                  class="form-control{% if form.appointment_date.errors %} is-invalid{% endif %}"
+                  value="{{ form.appointment_date.value|default_if_none:'' }}"
+                  min="{{ today_str }}"
+                />
+                <button type="button" class="btn btn-outline-primary" id="btn-today"
+                  onclick="document.getElementById('id_appointment_date').value='{{ today_str }}';"
+                  title="Set to today">
+                  Today
+                </button>
+              </div>
+              {% for err in form.appointment_date.errors %}
+                <div class="text-danger" style="font-size:.82rem;">{{ err }}</div>
+              {% endfor %}
+            </div>
           </div>
 
           <!-- ── Problem Description ── -->
@@ -700,10 +727,37 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  // ── Booking method selection handler ──────────────────────
   (function () {
-    const deptSel   = document.getElementById('id_medical_department');
-    const doctorSel = document.getElementById('id_doctor');
-    if (!deptSel || !doctorSel) return;
+    const methodDoctor = document.getElementById('method-doctor');
+    const methodDate = document.getElementById('method-date');
+    const doctorSection = document.getElementById('doctor-section');
+    const dateSection = document.getElementById('date-section');
+    const doctorField = document.getElementById('id_doctor');
+    const dateField = document.getElementById('id_appointment_date');
+
+    if (!methodDoctor || !methodDate || !doctorSection || !dateSection) return;
+
+    function updateFieldVisibility() {
+      if (methodDoctor.checked) {
+        doctorSection.style.display = 'block';
+        dateSection.style.display = 'none';
+        doctorField.setAttribute('required', 'required');
+        dateField.removeAttribute('required');
+      } else {
+        doctorSection.style.display = 'none';
+        dateSection.style.display = 'block';
+        doctorField.removeAttribute('required');
+        dateField.setAttribute('required', 'required');
+      }
+    }
+
+    methodDoctor.addEventListener('change', updateFieldVisibility);
+    methodDate.addEventListener('change', updateFieldVisibility);
+    updateFieldVisibility();
+  })();
+</script>
+<script>
 
     // Snapshot all doctor options (skip the placeholder at index 0)
     const allOptions = Array.from(doctorSel.options).slice(1).map(o => o.cloneNode(true));
