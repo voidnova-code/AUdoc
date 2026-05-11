@@ -2039,6 +2039,38 @@ def admin_clear_all_data(request):
     return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
 
 
+@_admin_required
+def admin_send_confirmations_test(request):
+    """Manual trigger for sending same-day appointment confirmations (admin only)."""
+    if request.method != 'POST':
+        return JsonResponse({"error": "POST required"}, status=405)
+
+    from django.core.management import call_command
+    from io import StringIO
+
+    try:
+        # Run the send_appointment_confirmations command
+        out = StringIO()
+        call_command('send_appointment_confirmations', stdout=out)
+        output = out.getvalue()
+
+        messages.success(
+            request,
+            "✓ Confirmation emails sent successfully! Check admin dashboard for details."
+        )
+        log_security_event("send_confirmations_test", request, {"output": output[:200]})
+
+        return JsonResponse({
+            "success": True,
+            "message": "Confirmation emails sent",
+            "details": output
+        })
+    except Exception as e:
+        messages.error(request, f"Error sending confirmations: {str(e)}")
+        log_security_event("send_confirmations_test_error", request, {"error": str(e)}, level="error")
+        return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+
 # ── AI Chatbot ────────────────────────────────────────────────────────────────
 
 @require_POST

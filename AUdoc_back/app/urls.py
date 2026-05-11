@@ -41,6 +41,7 @@ urlpatterns = [
     path("manage/staff/save/", views.admin_staff_save, name="admin_staff_save"),
     path("manage/staff/<int:pk>/delete/", views.admin_staff_delete, name="admin_staff_delete"),
     path("manage/staff/add/", views.add_staff_member, name="add_staff_member"),
+    path("manage/send-confirmations-test/", views.admin_send_confirmations_test, name="admin_send_confirmations_test"),
 
     # ── AI Chatbot ───────────────────────────────────────────────
     path("chat/", views.chat_api, name="chat_api"),
