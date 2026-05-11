@@ -2529,13 +2529,13 @@ def api_appointments(request):
             appointment_date=apt_date,
             appointment_time=requested_time,
             problem_description=data["problem_description"],
-            status="PENDING",
+            status="CONFIRMED",
         )
         request.session["last_appointment_student_id"] = student_id
 
         return JsonResponse({
             "success": True,
-            "message": "Appointment booked successfully",
+            "message": "Appointment booked and confirmed successfully",
             "appointment": {
                 "id": appointment.id,
                 "doctor_name": doctor.name if doctor else None,

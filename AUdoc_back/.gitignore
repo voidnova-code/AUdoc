@@ -50,3 +50,4 @@ Thumbs.db
 # Documentation (keep locally, don't commit)
 *.md
 !README.md
+.secret_key
