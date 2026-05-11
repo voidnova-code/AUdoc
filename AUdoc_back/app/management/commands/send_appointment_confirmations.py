@@ -22,10 +22,11 @@ class Command(BaseCommand):
         self.stdout.write(f"Sending appointment confirmations for {today}")
         self.stdout.write(f"{'='*60}\n")
 
-        # Get all PENDING appointments scheduled for today
+        # Get all appointments scheduled for today (CONFIRMED or PENDING status)
+        # These are recently booked appointments that need today's confirmation
         appointments = Appointment.objects.filter(
             appointment_date=today,
-            status='PENDING'
+            status__in=['CONFIRMED', 'PENDING']
         ).select_related('doctor')
 
         if not appointments.exists():
