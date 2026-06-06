@@ -915,10 +915,13 @@ def blood_donors_list(request):
 
 
 def blood_bank(request):
-    """Unified Blood Bank page with both donation and request forms."""
+    """Unified Blood Bank page with both donation and request forms (GET/POST)."""
     form_donate = BloodDonationForm(request.POST or None)
     form_request = BloodRequestForm(request.POST or None)
     active_tab = request.GET.get("tab", "donate")
+
+    # Log access for analytics
+    log_security_event("blood_bank_access", request, {"method": request.method}, level="info")
 
     # Check if the logged-in user is already registered as a donor
     existing_donation = None
@@ -976,6 +979,7 @@ def blood_bank(request):
 
             # Block duplicate registration
             if BloodDonation.objects.filter(email=cd["email"]).exists():
+                log_security_event("blood_donation_duplicate", request, {"email": cd["email"]}, level="warning")
                 messages.error(request, "You have already registered as a blood donor.")
                 return redirect("blood_bank")
 
@@ -988,7 +992,7 @@ def blood_bank(request):
                 except Exception:
                     pass
 
-            BloodDonation.objects.create(
+            donation = BloodDonation.objects.create(
                 student_id=student_id,
                 donor_name=cd["donor_name"],
                 email=cd["email"],
@@ -1001,6 +1005,8 @@ def blood_bank(request):
                 message=cd["message"],
                 status="PENDING",
             )
+            log_security_event("blood_donation_registered", request,
+                {"donation_id": donation.id, "blood_group": cd["blood_group"]}, level="info")
             messages.success(
                 request,
                 "Thank you for registering as a blood donor! The health center will review your application and contact you soon.",
@@ -1041,13 +1047,20 @@ def blood_bank(request):
             matching_donors = BloodDonation.objects.filter(
                 blood_group=cd["blood_group"], status="APPROVED"
             ).exclude(email=cd["email"])
+            donor_count = 0
             for donor in matching_donors:
                 dr, _ = DonorResponse.objects.get_or_create(blood_request=blood_req, donor=donor)
-                _send_donor_request_email(request, blood_req, donor, dr.token)
+                try:
+                    _send_donor_request_email(request, blood_req, donor, dr.token)
+                    donor_count += 1
+                except Exception as e:
+                    logger.error(f"Failed to notify donor {donor.id}: {str(e)}")
 
+            log_security_event("blood_request_submitted", request,
+                {"request_id": blood_req.id, "donors_notified": donor_count}, level="info")
             messages.success(
                 request,
-                "Your blood request has been submitted! Matching donors have been notified by email.",
+                f"Your blood request has been submitted! {donor_count} matching donor(s) have been notified by email.",
             )
             return redirect("blood_bank")
 
@@ -1790,24 +1803,30 @@ def admin_appointment_status(request, pk):
 @_admin_required
 @require_http_methods(["POST"])
 def admin_blood_donation_status(request, pk):
+    """Update blood donation status (admin only)."""
     don = get_object_or_404(BloodDonation, pk=pk)
-    new_status = request.POST.get('status')
+    new_status = request.POST.get('status', '').strip()
     if new_status in ('PENDING', 'APPROVED', 'COMPLETED', 'REJECTED'):
         don.status = new_status
         don.save()
         messages.success(request, f"Blood donation #{pk} updated to {new_status}.")
+    else:
+        messages.error(request, "Invalid status value.")
     return redirect(f"{reverse('admin_dashboard')}?tab=blood-donations")
 
 
 @_admin_required
 @require_http_methods(["POST"])
 def admin_blood_request_status(request, pk):
+    """Update blood request status (admin only)."""
     req = get_object_or_404(BloodRequest, pk=pk)
-    new_status = request.POST.get('status')
+    new_status = request.POST.get('status', '').strip()
     if new_status in ('PENDING', 'APPROVED', 'FULFILLED', 'REJECTED'):
         req.status = new_status
         req.save()
         messages.success(request, f"Blood request #{pk} updated to {new_status}.")
+    else:
+        messages.error(request, "Invalid status value.")
     return redirect(f"{reverse('admin_dashboard')}?tab=blood-requests")
 
 
@@ -1919,12 +1938,14 @@ def admin_staff_delete(request, pk):
 
 
 @_admin_required
-@require_POST
+@require_http_methods(["POST"])
 def admin_blood_request_delete(request, pk):
+    """Delete a blood request (admin only)."""
     blood_request = get_object_or_404(BloodRequest, pk=pk)
     requester_name = blood_request.requester_name
     blood_request.delete()
-    return JsonResponse({'success': True, 'message': f"Blood request from '{requester_name}' deleted successfully"})
+    messages.success(request, f"Blood request from '{requester_name}' deleted successfully.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=blood-requests")
 
 
 @_admin_required
@@ -2599,6 +2620,7 @@ def api_appointments(request):
 
 
 @csrf_exempt
+@require_http_methods(["GET", "POST"])
 @rate_limit_api
 def api_blood_donations(request):
     """API: Get or create blood donations for Flutter app."""
@@ -2655,6 +2677,19 @@ def api_blood_donations(request):
         email = sanitize_string(data["email"], max_length=254)
         phone = sanitize_string(data["phone"], max_length=20)
 
+        if not validate_email_format(email):
+            return JsonResponse({"error": "Invalid email format"}, status=400)
+
+        if not validate_phone(phone):
+            return JsonResponse({"error": "Invalid phone format"}, status=400)
+
+        try:
+            weight = int(data["weight"])
+            if weight < 50:
+                return JsonResponse({"error": "Minimum weight required is 50 kg"}, status=400)
+        except (ValueError, TypeError):
+            return JsonResponse({"error": "Weight must be a valid number"}, status=400)
+
         # Create new donor registration
         donation = BloodDonation.objects.create(
             student_id=sanitize_string(data.get("student_id", ""), max_length=50) or student_id,
@@ -2663,7 +2698,7 @@ def api_blood_donations(request):
             phone=phone,
             blood_group=sanitize_string(data["blood_group"], max_length=10),
             date_of_birth=dob,
-            weight=int(data["weight"]),
+            weight=weight,
             previous_donation=bool(data.get("previous_donation", False)),
             health_condition=sanitize_string(data.get("health_condition", ""), max_length=200),
             message=sanitize_string(data.get("message", ""), max_length=500),
@@ -2673,12 +2708,11 @@ def api_blood_donations(request):
             "success": True,
             "message": "Registered as blood donor",
             "donation_id": donation.id,
-        })
-
-    return JsonResponse({"error": "Method not allowed"}, status=405)
+        }, status=201)
 
 
 @csrf_exempt
+@require_http_methods(["GET", "POST"])
 @rate_limit_api
 def api_blood_requests(request):
     """API: Get or create blood requests for Flutter app."""
@@ -2735,17 +2769,40 @@ def api_blood_requests(request):
 
         try:
             required_date = date.fromisoformat(data["required_date"])
+            if required_date < timezone.localdate():
+                return JsonResponse({"error": "Required date cannot be in the past"}, status=400)
         except ValueError:
             return JsonResponse({"error": "Invalid required_date format. Use YYYY-MM-DD"}, status=400)
 
+        # Validate inputs
+        email = sanitize_string(data["email"], max_length=254)
+        phone = sanitize_string(data["phone"], max_length=20)
+
+        if not validate_email_format(email):
+            return JsonResponse({"error": "Invalid email format"}, status=400)
+
+        if not validate_phone(phone):
+            return JsonResponse({"error": "Invalid phone format"}, status=400)
+
+        try:
+            units = int(data["units_required"])
+            if units < 1:
+                return JsonResponse({"error": "Units required must be at least 1"}, status=400)
+        except (ValueError, TypeError):
+            return JsonResponse({"error": "Units required must be a valid number"}, status=400)
+
+        urgency = sanitize_string(data.get("urgency", "MEDIUM"), max_length=10)
+        if urgency not in ["LOW", "MEDIUM", "HIGH", "URGENT"]:
+            return JsonResponse({"error": "Invalid urgency level. Choose from: LOW, MEDIUM, HIGH, URGENT"}, status=400)
+
         blood_request = BloodRequest.objects.create(
-            student_id=data.get("student_id") or student_id,
-            requester_name=data["requester_name"],
-            email=data["email"],
-            phone=data["phone"],
+            student_id=sanitize_string(data.get("student_id", ""), max_length=50) or student_id,
+            requester_name=sanitize_string(data["requester_name"], max_length=150),
+            email=email,
+            phone=phone,
             blood_group=sanitize_string(data["blood_group"], max_length=10),
-            units_required=int(data["units_required"]),
-            urgency=sanitize_string(data.get("urgency", "MEDIUM"), max_length=10),
+            units_required=units,
+            urgency=urgency,
             hospital_name=sanitize_string(data["hospital_name"], max_length=200),
             hospital_contact=sanitize_string(data["hospital_contact"], max_length=200),
             reason=sanitize_string(data["reason"], max_length=200),
@@ -2753,13 +2810,22 @@ def api_blood_requests(request):
             notes=sanitize_string(data.get("notes", ""), max_length=500),
         )
 
+        # Notify matching donors
+        matching_donors = BloodDonation.objects.filter(
+            blood_group=blood_request.blood_group, status="APPROVED"
+        ).exclude(email=email)
+        for donor in matching_donors:
+            dr, _ = DonorResponse.objects.get_or_create(blood_request=blood_request, donor=donor)
+            try:
+                _send_donor_request_email(request, blood_request, donor, dr.token)
+            except Exception as e:
+                logger.error(f"Failed to send donor notification email: {str(e)}")
+
         return JsonResponse({
             "success": True,
             "message": "Blood request submitted",
             "request_id": blood_request.id,
-        })
-
-    return JsonResponse({"error": "Method not allowed"}, status=405)
+        }, status=201)
 
 
 @rate_limit_api
