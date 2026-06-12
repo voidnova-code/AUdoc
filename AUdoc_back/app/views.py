@@ -752,7 +752,7 @@ def appointment(request):
             appointment_date=appointment_date,
             appointment_time=cd.get("appointment_time") or None,
             problem_description=cd["problem_description"],
-            status="CONFIRMED",
+            status="PENDING",
         )
         request.session["last_appointment_student_id"] = cd["student_id"]
 
@@ -760,7 +760,7 @@ def appointment(request):
         doctor_str = f" with Dr. {doctor.name}" if doctor else ""
         messages.success(
             request,
-            f"Your appointment has been booked and confirmed for {date_str}{doctor_str}!",
+            f"Your appointment has been booked for {date_str}{doctor_str}. You will receive a confirmation email on the morning of your appointment.",
         )
         return redirect("appointment")
     elif request.method == "POST":
@@ -1303,12 +1303,12 @@ def appointment_confirm(request, token, action):
         today_appt.status = "CONFIRMED"
         today_appt.responded_at = timezone.now()
 
-        # Assign FCFS queue position based on appointment booking time (created_at)
-        # Count how many confirmed appointments for the same date were booked earlier
+        # Assign FCFS queue position based on confirmation response time (responded_at)
+        # Count how many confirmed appointments for the same date were confirmed earlier
         earlier_confirmed = TodaysAppointment.objects.filter(
             status="CONFIRMED",
             appointment__appointment_date=today_appt.appointment.appointment_date,
-            appointment__created_at__lt=today_appt.appointment.created_at
+            responded_at__lt=today_appt.responded_at
         ).count()
 
         # Queue position = number of earlier bookings + 1
