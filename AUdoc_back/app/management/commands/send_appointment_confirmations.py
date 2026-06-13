@@ -11,8 +11,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         today = date.today()
-        # Find all PENDING appointments for today
-        appointments = Appointment.objects.filter(appointment_date=today, status="PENDING")
+        # Find all PENDING appointments for today AND any missed past days
+        # This catches appointments that were missed if the scheduler didn't fire
+        appointments = Appointment.objects.filter(appointment_date__lte=today, status="PENDING")
         
         count = 0
         from django.utils import timezone
@@ -60,7 +61,7 @@ class Command(BaseCommand):
         msg = EmailMultiAlternatives(
             subject="[AUdoc] Today's Appointment Confirmation Required",
             body=plain_text,
-            from_email=None,
+            from_email=settings.DEFAULT_FROM_EMAIL,
             to=[appt.email],
         )
         # Using send() directly instead of send_email_async in a cron context to avoid thread issues,

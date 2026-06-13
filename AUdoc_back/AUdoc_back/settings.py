@@ -15,7 +15,10 @@ import os
 import secrets
 
 # Load .env file if it exists (for local development)
+# Check AUdoc_back/.env first, then fall back to project root .env
 _env_path = Path(__file__).resolve().parent.parent / ".env"
+if not _env_path.exists():
+    _env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 if _env_path.exists():
     with open(_env_path) as _f:
         for _line in _f:
