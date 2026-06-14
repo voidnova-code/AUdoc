@@ -232,6 +232,9 @@ EMAIL_BACKEND = "app.resend_backend.ResendBackend"
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "AUdoc Campus Health <noreply@voiddoc.me>")
 
+# Site URL for generating links in emails (e.g. appointment confirmation)
+SITE_URL = os.environ.get("SITE_URL", "https://voiddoc.me")
+
 # ── Groq AI (Chatbot — free tier) ───────────────────────────────────────────
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 

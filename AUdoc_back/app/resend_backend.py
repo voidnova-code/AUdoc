@@ -53,9 +53,18 @@ class ResendBackend(BaseEmailBackend):
                             html_content = content
                             break
 
+                # Ensure from_email uses our verified domain, never Resend's test domain
+                from_addr = message.from_email
+                if not from_addr or "resend.dev" in str(from_addr):
+                    from django.conf import settings
+                    from_addr = getattr(settings, "DEFAULT_FROM_EMAIL", None)
+                    if not from_addr or "resend.dev" in str(from_addr):
+                        from_addr = "AUdoc Campus Health <noreply@voiddoc.me>"
+                    logger.warning(f"from_email was invalid ('{message.from_email}'), using: {from_addr}")
+
                 # Build email params
                 email_params = {
-                    "from": message.from_email,
+                    "from": from_addr,
                     "to": message.to,
                     "subject": message.subject,
                 }

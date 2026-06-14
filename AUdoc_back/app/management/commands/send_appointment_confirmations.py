@@ -48,6 +48,13 @@ class Command(BaseCommand):
         
         doctor_str = f" with Dr. {appt.doctor.name}" if appt.doctor else ""
         
+        # Use verified domain sender — never fall back to resend.dev
+        from_email = settings.DEFAULT_FROM_EMAIL
+        if not from_email or "resend.dev" in str(from_email):
+            from_email = "AUdoc Campus Health <noreply@voiddoc.me>"
+        
+        self.stdout.write(f"  → Sending to {appt.email} | from: {from_email} | domain: {domain}")
+        
         plain_text = (
             f"Dear {appt.student_name},\n\n"
             f"You have an appointment booked for today{doctor_str}.\n"
@@ -61,9 +68,8 @@ class Command(BaseCommand):
         msg = EmailMultiAlternatives(
             subject="[AUdoc] Today's Appointment Confirmation Required",
             body=plain_text,
-            from_email=settings.DEFAULT_FROM_EMAIL,
+            from_email=from_email,
             to=[appt.email],
         )
-        # Using send() directly instead of send_email_async in a cron context to avoid thread issues,
-        # but since we import send_email_async we can just use it or msg.send().
         msg.send()
+
