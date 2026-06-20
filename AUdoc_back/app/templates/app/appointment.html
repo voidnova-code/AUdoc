@@ -182,6 +182,13 @@
       border-radius: 50%; animation: spin .7s linear infinite; margin-right: .4rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
+
+  <!-- SEO Enhancements -->
+  <meta name="description" content="Book your campus health center appointment at AUdoc. Select a department, choose a doctor, and schedule your visit.">
+  <meta property="og:title" content="Book Appointment – AUdoc Campus Health">
+<meta property="og:description" content="Book your campus health center appointment at AUdoc. Select a department, choose a doctor, and schedule your visit.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://voiddoc.me{% url 'appointment' %}">
 </head>
 <body>
 
@@ -851,6 +858,21 @@
       btn.classList.add('btn-loading');
     });
   })();
+</script>
+
+  <!-- Schema.org Data -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Book an Appointment",
+  "url": "https://voiddoc.me{% url 'appointment' %}",
+  "isPartOf": {
+    "@type": "WebSite",
+    "url": "https://voiddoc.me",
+    "name": "AUdoc Health Center"
+  }
+}
 </script>
 </body>
 </html>

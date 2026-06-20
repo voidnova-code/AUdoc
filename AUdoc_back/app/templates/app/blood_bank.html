@@ -218,6 +218,13 @@
     .btn-loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
+
+  <!-- SEO Enhancements -->
+  <meta name="description" content="Save lives by donating blood or find the blood you need. Manage your donations and requests at the AUdoc Campus Health Blood Bank.">
+  <meta property="og:title" content="Blood Bank – AUdoc Campus Health">
+<meta property="og:description" content="Save lives by donating blood or find the blood you need. Manage your donations and requests at the AUdoc Campus Health Blood Bank.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://voiddoc.me{% url 'blood_bank' %}">
 </head>
 <body>
 
@@ -1053,6 +1060,27 @@
       });
     });
   })();
+</script>
+
+  <!-- Schema.org Data -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Blood Bank",
+  "url": "https://voiddoc.me{% url 'blood_bank' %}",
+  "description": "Manage your blood donations and requests at the AUdoc Campus Health Blood Bank.",
+  "about": {
+    "@type": "MedicalOrganization",
+    "name": "AUdoc Blood Bank",
+    "telephone": "+91 6900577470"
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "url": "https://voiddoc.me",
+    "name": "AUdoc Health Center"
+  }
+}
 </script>
 </body>
 </html>

@@ -261,6 +261,13 @@
     .char-counter { font-size: .78rem; color: #999; text-align: right; margin-top: 4px; }
     .char-counter.warn { color: #f59e0b; }
   </style>
+
+  <!-- SEO Enhancements -->
+  <meta name="description" content="Learn about AUdoc, the student-built campus health portal for Assam University Silchar.">
+  <meta property="og:title" content="About – AUdoc Campus Health Portal">
+<meta property="og:description" content="Learn about AUdoc, the student-built campus health portal for Assam University Silchar.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://voiddoc.me{% url 'about' %}">
 </head>
 <body>
 
@@ -955,6 +962,27 @@
     ta.addEventListener('input', update);
     update();
   })();
+</script>
+
+  <!-- Schema.org Data -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://voiddoc.me/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "About"
+    }
+  ]
+}
 </script>
 </body>
 </html>

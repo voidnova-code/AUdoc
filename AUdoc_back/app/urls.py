@@ -31,11 +31,13 @@ urlpatterns = [
     path("manage/blood-donation/<int:pk>/status/", views.admin_blood_donation_status, name="admin_blood_donation_status"),
     path("manage/blood-request/<int:pk>/status/", views.admin_blood_request_status, name="admin_blood_request_status"),
     path("manage/blood-request/<int:pk>/delete/", views.admin_blood_request_delete, name="admin_blood_request_delete"),
+    path("manage/blood-request/<int:pk>/responses/", views.admin_blood_request_responses, name="admin_blood_request_responses"),
     path("manage/donation/<int:pk>/toggle-paid/", views.admin_donation_toggle_paid, name="admin_donation_toggle_paid"),
     path("manage/doctor/save/", views.admin_doctor_save, name="admin_doctor_save"),
     path("manage/doctor/<int:pk>/delete/", views.admin_doctor_delete, name="admin_doctor_delete"),
     path("manage/doctor/add/", views.add_doctor, name="add_doctor"),
     path("manage/clear-all-data/", views.admin_clear_all_data, name="admin_clear_all_data"),
+    path("manage/clear-all-data/confirm/<str:token>/", views.admin_confirm_clear_all_data, name="admin_confirm_clear_all_data"),
     path("manage/export/<str:model_name>/", views.admin_export_data, name="admin_export_data"),
     path("manage/export-selected/", views.admin_export_selected, name="admin_export_selected"),
     path("manage/staff/save/", views.admin_staff_save, name="admin_staff_save"),
@@ -61,4 +63,8 @@ urlpatterns = [
     # ── Appointment Slot Filtering (AJAX) ────────────────────────
     path("api/appointment-slots/", views.api_appointment_slots, name="api_appointment_slots"),
     path("api/doctor-availability/", views.api_doctor_availability, name="api_doctor_availability"),
+
+    # ── SEO ──────────────────────────────────────────────────────
+    path("robots.txt", views.robots_txt, name="robots_txt"),
+    path("sitemap.xml", views.sitemap_xml, name="sitemap_xml"),
 ]

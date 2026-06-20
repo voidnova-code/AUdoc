@@ -452,6 +452,13 @@
     .chat-welcome i { font-size: 2rem; color: var(--primary); display: block; margin-bottom: 8px; }
 
   </style>
+
+  <!-- SEO Enhancements -->
+  <meta name="description" content="Your campus health, all in one place. Book appointments, access the blood bank, and find emergency contacts for Assam University Silchar students.">
+  <meta property="og:title" content="AUdoc – Student Health Portal">
+<meta property="og:description" content="Your campus health, all in one place. Book appointments, access the blood bank, and find emergency contacts for Assam University Silchar students.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://voiddoc.me/">
 </head>
 <body>
 
@@ -1216,6 +1223,77 @@
 
   sendBtn.addEventListener('click', sendMessage);
 })();
+</script>
+
+  <!-- Schema.org Data -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MedicalClinic",
+  "name": "AUdoc Health Center",
+  "description": "The campus health booking portal for AUS students.",
+  "url": "https://voiddoc.me",
+  "telephone": "+91 6900577470",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Academic Block C, Room 101, AUS Main Campus",
+    "addressLocality": "Silchar",
+    "addressRegion": "Assam",
+    "addressCountry": "IN"
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "opens": "09:00",
+      "closes": "17:00"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {% for doctor in doctors %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "item": {
+        "@type": "Physician",
+        "name": "{{ doctor.name }}",
+        "medicalSpecialty": "{{ doctor.get_specialized_in_display }}",
+        "url": "https://voiddoc.me{% url 'appointment' %}"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What are the clinic hours?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The clinic is open Monday through Saturday from 9:00 AM to 5:00 PM, with a lunch break from 1:00 PM to 2:00 PM."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I contact emergency services on campus?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For emergencies, you can call Ext. 5555 internally or +91 6900577470 from an external line."
+      }
+    }
+  ]
+}
 </script>
 </body>
 </html>

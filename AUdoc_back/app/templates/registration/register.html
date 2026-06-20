@@ -288,6 +288,13 @@
       .blood-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
     }
   </style>
+
+  <!-- SEO Enhancements -->
+  <meta name="description" content="Create your AUdoc account to book campus doctor appointments online, access the blood bank, and get student healthcare resources.">
+  <meta property="og:title" content="Student Registration – AUdoc Campus Health">
+<meta property="og:description" content="Create your AUdoc account to book campus doctor appointments online, access the blood bank, and get student healthcare resources.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://voiddoc.me{% url 'register' %}">
 </head>
 <body>
 
@@ -759,5 +766,8 @@
     document.getElementById('id_email').value || 'your email';
   {% endif %}
 </script>
+
+  <!-- Schema.org Data -->
+  
 </body>
 </html>

@@ -779,6 +779,7 @@ def appointment(request):
     })
 
 
+@login_required
 def donation(request):
     form = DonationForm()
     return render(
@@ -914,6 +915,7 @@ def blood_donors_list(request):
     })
 
 
+@login_required
 def blood_bank(request):
     """Unified Blood Bank page with both donation and request forms (GET/POST)."""
     form_donate = BloodDonationForm(request.POST or None)
@@ -1015,16 +1017,28 @@ def blood_bank(request):
 
         # Handle request form submission
         elif form_type == "request" and form_request.is_valid():
+            # Enforce: only logged-in, approved donors can submit blood requests
+            if not request.user.is_authenticated:
+                messages.error(request, "You must be logged in to request blood.")
+                return redirect("blood_bank")
+
+            if not BloodDonation.objects.filter(email=request.user.email, status="APPROVED").exists():
+                messages.error(
+                    request,
+                    "You must be a registered and approved blood donor to request blood. "
+                    "Please register as a donor first.",
+                )
+                return redirect("blood_bank")
+
             cd = form_request.cleaned_data
 
             # Resolve student_id if user is authenticated
             student_id = ""
-            if request.user.is_authenticated:
-                try:
-                    profile = request.user.student_profile
-                    student_id = profile.student_id
-                except Exception:
-                    pass
+            try:
+                profile = request.user.student_profile
+                student_id = profile.student_id
+            except Exception:
+                pass
 
             blood_req = BloodRequest.objects.create(
                 student_id=student_id,
@@ -1070,12 +1084,20 @@ def blood_bank(request):
         elif form_type == "request":
             active_tab = "request"
 
+    # Determine if current user is an approved blood donor
+    is_approved_donor = False
+    if request.user.is_authenticated:
+        is_approved_donor = BloodDonation.objects.filter(
+            email=request.user.email, status="APPROVED"
+        ).exists()
+
     return render(request, "app/blood_bank.html", {
         "form_donate":        form_donate,
         "form_request":       form_request,
         "active_tab":         active_tab,
         "existing_donation":  existing_donation,
         "blood_requests":     blood_requests,
+        "is_approved_donor":  is_approved_donor,
     })
 
 
@@ -1376,7 +1398,9 @@ def admin_dashboard(request):
     ).order_by('appointment__created_at')  # FCFS order
 
     blood_donations = BloodDonation.objects.order_by('-created_at')
-    blood_requests = BloodRequest.objects.order_by('-created_at')
+    blood_requests = BloodRequest.objects.prefetch_related(
+        'donor_responses', 'donor_responses__donor'
+    ).order_by('-created_at')
     all_appointments = Appointment.objects.select_related('doctor').order_by('-created_at')
     doctors = Doctor.objects.all().order_by('name')
 
@@ -1949,6 +1973,24 @@ def admin_blood_request_delete(request, pk):
 
 
 @_admin_required
+def admin_blood_request_responses(request, pk):
+    """AJAX: Get donor responses for a blood request."""
+    blood_req = get_object_or_404(BloodRequest, pk=pk)
+    responses = DonorResponse.objects.filter(
+        blood_request=blood_req
+    ).select_related('donor')
+    data = [{
+        'donor_name': r.donor.donor_name,
+        'donor_email': r.donor.email,
+        'donor_phone': r.donor.phone,
+        'blood_group': r.donor.blood_group,
+        'response': r.response,
+        'responded_at': r.responded_at.isoformat() if r.responded_at else None,
+    } for r in responses]
+    return JsonResponse({'responses': data, 'total': len(data)})
+
+
+@_admin_required
 def admin_clear_all_data(request):
     """
     DANGER ZONE: Irreversibly deletes all student-related data.
@@ -1958,51 +2000,35 @@ def admin_clear_all_data(request):
         confirmation = request.POST.get('confirmation')
         if confirmation == 'DELETE_ALL_STUDENT_DATA':
             try:
-                # Count records before deletion for detailed feedback
-                counts = {
-                    'student_registrations': StudentRegistration.objects.count(),
-                    'student_profiles': StudentProfile.objects.count(),
-                    'appointments': Appointment.objects.count(),
-                    'todays_appointments': TodaysAppointment.objects.count(),
-                    'blood_donations': BloodDonation.objects.count(),
-                    'blood_requests': BloodRequest.objects.count(),
-                    'donor_responses': DonorResponse.objects.count(),
-                    'donations': Donation.objects.count(),
-                    'feedback': HelpDesk.objects.count(),
-                    'login_logs': LoginLog.objects.count(),
-                }
-
-                # Delete in FK-safe order
-                DonorResponse.objects.all().delete()
-                TodaysAppointment.objects.all().delete()
-                BloodRequest.objects.all().delete()
-                BloodDonation.objects.all().delete()
-                Appointment.objects.all().delete()
-                Donation.objects.all().delete()
-                HelpDesk.objects.all().delete()
-                LoginLog.objects.all().delete()
-                StudentRegistration.objects.all().delete()
-                StudentProfile.objects.all().delete()
-
-                # Remove only non-admin user accounts (student accounts)
-                from django.contrib.auth.models import User
-                student_users = User.objects.filter(is_staff=False, is_superuser=False)
-                student_count = student_users.count()
-                student_users.delete()
-
-                total_deleted = sum(counts.values()) + student_count
-
-                messages.success(
-                    request,
-                    f"🗑️ STUDENT DATA PURGED: {total_deleted:,} records permanently deleted! "
-                    f"Details: {counts['student_registrations']} registrations, "
-                    f"{counts['appointments']} appointments, {counts['blood_donations']} blood donations, "
-                    f"{counts['blood_requests']} blood requests, {student_count} user accounts, "
-                    f"{counts['feedback']} feedback entries, and {counts['login_logs']} login logs."
-                )
-
+                from django.core.signing import TimestampSigner
+                signer = TimestampSigner()
+                token = signer.sign("DELETE_ALL_STUDENT_DATA")
+                
+                confirm_url = request.build_absolute_uri(reverse('admin_confirm_clear_all_data', args=[token]))
+                
+                subject = "⚠️ URGENT: Data Deletion Confirmation Requested"
+                html_body = f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #dc2626;">Danger: Data Deletion Requested</h2>
+                    <p>An admin has requested to <strong>PURGE ALL STUDENT DATA</strong> from the AUdoc database.</p>
+                    <p>If you confirm this action, all student registrations, appointments, blood requests/donations, feedback, logs, and accounts will be permanently deleted.</p>
+                    <p>To confirm and execute this deletion, click the button below:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{confirm_url}" style="display: inline-block; padding: 15px 30px; background-color: #dc2626; color: white; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 16px;">CONFIRM & DELETE ALL DATA</a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">If you did not authorize this, please ignore this email and secure your admin panel immediately.</p>
+                    <p style="color: #999; font-size: 12px; margin-top: 20px;">This link will expire in 1 hour.</p>
+                </div>
+                """
+                plain_body = f"Admin requested to purge all student data.\nVisit this URL to confirm: {confirm_url}\nThis link expires in 1 hour."
+                
+                msg = EmailMultiAlternatives(subject, plain_body, None, ["sayankumarr@gmail.com"])
+                msg.attach_alternative(html_body, "text/html")
+                send_email_async(msg)
+                
+                messages.success(request, "⚠️ A confirmation email has been sent to sayankumarr@gmail.com. Please check the inbox to proceed with the deletion.")
             except Exception as e:
-                messages.error(request, f"❌ Critical error during data purge: {str(e)}")
+                messages.error(request, f"❌ Error initiating data purge: {str(e)}")
 
         elif confirmation == 'CONFIRMED_SELECTIVE_DELETE':
             # ── Selective deletion: only delete chosen categories ──
@@ -2056,6 +2082,67 @@ def admin_clear_all_data(request):
                 messages.error(request, f"❌ Error during selective deletion: {str(e)}")
         else:
             messages.error(request, "❌ Incorrect confirmation phrase. Data purge cancelled for safety.")
+
+    return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
+
+@_admin_required
+def admin_confirm_clear_all_data(request, token):
+    from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
+    try:
+        signer = TimestampSigner()
+        # Valid for 1 hour (3600 seconds)
+        action = signer.unsign(token, max_age=3600)
+        
+        if action == "DELETE_ALL_STUDENT_DATA":
+            # Count records before deletion for detailed feedback
+            counts = {
+                'student_registrations': StudentRegistration.objects.count(),
+                'student_profiles': StudentProfile.objects.count(),
+                'appointments': Appointment.objects.count(),
+                'todays_appointments': TodaysAppointment.objects.count(),
+                'blood_donations': BloodDonation.objects.count(),
+                'blood_requests': BloodRequest.objects.count(),
+                'donor_responses': DonorResponse.objects.count(),
+                'donations': Donation.objects.count(),
+                'feedback': HelpDesk.objects.count(),
+                'login_logs': LoginLog.objects.count(),
+            }
+
+            # Delete in FK-safe order
+            DonorResponse.objects.all().delete()
+            TodaysAppointment.objects.all().delete()
+            BloodRequest.objects.all().delete()
+            BloodDonation.objects.all().delete()
+            Appointment.objects.all().delete()
+            Donation.objects.all().delete()
+            HelpDesk.objects.all().delete()
+            LoginLog.objects.all().delete()
+            StudentRegistration.objects.all().delete()
+            StudentProfile.objects.all().delete()
+
+            # Remove only non-admin user accounts (student accounts)
+            from django.contrib.auth.models import User
+            student_users = User.objects.filter(is_staff=False, is_superuser=False)
+            student_count = student_users.count()
+            student_users.delete()
+
+            total_deleted = sum(counts.values()) + student_count
+
+            messages.success(
+                request,
+                f"🗑️ STUDENT DATA PURGED: {total_deleted:,} records permanently deleted! "
+                f"Details: {counts['student_registrations']} registrations, "
+                f"{counts['appointments']} appointments, {counts['blood_donations']} blood donations, "
+                f"{counts['blood_requests']} blood requests, {student_count} user accounts, "
+                f"{counts['feedback']} feedback entries, and {counts['login_logs']} login logs."
+            )
+    except SignatureExpired:
+        messages.error(request, "❌ The confirmation link has expired. Please initiate the deletion again.")
+    except BadSignature:
+        messages.error(request, "❌ Invalid confirmation link.")
+    except Exception as e:
+        messages.error(request, f"❌ Critical error during data purge: {str(e)}")
 
     return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
 
@@ -3296,4 +3383,31 @@ def page_404(request, exception=None):
 def page_500(request):
     """Custom 500 page handler - displays incident report style error page."""
     return render(request, '404.html', {'error_type': 'Server Error'}, status=500)
+
+
+def robots_txt(request):
+    """Serve robots.txt file."""
+    lines = [
+        "User-Agent: *",
+        "Disallow: /manage/",
+        "Disallow: /api/",
+        "Allow: /",
+        f"Sitemap: {request.build_absolute_uri('/sitemap.xml')}"
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+def sitemap_xml(request):
+    """Serve sitemap.xml file."""
+    pages = [
+        "home", "about", "appointment", "blood_bank", "donation", "register", "login"
+    ]
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for page in pages:
+        xml.append('  <url>')
+        xml.append(f'    <loc>{request.build_absolute_uri(reverse(page))}</loc>')
+        xml.append('    <changefreq>weekly</changefreq>')
+        xml.append('  </url>')
+    xml.append('</urlset>')
+    return HttpResponse("\n".join(xml), content_type="application/xml")
 

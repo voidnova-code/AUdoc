@@ -1702,6 +1702,7 @@
                     <th>Units Required</th>
                     <th>Hospital</th>
                     <th>Urgency</th>
+                    <th>Donor Responses</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -1715,6 +1716,21 @@
                     <td>{{ request.units_required }}</td>
                     <td>{{ request.hospital_name }}</td>
                     <td>{{ request.urgency }}</td>
+                    <td>
+                      {% with responses=request.donor_responses.all %}
+                      {% if responses %}
+                        <span class="badge bg-success rounded-pill" style="font-size:.75rem;">
+                          {{ responses|length }} notified
+                        </span>
+                        <button class="btn btn-sm btn-outline-primary ms-1" style="font-size:.72rem;padding:2px 8px;"
+                          onclick="showDonorResponses({{ request.id }})" title="View donor responses">
+                          <i class="bi bi-people-fill me-1"></i>View
+                        </button>
+                      {% else %}
+                        <span class="text-muted small">No donors notified</span>
+                      {% endif %}
+                      {% endwith %}
+                    </td>
                     <td>
                       {% if request.status == "APPROVED" %}
                       <span class="badge status-confirmed">Approved</span>
@@ -1761,7 +1777,7 @@
                   </tr>
                   {% empty %}
                   <tr>
-                    <td colspan="8" class="text-center text-muted">No blood requests found</td>
+                    <td colspan="9" class="text-center text-muted">No blood requests found</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -3789,11 +3805,121 @@
         
         <div class="detail-row">
           <label>Status:</label>
-          <span>${cells[6]?.textContent || 'N/A'}</span>
+          <span>${cells[7]?.textContent || 'N/A'}</span>
+        </div>
+
+        <hr style="margin: 20px 0;">
+        <h6 style="color: var(--primary); margin-bottom: 16px;"><i class="bi bi-people-fill me-2"></i>Donor Responses</h6>
+        <div id="donorResponsesInDetail" style="text-align:center;padding:20px;">
+          <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          <span class="ms-2 text-muted small">Loading donor responses...</span>
         </div>
       `;
 
       new bootstrap.Modal(modal).show();
+
+      // Fetch donor responses via AJAX
+      fetch('/manage/blood-request/' + id + '/responses/')
+        .then(r => r.json())
+        .then(data => {
+          const container = document.getElementById('donorResponsesInDetail');
+          if (!data.responses || data.responses.length === 0) {
+            container.innerHTML = '<p class="text-muted small mb-0">No donors were notified for this request.</p>';
+            return;
+          }
+          container.innerHTML = _buildDonorResponsesHTML(data.responses);
+        })
+        .catch(() => {
+          const container = document.getElementById('donorResponsesInDetail');
+          container.innerHTML = '<p class="text-danger small mb-0">Failed to load donor responses.</p>';
+        });
+    }
+
+    // Show Donor Responses modal (standalone from the "View" button in the Donor Responses column)
+    function showDonorResponses(requestId) {
+      const modal = document.getElementById('viewDetailsModal');
+      const content = document.getElementById('viewDetailsContent');
+
+      content.innerHTML = `
+        <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-people-fill me-2"></i>Donor Responses</h5>
+        <div id="donorResponsesStandalone" style="text-align:center;padding:30px;">
+          <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          <span class="ms-2 text-muted small">Loading donor responses...</span>
+        </div>
+      `;
+
+      new bootstrap.Modal(modal).show();
+
+      fetch('/manage/blood-request/' + requestId + '/responses/')
+        .then(r => r.json())
+        .then(data => {
+          const container = document.getElementById('donorResponsesStandalone');
+          if (!data.responses || data.responses.length === 0) {
+            container.innerHTML = '<p class="text-muted small mb-0">No donors were notified for this request.</p>';
+            return;
+          }
+          container.innerHTML = _buildDonorResponsesHTML(data.responses);
+        })
+        .catch(() => {
+          const container = document.getElementById('donorResponsesStandalone');
+          container.innerHTML = '<p class="text-danger small mb-0">Failed to load donor responses.</p>';
+        });
+    }
+
+    // Helper: Build HTML for donor responses list
+    function _buildDonorResponsesHTML(responses) {
+      const accepted = responses.filter(r => r.response === 'ACCEPTED');
+      const declined = responses.filter(r => r.response === 'DECLINED');
+      const pending  = responses.filter(r => r.response === 'PENDING');
+
+      let html = `
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <span class="badge bg-success rounded-pill px-3 py-2" style="font-size:.8rem;">
+            <i class="bi bi-check-circle-fill me-1"></i>${accepted.length} Accepted
+          </span>
+          <span class="badge bg-danger rounded-pill px-3 py-2" style="font-size:.8rem;">
+            <i class="bi bi-x-circle-fill me-1"></i>${declined.length} Declined
+          </span>
+          <span class="badge bg-warning text-dark rounded-pill px-3 py-2" style="font-size:.8rem;">
+            <i class="bi bi-clock-fill me-1"></i>${pending.length} Pending
+          </span>
+        </div>
+      `;
+
+      responses.forEach(r => {
+        let statusColor, statusIcon, statusLabel, bgColor;
+        if (r.response === 'ACCEPTED') {
+          statusColor = '#155724'; statusIcon = 'check-circle-fill'; statusLabel = 'Accepted'; bgColor = '#d1edda';
+        } else if (r.response === 'DECLINED') {
+          statusColor = '#721c24'; statusIcon = 'x-circle-fill'; statusLabel = 'Declined'; bgColor = '#f8d7da';
+        } else {
+          statusColor = '#856404'; statusIcon = 'clock-fill'; statusLabel = 'Pending'; bgColor = '#fff3cd';
+        }
+
+        const respondedStr = r.responded_at
+          ? new Date(r.responded_at).toLocaleString()
+          : 'Not yet';
+
+        html += `
+          <div style="border:1px solid #e9ecef;border-radius:10px;padding:14px;margin-bottom:10px;
+                      ${r.response === 'ACCEPTED' ? 'border-left:4px solid #28a745;background:#f8fff8;' : ''}">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <strong style="font-size:.95rem;">${r.donor_name}</strong>
+              <span style="display:inline-block;padding:3px 12px;background:${bgColor};color:${statusColor};border-radius:20px;font-size:.78rem;font-weight:600;">
+                <i class="bi bi-${statusIcon} me-1"></i>${statusLabel}
+              </span>
+            </div>
+            <div style="font-size:.85rem;color:#666;">
+              <div><i class="bi bi-envelope me-1"></i>${r.donor_email}</div>
+              <div><i class="bi bi-telephone me-1"></i>${r.donor_phone}</div>
+              <div><i class="bi bi-droplet-fill me-1"></i>Blood Group: <strong>${r.blood_group}</strong></div>
+              <div><i class="bi bi-clock me-1"></i>Responded: ${respondedStr}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      return html;
     }
 
     // Show Login Log Details Modal

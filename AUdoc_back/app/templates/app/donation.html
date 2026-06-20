@@ -162,6 +162,13 @@
     .btn-loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
+
+  <!-- SEO Enhancements -->
+  <meta name="description" content="Support AUdoc Campus Health. Your donation helps provide better healthcare resources for every AUS student. Donate now.">
+  <meta property="og:title" content="Donate – AUdoc Campus Health">
+<meta property="og:description" content="Support AUdoc Campus Health. Your donation helps provide better healthcare resources for every AUS student. Donate now.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://voiddoc.me{% url 'donation' %}">
 </head>
 <body>
 
@@ -621,6 +628,29 @@
       }
     });
   })();
+</script>
+
+  <!-- Schema.org Data -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Donate",
+  "url": "https://voiddoc.me{% url 'donation' %}",
+  "description": "Support AUdoc Campus Health. Your donation helps provide better healthcare resources for every AUS student.",
+  "potentialAction": {
+    "@type": "DonateAction",
+    "recipient": {
+      "@type": "MedicalOrganization",
+      "name": "AUdoc Health Center"
+    }
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "url": "https://voiddoc.me",
+    "name": "AUdoc Health Center"
+  }
+}
 </script>
 </body>
 </html>

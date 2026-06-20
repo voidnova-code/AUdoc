@@ -1,0 +1,117 @@
+:root {
+  --primary:      #4a7c59;
+  --primary-dark: #2e5c3a;
+  --accent:       #e8f5ec;
+  --green:        #1d8348;
+  --green-light:  #d5f0e2;
+  --red:          #c41e3a;
+
+  /* Override Bootstrap primary */
+  --bs-primary:          #4a7c59;
+  --bs-primary-rgb:      74, 124, 89;
+  --bs-link-color:       #4a7c59;
+  --bs-link-hover-color: #2e5c3a;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+  background: #faf9f4;
+  animation: pagein .4s ease;
+}
+
+/* ── Topbar ── */
+.topbar {
+  background: var(--primary-dark);
+  color: #c8e6d0;
+  font-size: .82rem;
+  padding: 6px 0;
+}
+.topbar a { color: #c8e6d0; text-decoration: none; }
+.topbar a:hover { color: #fff; }
+
+/* ── Navbar ── */
+.navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
+.navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
+.nav-link { color: #555 !important; font-weight: 500; }
+.nav-link:hover,
+.nav-link.active { color: var(--primary) !important; }
+
+/* ── Navbar sliding pill indicator ── */
+.navbar-nav { position: relative; }
+.nav-pill-indicator {
+  position: absolute;
+  background: var(--accent);
+  border-radius: 8px;
+  transition: left   0.32s cubic-bezier(.4,0,.2,1),
+              top    0.32s cubic-bezier(.4,0,.2,1),
+              width  0.32s cubic-bezier(.4,0,.2,1),
+              height 0.32s cubic-bezier(.4,0,.2,1),
+              opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+.navbar-nav .nav-link { position: relative; z-index: 1; }
+
+/* ── Footer ── */
+footer { background: #0d2418; color: #9abea8; padding: 52px 0 24px; }
+footer h6 { color: #fff; font-weight: 600; margin-bottom: 14px; }
+footer a  { color: #9abea8; text-decoration: none; display: block; margin-bottom: 8px; font-size: .88rem; }
+footer a:hover { color: #fff; }
+footer .divider { border-color: #1e4a2e; margin: 24px 0 18px; }
+
+/* ── Scroll-reveal ── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ── Scroll-to-top ── */
+#scroll-top {
+  position: fixed; bottom: 30px; right: 30px;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--primary); color: #fff; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; box-shadow: 0 4px 16px rgba(74,124,89,.3);
+  opacity: 0; visibility: hidden; z-index: 998;
+  transition: opacity .3s, visibility .3s, transform .3s;
+}
+#scroll-top.show { opacity: 1; visibility: visible; }
+#scroll-top:hover { transform: translateY(-3px); }
+
+/* ── Page fade-in ── */
+@keyframes pagein { from { opacity:0; } to { opacity:1; } }
+
+/* ── Section label ── */
+.section-label {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--primary);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 6px;
+  margin-bottom: 20px;
+}
+
+/* ── Form controls ── */
+.form-label { font-weight: 600; font-size: .88rem; color: #444; }
+.form-control, .form-select {
+  border-radius: 10px;
+  border: 1.5px solid #d5e8d9;
+  font-size: .93rem;
+  padding: 10px 14px;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(74,124,89,.1);
+}
+.invalid-feedback { font-size: .82rem; }
+
+/* ── Submit loading state ── */
+.btn-loading { pointer-events: none; opacity: .75; }
+.btn-spinner { display: none; width: 1rem; height: 1rem;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+  border-radius: 50%; animation: spin .7s linear infinite; margin-right: .4rem; }
+.btn-loading .btn-spinner { display: inline-block; }
+.btn-loading .btn-text { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
