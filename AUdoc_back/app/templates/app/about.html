@@ -715,7 +715,12 @@
 
             <!-- Name -->
             <div class="mb-3">
-              <label class="form-label" for="id_name">Your Name <span class="text-danger">*</span></label>
+              <div class="d-flex justify-content-between align-items-end mb-2">
+                <label class="form-label mb-0" for="id_name">Your Name <span class="text-danger">*</span></label>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2" style="font-size: 0.75rem;" onclick="setAnonymousName()" title="Generate random funny name">
+                  <i class="bi bi-incognito me-1"></i>Anonymous
+                </button>
+              </div>
               <input type="text" name="name" id="id_name" class="form-control {% if form.name.errors %}is-invalid{% endif %}"
                      placeholder="Enter your full name"
                      value="{{ form.name.value|default:'' }}" required />
@@ -962,6 +967,23 @@
     ta.addEventListener('input', update);
     update();
   })();
+
+  // ── Anonymous Name Generator ──────────────────────────────────────
+  function setAnonymousName() {
+    const funnyNames = [
+      "Batman", "Captain Underpants", "Darth Vader", "Sherlock Holmes", 
+      "The Invisible Man", "Sir Laughs-a-Lot", "Ninja Coder", "Mysterious Stranger",
+      "Doctor Who", "Iron Man", "A Very Good Dog", "Secret Agent 007",
+      "Captain Jack Sparrow", "John Wick", "Spongebob Squarepants",
+      "Lord Voldemort", "Gandalf the Grey", "Harry Potter", "Spider-Man",
+      "Wonder Woman", "Black Panther", "Thor Odinson", "Hulk Smash"
+    ];
+    const nameInput = document.getElementById('id_name');
+    if (nameInput) {
+      const randomIndex = Math.floor(Math.random() * funnyNames.length);
+      nameInput.value = funnyNames[randomIndex];
+    }
+  }
 </script>
 
   <!-- Schema.org Data -->
