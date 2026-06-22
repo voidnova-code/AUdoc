@@ -856,6 +856,98 @@
         padding: 16px 20px;
       }
     }
+
+    /* ── Search Bar Styling ──────────────────────────────────── */
+    .admin-search-bar {
+      background: linear-gradient(135deg, #f8fdf9 0%, #eef7f0 100%);
+      border: 1.5px solid #d5e8d9;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .admin-search-bar:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(74, 124, 89, .1);
+    }
+
+    .admin-search-bar .search-icon {
+      color: var(--primary);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .admin-search-bar .search-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: .93rem;
+      color: #333;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .admin-search-bar .search-input::placeholder {
+      color: #9abea8;
+    }
+
+    .admin-search-bar .search-select {
+      border: 1.5px solid #d5e8d9;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: .88rem;
+      background: #fff;
+      color: #333;
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+    }
+
+    .admin-search-bar .search-select:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    .admin-search-bar .search-clear {
+      border: none;
+      background: none;
+      color: #999;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      display: none;
+    }
+
+    .admin-search-bar .search-clear.visible {
+      display: inline-flex;
+    }
+
+    .admin-search-bar .search-clear:hover {
+      color: #dc3545;
+      background: rgba(220, 53, 69, .1);
+    }
+
+    .search-result-count {
+      font-size: .82rem;
+      color: #6c8a72;
+      padding: 3px 10px;
+      background: rgba(74, 124, 89, .08);
+      border-radius: 20px;
+      font-weight: 600;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .table tbody tr.search-hidden {
+      display: none;
+    }
   </style>
 </head>
 
@@ -1453,6 +1545,16 @@
             <h5 class="card-title">Student Registrations</h5>
           </div>
           <div class="card-body">
+            <!-- Search Bar for Registrations -->
+            <div class="admin-search-bar" id="regSearchBar">
+              <i class="bi bi-search search-icon"></i>
+              <input type="text" class="search-input" id="regSearchInput"
+                placeholder="Search by student name or student ID..." autocomplete="off">
+              <button type="button" class="search-clear" id="regSearchClear" title="Clear search">
+                <i class="bi bi-x-lg"></i>
+              </button>
+              <span class="search-result-count" id="regSearchCount"></span>
+            </div>
             <div class="table-responsive">
               <table class="table table-hover">
                 <thead>
@@ -1612,6 +1714,27 @@
             <h5 class="card-title">Blood Donors</h5>
           </div>
           <div class="card-body">
+            <!-- Search Bar for Blood Donations -->
+            <div class="admin-search-bar" id="bloodSearchBar">
+              <i class="bi bi-search search-icon"></i>
+              <input type="text" class="search-input" id="bloodSearchInput"
+                placeholder="Search by donor name or student ID..." autocomplete="off">
+              <select class="search-select" id="bloodGroupFilter">
+                <option value="">All Blood Groups</option>
+                <option value="A+">A+</option>
+                <option value="A-">A−</option>
+                <option value="B+">B+</option>
+                <option value="B-">B−</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB−</option>
+                <option value="O+">O+</option>
+                <option value="O-">O−</option>
+              </select>
+              <button type="button" class="search-clear" id="bloodSearchClear" title="Clear search">
+                <i class="bi bi-x-lg"></i>
+              </button>
+              <span class="search-result-count" id="bloodSearchCount"></span>
+            </div>
             <div class="table-responsive">
               <table class="table table-hover">
                 <thead>
@@ -4336,6 +4459,117 @@
         alert('Error: ' + error.message);
       }
     });
+  </script>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════
+    //  SEARCH / FILTER FUNCTIONS for Admin Panel Tables
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ── Student Registration Search ─────────────────────────────────
+    (function () {
+      const input = document.getElementById('regSearchInput');
+      const clearBtn = document.getElementById('regSearchClear');
+      const countEl = document.getElementById('regSearchCount');
+      const table = document.querySelector('#registrations .table tbody');
+      if (!input || !table) return;
+
+      function filterRegistrations() {
+        const query = input.value.trim().toLowerCase();
+        const rows = table.querySelectorAll('tr');
+        let visible = 0;
+        let total = 0;
+
+        rows.forEach(row => {
+          // Skip the "No registrations found" empty row
+          if (row.querySelector('td[colspan]')) return;
+          total++;
+
+          const studentId = (row.cells[0]?.textContent || '').toLowerCase();
+          const name = (row.cells[1]?.textContent || '').toLowerCase();
+
+          const matches = !query || studentId.includes(query) || name.includes(query);
+
+          if (matches) {
+            row.classList.remove('search-hidden');
+            visible++;
+          } else {
+            row.classList.add('search-hidden');
+          }
+        });
+
+        // Update counter and clear button visibility
+        clearBtn.classList.toggle('visible', query.length > 0);
+        if (query.length > 0) {
+          countEl.textContent = visible + ' of ' + total + ' shown';
+        } else {
+          countEl.textContent = '';
+        }
+      }
+
+      input.addEventListener('input', filterRegistrations);
+      clearBtn.addEventListener('click', () => {
+        input.value = '';
+        filterRegistrations();
+        input.focus();
+      });
+    })();
+
+    // ── Blood Donation Search ────────────────────────────────────────
+    (function () {
+      const input = document.getElementById('bloodSearchInput');
+      const groupFilter = document.getElementById('bloodGroupFilter');
+      const clearBtn = document.getElementById('bloodSearchClear');
+      const countEl = document.getElementById('bloodSearchCount');
+      const table = document.querySelector('#blood-donations .table tbody');
+      if (!input || !table) return;
+
+      function filterBloodDonations() {
+        const query = input.value.trim().toLowerCase();
+        const selectedGroup = groupFilter.value.trim().toLowerCase();
+        const rows = table.querySelectorAll('tr');
+        let visible = 0;
+        let total = 0;
+
+        rows.forEach(row => {
+          // Skip the "No blood donors found" empty row
+          if (row.querySelector('td[colspan]')) return;
+          total++;
+
+          const studentId = (row.cells[0]?.textContent || '').toLowerCase();
+          const donorName = (row.cells[1]?.textContent || '').toLowerCase();
+          const bloodGroup = (row.cells[2]?.textContent || '').trim().toLowerCase();
+
+          const matchesText = !query || studentId.includes(query) || donorName.includes(query);
+          const matchesGroup = !selectedGroup || bloodGroup.includes(selectedGroup);
+
+          if (matchesText && matchesGroup) {
+            row.classList.remove('search-hidden');
+            visible++;
+          } else {
+            row.classList.add('search-hidden');
+          }
+        });
+
+        // Update counter and clear button visibility
+        const hasFilter = query.length > 0 || selectedGroup.length > 0;
+        clearBtn.classList.toggle('visible', hasFilter);
+        if (hasFilter) {
+          countEl.textContent = visible + ' of ' + total + ' shown';
+        } else {
+          countEl.textContent = '';
+        }
+      }
+
+      input.addEventListener('input', filterBloodDonations);
+      groupFilter.addEventListener('change', filterBloodDonations);
+      clearBtn.addEventListener('click', () => {
+        input.value = '';
+        groupFilter.value = '';
+        filterBloodDonations();
+        input.focus();
+      });
+    })();
   </script>
 </body>
 

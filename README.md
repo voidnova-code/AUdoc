@@ -95,7 +95,7 @@ The system has two layers working together:
 | 👥 **Staff Management** | Add and manage staff | No more "who's working today?" calls |
 | 🩸 **Blood Bank Admin** | Donor registrations with urgency levels | URGENT = I really need this |
 | 📊 **Login Audit Log** | Every login timestamped with IP | Big Brother is watching (jk, it's just logs) |
-| 🔍 **Advanced Search** | Fast search with filtering | Find anything in 0.2 seconds |
+| 🔍 **Smart Search & Filters** | Instant search across registrations & blood donors | Find any student or donor in real-time |
 | 📤 **Export Data** | Download as CSV/Excel | Flex on Excel spreadsheet people |
 | 📱 **Mobile Responsive** | Works on all devices | Even your ancient tablet |
 
@@ -417,7 +417,7 @@ The admin panel has been completely redesigned with a modern glass-morphism UI!
 | 📊 **Interactive Charts** | Line charts & doughnut charts with real data |
 | 📈 **Real-time Stats** | Auto-refresh every 30 seconds |
 | 🎫 **FCFS Queue View** | Today's appointments in queue order |
-| 🔍 **Advanced Search** | Fast search with DataTables integration |
+| 🔍 **Smart Search & Filters** | Instant client-side search for registrations & blood donors |
 | ⚡ **Quick Actions** | Priority-based action buttons with stats and keyboard shortcuts |
 | 📱 **Mobile Responsive** | Works on all devices |
 
@@ -432,6 +432,20 @@ The enhanced Quick Actions section provides:
 - **Secondary Actions** — 2x2 grid of quick access buttons for Blood Requests, Doctors, Appointments, and Staff
 - **Keyboard Shortcuts** — Use `Alt+R`, `Alt+A`, `Alt+B`, `Alt+D`, `Alt+S` for quick navigation
 - **Toast Notifications** — Visual feedback for keyboard shortcuts
+
+### Smart Search & Filtering
+
+Admin panel sections include built-in, instant search bars for quickly locating records:
+
+| Section | Search By | Filter By |
+|---------|-----------|----------|
+| 📋 **Student Registrations** | Student Name, Student ID | — |
+| 🩸 **Blood Donations** | Donor Name, Student ID | Blood Group (A±, B±, AB±, O±) |
+
+- **Instant Results** — Filters as you type, no page reload required
+- **Result Counter** — Shows "X of Y shown" while filtering
+- **Clear Button** — One-click reset for all active filters
+- **Blood Group Dropdown** — Quick filter by any of the 8 blood groups
 
 ### Access
 
