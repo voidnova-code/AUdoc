@@ -73,6 +73,9 @@ The system has two layers working together:
 | 💸 **Donations** | Support the health center financially | ✅ Live | Even ₹10 counts! (voidnova accepts UPI too) |
 | 📊 **Appointment History** | Track all past visits | ✅ Live | Proof that you actually went to the doctor |
 | ⭐ **Help Desk Feedback** | Rate your experience | ✅ Live | Roast us gently, please |
+| 🔑 **Google Login** | Log in instantly with your Google account | ✅ Live | One-click magic for approved students |
+| 📱 **SMS Reminders** | Get text alerts 2h before your appointment | ✅ Live | No excuses for being late |
+| ⚖️ **No-Show Tracking** | Auto-restrictions after 3 missed appointments | ✅ Live | Fairness enforced by code |
 | 📱 **Mobile App** | Cross-platform app (basically everywhere) | 🚧 In Progress | *voidnova is sleeping more these days* |
 
 ### The 8 Medical Specialties 🩺
@@ -97,6 +100,8 @@ The system has two layers working together:
 | 📊 **Login Audit Log** | Every login timestamped with IP | Big Brother is watching (jk, it's just logs) |
 | 🔍 **Smart Search & Filters** | Instant search across registrations & blood donors | Find any student or donor in real-time |
 | 📤 **Export Data** | Download as CSV/Excel | Flex on Excel spreadsheet people |
+| 🏖️ **Doctor Leaves** | Manage doctor availability and leaves | The system knows when docs are away |
+| 🩺 **System Health** | Monitor database size, errors, & logs | Look like a real sysadmin |
 | 📱 **Mobile Responsive** | Works on all devices | Even your ancient tablet |
 
 ---
@@ -142,6 +147,7 @@ AUdoc takes security seriously. The application has been hardened against common
 | 🔒 **Security Headers** | X-Frame-Options, CSP, HSTS, XSS filter | ✅ Active | 9/10 (some configs are still evolving) |
 | 🔑 **Argon2 Hashing** | Memory-hard password hashing algorithm | ✅ Active | 10/10 (even quantum computers will struggle) |
 | 📝 **Security Logging** | Failed login attempts, rate limit violations | ✅ Active | 8/10 (logs are there, but who reads them?) |
+| 🌐 **OAuth Validation** | Strict checking of Google OAuth logins | ✅ Active | 10/10 (unapproved users stay blocked) |
 
 ### Rate Limits *(To Stop You From Breaking Things)*
 
@@ -225,8 +231,9 @@ AUdoc/
 │  API Framework   │  Django REST Framework 3.16.1                │
 │  Mobile/Desktop  │  Flutter  ·  Dart SDK ^3.11.1                │
 │  Database        │  PostgreSQL (Render)  ·  SQLite (dev)        │
-│  Authentication  │  Custom OTP-based (no passwords = less pain)  │
-│  Email           │  Resend  ·  TLS  ·  Free tier + custom domain│
+│  Authentication  │  OTP-based + Google OAuth (no passwords!)    │
+│  Email           │  Resend / SendGrid  ·  TLS  ·  Free tier     │
+│  SMS             │  Twilio / Nexmo (Vonage) / Optional          │
 │  Charts          │  Chart.js (make stats look pretty)           │
 │  UI Theme        │  Material Design 3  ·  Glass-morphism vibes  │
 │  Admin Panel     │  Custom UI (voidnova's pride and joy)           │
@@ -253,6 +260,9 @@ AUdoc/
 | `DonorResponse` | Track donor accept/decline responses |
 | `HelpDesk` | User feedback with star ratings |
 | `LoginLog` | Security audit trail — every login, timestamped |
+| `DoctorLeave` | Doctor unavailabilities and leave days |
+| `StudentNoShowRecord`| Tracks missed appointments and auto-restricts booking |
+| `StaffPasswordResetToken`| Secure expiring tokens for staff password resets |
 
 ---
 
@@ -289,6 +299,8 @@ AUdoc/
 |--------|-----|-------------|
 | `GET` | `/manage/` | Modern admin dashboard |
 | `GET` | `/manage/stats/` | **[AJAX]** Real-time statistics |
+| `GET` | `/manage/system-health/` | Monitor database & system health |
+| `GET` | `/manage/export/<model>/` | Export records as CSV |
 | `GET` | `/manage/chart-data/` | **[AJAX]** Chart data (appointments/blood groups) |
 | `POST` | `/manage/registration/<pk>/action/` | Approve/reject registration |
 | `POST` | `/manage/appointment/<pk>/status/` | Update appointment status |
@@ -300,6 +312,15 @@ AUdoc/
 | `POST` | `/manage/staff/save/` | Add/edit staff |
 | `DELETE` | `/manage/staff/<pk>/delete/` | Delete staff |
 | `POST` | `/manage/clear-all-data/` | Clear all data (danger!) |
+
+### Flutter API Routes (Mobile App)
+
+| Method | URL | Description |
+|--------|-----|-------------|
+| `POST` | `/api/student-login/` | App login |
+| `GET`  | `/api/doctors/` | Fetch doctor directory |
+| `GET`  | `/api/appointments/` | Get user appointments |
+| `GET`  | `/api/appointment-slots/` | Filter available time slots |
 
 ---
 
@@ -382,6 +403,9 @@ DEFAULT_FROM_EMAIL=onboarding@resend.dev
 GROQ_API_KEY=your_groq_api_key_for_chatbot
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
+SMS_PROVIDER=disabled  # or twilio/nexmo
 ```
 
 #### For Production (PostgreSQL on Render):
@@ -394,6 +418,12 @@ DEFAULT_FROM_EMAIL=noreply@yourdomain.com
 GROQ_API_KEY=your_groq_api_key_for_chatbot
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
+SMS_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=your_twilio_sid
+TWILIO_AUTH_TOKEN=your_twilio_token
+TWILIO_PHONE_NUMBER=your_twilio_phone
 ```
 
 > ⚠️ **Never commit `.env` to git.** It's gitignored for a reason. We are not animals.
