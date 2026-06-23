@@ -16,3 +16,5 @@ sendgrid>=6.9.1
 django-allauth==65.16.1
 PyJWT>=2.8.0
 resend>=0.6.0
+django-redis>=5.4.0
+django-csp>=3.8
