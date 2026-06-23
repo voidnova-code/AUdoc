@@ -22,13 +22,17 @@ from django.conf import settings
 from app import views
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    # path("admin/", admin.site.urls), # Disabled per security audit (L-5)
     path("accounts/", include("django.contrib.auth.urls")),
     path("accounts/", include("allauth.urls")),
     path("", include("app.urls")),
-    # Serve uploaded media files (works regardless of DEBUG setting)
-    re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+    ]
+
 
 # Custom error handlers
 handler404 = 'app.views.page_404'

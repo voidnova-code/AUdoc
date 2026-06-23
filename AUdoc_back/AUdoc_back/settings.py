@@ -102,6 +102,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "csp.middleware.CSPMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -165,6 +166,15 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
+# Cache Configuration (C-2)
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/1"),
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+    }
+}
 
 
 # Password validation
@@ -257,7 +267,7 @@ CSRF_FAILURE_VIEW = "django.views.csrf.csrf_failure"
 
 # ── SSL/HTTPS Settings (Production) ──────────────────────────────────────────
 if not DEBUG:
-    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "False").lower() in ("true", "1", "yes")
+    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "True").lower() not in ("false", "0", "no")
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # ── Security Headers ─────────────────────────────────────────────────────────
@@ -411,4 +421,4 @@ SOCIALACCOUNT_PROVIDERS = {
 # Redirect URLs after Google OAuth
 LOGIN_REDIRECT_URL = "/post-login/"
 SOCIALACCOUNT_AUTO_SIGNUP = True    # Auto-signup approved students (validation happens in pre_social_login signal)
-SOCIALACCOUNT_LOGIN_ON_GET = True   # Skip intermediate page, go directly to Google
+SOCIALACCOUNT_LOGIN_ON_GET = False  # Skip intermediate page, go directly to Google

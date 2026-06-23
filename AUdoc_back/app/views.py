@@ -38,7 +38,37 @@ from .security import (
     sanitize_string,
     validate_student_id,
     validate_email_format,
+    validate_phone,
+    hash_otp,
+    verify_otp_hash,
 )
+
+from PIL import Image as PILImage
+import io
+
+def _validate_and_process_image(uploaded_file, max_bytes=2 * 1024 * 1024):
+    """Validate and re-encode an uploaded image using Pillow."""
+    if uploaded_file.size > max_bytes:
+        raise ValueError("Image must be under 2 MB.")
+    try:
+        img = PILImage.open(uploaded_file)
+        img.verify()          # raises if not a valid image
+        uploaded_file.seek(0)
+        img = PILImage.open(uploaded_file)  # reopen after verify
+        # Re-encode to strip any embedded metadata/payloads
+        buffer = io.BytesIO()
+        # Convert RGBA to RGB for JPEG compatibility
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+        img.save(buffer, format='JPEG', quality=85)
+        buffer.seek(0)
+        from django.core.files.uploadedfile import InMemoryUploadedFile
+        return InMemoryUploadedFile(
+            buffer, None, uploaded_file.name.rsplit('.', 1)[0] + '.jpg',
+            'image/jpeg', buffer.getbuffer().nbytes, None
+        )
+    except Exception as e:
+        raise ValueError(f"Uploaded file is not a valid image: {str(e)}")
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +88,7 @@ def send_email_async(email_msg):
     logger.info(f"🧵 [Async] Email thread started (daemon)")
 
 
-def send_staff_welcome_email(staff, request, password='staff123'):
+def send_staff_welcome_email(staff, request):
     """Send a fun welcome email to new staff/doctor with password setup instructions."""
     try:
         from app.models import StaffPasswordResetToken
@@ -83,15 +113,14 @@ def send_staff_welcome_email(staff, request, password='staff123'):
             f"Great news! You've been added as a {role} in the AUdoc system.\n\n"
             f"Your credentials:\n"
             f"📧 Email: {staff.email}\n"
-            f"🔐 Staff ID: {staff.staff_id}\n"
-            f"🔑 Temporary Password: {password}\n\n"
+            f"🔐 Staff ID: {staff.staff_id}\n\n"
             f"QUICK START - SET YOUR OWN PASSWORD:\n"
             f"1. Click this link to set your password: {reset_link}\n"
             f"2. Link valid for 24 hours only\n"
             f"3. Choose a strong password\n\n"
             f"OR LOG IN FIRST:\n"
-            f"1. Log in at /accounts/login/ with your email and temporary password\n"
-            f"2. Change your password in settings\n\n"
+            f"1. Log in at /accounts/login/ with your email and new password\n"
+            f"2. Change your password in settings anytime\n\n"
             f"Questions? Reach us at health@au.edu — we're friendly, we promise! 😊\n\n"
             f"Welcome aboard!\n"
             f"The AUdoc Team 🏥"
@@ -148,14 +177,10 @@ def send_staff_welcome_email(staff, request, password='staff123'):
                         <div class="credential-label">👤 {role} ID:</div>
                         <div class="credential-value">{staff.staff_id}</div>
                     </div>
-                    <div class="credential-item">
-                        <div class="credential-label">🔑 Temporary Password:</div>
-                        <div class="credential-value">{password}</div>
-                    </div>
                 </div>
 
                 <div class="warning">
-                    ⚠️ <strong>IMPORTANT:</strong> This is a temporary password. Change it immediately after your first login for security!
+                    ⚠️ <strong>IMPORTANT:</strong> You must set your password using the link below before you can log in.
                 </div>
 
                 <div style="text-align: center;">
@@ -171,7 +196,7 @@ def send_staff_welcome_email(staff, request, password='staff123'):
                     </div>
                     <div class="step">
                         <div class="step-number">2</div>
-                        <div class="step-text">Log in with your email and temporary password</div>
+                        <div class="step-text">Log in with your email and new password</div>
                     </div>
                     <div class="step">
                         <div class="step-number">3</div>
@@ -290,36 +315,55 @@ def about(request):
     return render(request, "app/about.html", {"form": form, "submitted": False})
 
 
+@rate_limit_login
 def student_login(request):
     if request.method == "POST":
         student_id  = sanitize_string(request.POST.get("student_id", ""), max_length=50)
         otp_entered = sanitize_string(request.POST.get("otp", ""), max_length=10)
         otp_data    = request.session.get("login_otp_data", {})
 
+        # Per-session OTP attempts limiter
+        attempts = request.session.get("login_otp_attempts", 0)
+        if attempts >= 5:
+            log_failed_login(request, student_id, "otp_lockout")
+            messages.error(request, "Too many failed OTP attempts. Please request a new OTP.")
+            if "login_otp_data" in request.session:
+                del request.session["login_otp_data"]
+            return redirect("/accounts/login/")
+
         # Validate student_id format
         if not validate_student_id(student_id):
+            request.session["login_otp_attempts"] = attempts + 1
             log_failed_login(request, student_id, "invalid_format")
             messages.error(request, "Invalid Student ID format.")
             return redirect("/accounts/login/")
 
         if not otp_entered:
+            request.session["login_otp_attempts"] = attempts + 1
             messages.error(request, "Please verify your Student ID with OTP before logging in.")
             return redirect("/accounts/login/")
         if otp_data.get("student_id") != student_id:
+            request.session["login_otp_attempts"] = attempts + 1
             log_failed_login(request, student_id, "otp_mismatch_student_id")
             messages.error(request, "OTP was sent for a different Student ID. Please re-send.")
             return redirect("/accounts/login/")
         if time.time() > otp_data.get("expires", 0):
+            request.session["login_otp_attempts"] = attempts + 1
             log_failed_login(request, student_id, "otp_expired")
             messages.error(request, "Your OTP has expired. Please request a new one.")
             return redirect("/accounts/login/")
-        # Use constant-time comparison to prevent timing attacks
-        if not constant_time_compare(otp_data.get("otp", ""), otp_entered):
+            
+        # Use verify_otp_hash for constant-time comparison of hashed OTP
+        stored_hash = otp_data.get("otp_hash", "")
+        salt = otp_data.get("otp_salt", "")
+        if not stored_hash or not verify_otp_hash(otp_entered, stored_hash, salt):
+            request.session["login_otp_attempts"] = attempts + 1
             log_failed_login(request, student_id, "otp_incorrect")
             messages.error(request, "Incorrect OTP. Please check your email and try again.")
             return redirect("/accounts/login/")
 
         del request.session["login_otp_data"]
+        request.session.pop("login_otp_attempts", None)
         user = authenticate(request, username=student_id)
         if user is not None:
             request.session["otp_login_verified"] = True
@@ -351,9 +395,11 @@ def send_login_otp(request):
         return JsonResponse({"error": "No email on file. Please contact health@au.edu."}, status=400)
 
     otp = generate_secure_otp(6)
+    otp_hash, otp_salt = hash_otp(otp)
     request.session["login_otp_data"] = {
         "student_id": student_id,
-        "otp":        otp,
+        "otp_hash":   otp_hash,
+        "otp_salt":   otp_salt,
         "expires":    time.time() + 600,
     }
 
@@ -469,9 +515,11 @@ def send_otp(request):
         return JsonResponse({"error": "This email is already registered."}, status=400)
 
     otp = generate_secure_otp(6)
+    otp_hash, otp_salt = hash_otp(otp)
     request.session["otp_data"] = {
         "email": email,
-        "otp":   otp,
+        "otp_hash":   otp_hash,
+        "otp_salt":   otp_salt,
         "expires": time.time() + 600,   # valid for 10 minutes
     }
 
@@ -585,13 +633,16 @@ def register(request):
         otp_entered = sanitize_string(request.POST.get("otp", ""), max_length=10)
         otp_data    = request.session.get("otp_data", {})
 
+        stored_hash = otp_data.get("otp_hash", "")
+        salt = otp_data.get("otp_salt", "")
+
         if not otp_entered:
             otp_error = "Please verify your email before submitting."
         elif otp_data.get("email") != email:
             otp_error = "OTP was sent to a different email. Please re-verify."
         elif time.time() > otp_data.get("expires", 0):
             otp_error = "Your OTP has expired. Please request a new one."
-        elif not constant_time_compare(otp_data.get("otp", ""), otp_entered):
+        elif not stored_hash or not verify_otp_hash(otp_entered, stored_hash, salt):
             otp_error = "Incorrect OTP. Please check your email and try again."
         else:
             # OTP valid — clear it and save registration
@@ -875,6 +926,9 @@ def donation_verify_payment(request):
     if donation_obj.razorpay_order_id != razorpay_order_id:
         return JsonResponse({"error": "Order ID mismatch."}, status=400)
 
+    if donation_obj.is_paid:
+        return JsonResponse({"success": True, "message": "Payment already recorded."})
+
     razorpay_client = razorpay.Client(
         auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
     )
@@ -899,20 +953,7 @@ def donation_verify_payment(request):
     return JsonResponse({"success": True, "message": "Payment successful."})
 
 
-def blood_donors_list(request):
-    if not (request.user.is_authenticated and request.user.is_staff):
-        return redirect("home")
 
-    blood_group_filter = request.GET.get("blood_group", "")
-    donors = BloodDonation.objects.filter(status="APPROVED")
-    if blood_group_filter:
-        donors = donors.filter(blood_group=blood_group_filter)
-
-    return render(request, "app/blood_donors_list.html", {
-        "donors": donors,
-        "blood_group_filter": blood_group_filter,
-        "blood_groups": BLOOD_GROUP_CHOICES,
-    })
 
 
 @login_required
@@ -1374,6 +1415,20 @@ def _admin_required(view_func):
             return redirect('home')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+@_admin_required
+def blood_donors_list(request):
+    blood_group_filter = request.GET.get("blood_group", "")
+    donors = BloodDonation.objects.filter(status="APPROVED")
+    if blood_group_filter:
+        donors = donors.filter(blood_group=blood_group_filter)
+
+    return render(request, "app/blood_donors_list.html", {
+        "donors": donors,
+        "blood_group_filter": blood_group_filter,
+        "blood_groups": BLOOD_GROUP_CHOICES,
+    })
 
 
 def post_login_redirect(request):
@@ -1888,17 +1943,29 @@ def admin_doctor_save(request):
         doc.is_available = is_available
         photo = request.FILES.get('photo')
         if photo:
-            doc.photo = photo
+            try:
+                doc.photo = _validate_and_process_image(photo)
+            except ValueError as e:
+                messages.error(request, str(e))
+                return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
         doc.save()
         messages.success(request, f"Doctor '{name}' updated.")
     else:
+        photo = request.FILES.get('photo')
+        if photo:
+            try:
+                photo = _validate_and_process_image(photo)
+            except ValueError as e:
+                messages.error(request, str(e))
+                return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
+
         Doctor.objects.create(
             name=name, email=email, phone=phone,
             specialized_in=specialized_in,
             available_days=available_days,
             available_time=available_time,
             is_available=is_available,
-            photo=request.FILES.get('photo'),
+            photo=photo,
         )
         messages.success(request, f"Doctor '{name}' added.")
 
@@ -1996,7 +2063,16 @@ def admin_clear_all_data(request):
     DANGER ZONE: Irreversibly deletes all student-related data.
     Keeps: Doctor records, staff/superuser User accounts.
     """
+    if not request.user.is_superuser:
+        messages.error(request, "Only superusers can perform data purges.")
+        return redirect("admin_dashboard")
+
     if request.method == 'POST':
+        admin_password = request.POST.get("admin_password", "")
+        if not request.user.check_password(admin_password):
+            messages.error(request, "Incorrect password. Data purge cancelled.")
+            return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
         confirmation = request.POST.get('confirmation')
         if confirmation == 'DELETE_ALL_STUDENT_DATA':
             try:
@@ -2182,6 +2258,7 @@ def admin_send_confirmations_test(request):
 # ── AI Chatbot ────────────────────────────────────────────────────────────────
 
 @require_POST
+@rate_limit_api
 def chat_api(request):
     """Stateless AI chat endpoint powered by Groq (free tier)."""
     import urllib.request as _urllib
@@ -2197,6 +2274,9 @@ def chat_api(request):
 
     if not message:
         return JsonResponse({"error": "No message provided"}, status=400)
+
+    if len(message) > 1000:
+        return JsonResponse({"error": "Message too long."}, status=400)
 
     api_key = os.environ.get("GROQ_API_KEY") or getattr(settings, "GROQ_API_KEY", "")
     if not api_key:
@@ -2296,9 +2376,11 @@ def api_send_login_otp(request):
         return JsonResponse({"error": "No email on file. Please contact health@au.edu"}, status=400)
 
     otp = generate_secure_otp(6)
+    otp_hash, otp_salt = hash_otp(otp)
     request.session["login_otp_data"] = {
         "student_id": student_id,
-        "otp": otp,
+        "otp_hash": otp_hash,
+        "otp_salt": otp_salt,
         "expires": time.time() + 600,
     }
 
@@ -2365,8 +2447,10 @@ def api_student_login(request):
     if time.time() > otp_data.get("expires", 0):
         log_failed_login(request, student_id, "api_otp_expired")
         return JsonResponse({"error": "OTP has expired. Please request a new one"}, status=400)
-    # Use constant-time comparison
-    if not constant_time_compare(otp_data.get("otp", ""), otp_entered):
+    
+    stored_hash = otp_data.get("otp_hash", "")
+    salt = otp_data.get("otp_salt", "")
+    if not stored_hash or not verify_otp_hash(otp_entered, stored_hash, salt):
         log_failed_login(request, student_id, "api_otp_incorrect")
         return JsonResponse({"error": "Incorrect OTP"}, status=400)
 
@@ -2438,9 +2522,11 @@ def api_send_register_otp(request):
         return JsonResponse({"error": "This email is already registered"}, status=400)
 
     otp = generate_secure_otp(6)
+    otp_hash, otp_salt = hash_otp(otp)
     request.session["register_otp_data"] = {
         "email": email,
-        "otp": otp,
+        "otp_hash": otp_hash,
+        "otp_salt": otp_salt,
         "expires": time.time() + 600,
     }
 
@@ -2515,7 +2601,10 @@ def api_register(request):
         return JsonResponse({"error": "OTP was sent for a different email"}, status=400)
     if time.time() > otp_data.get("expires", 0):
         return JsonResponse({"error": "OTP has expired. Please request a new one"}, status=400)
-    if not constant_time_compare(otp_data.get("otp", ""), otp_entered):
+    
+    stored_hash = otp_data.get("otp_hash", "")
+    salt = otp_data.get("otp_salt", "")
+    if not stored_hash or not verify_otp_hash(otp_entered, stored_hash, salt):
         return JsonResponse({"error": "Incorrect OTP"}, status=400)
 
     del request.session["register_otp_data"]
@@ -2557,8 +2646,6 @@ def api_doctors(request):
         doctor_list.append({
             "id": doc.id,
             "name": doc.name,
-            "email": doc.email,
-            "phone": doc.phone,
             "specialized_in": doc.specialized_in,
             "specialized_in_display": doc.get_specialized_in_display(),
             "available_days": doc.available_days_list,
@@ -2956,7 +3043,6 @@ def api_profile(request):
     return JsonResponse(profile_data)
 
 
-@csrf_exempt
 @require_POST
 def api_logout(request):
     """API: Logout user for Flutter app."""
@@ -3053,6 +3139,7 @@ def api_appointment_slots(request):
 
 
 @require_http_methods(["GET"])
+@login_required
 def api_doctor_availability(request):
     """
     AJAX endpoint to check doctor availability and get next available date.
@@ -3179,8 +3266,12 @@ def add_doctor(request):
 
         # Handle photo upload if provided
         if 'photo' in request.FILES:
-            doctor.photo = request.FILES['photo']
-            doctor.save(update_fields=['photo'])
+            try:
+                doctor.photo = _validate_and_process_image(request.FILES['photo'])
+                doctor.save(update_fields=['photo'])
+            except ValueError as e:
+                # If image validation fails, we still created the doctor, but we let them know.
+                pass
 
         if StaffProfile.objects.filter(email=email).exists():
             return JsonResponse({
@@ -3192,13 +3283,13 @@ def add_doctor(request):
             name=name,
             email=email,
             phone=phone,
-            password=make_password('doctor123'),
+            password='',
             is_doctor=True,
             staff_id=doctor.doctor_id,
         )
 
         # Create User account for doctor so they can login
-        User.objects.get_or_create(
+        user, _ = User.objects.get_or_create(
             username=doctor.doctor_id,
             defaults={
                 'email': email,
@@ -3207,8 +3298,10 @@ def add_doctor(request):
                 'is_staff': True,
             }
         )
+        user.set_unusable_password()
+        user.save()
 
-        send_staff_welcome_email(staff, request, password='doctor123')
+        send_staff_welcome_email(staff, request)
 
         log_security_event("doctor_added", request, {"email": email, "name": name}, level="info")
 
@@ -3241,12 +3334,12 @@ def add_staff_member(request):
             name=name,
             email=email,
             phone=phone,
-            password=make_password('staff123'),
+            password='',
             is_doctor=is_doctor,
         )
 
         # Create User account for staff so they can login
-        User.objects.get_or_create(
+        user, _ = User.objects.get_or_create(
             username=staff.staff_id,
             defaults={
                 'email': email,
@@ -3255,8 +3348,10 @@ def add_staff_member(request):
                 'is_staff': True,
             }
         )
+        user.set_unusable_password()
+        user.save()
 
-        send_staff_welcome_email(staff, request, password='staff123')
+        send_staff_welcome_email(staff, request)
 
         log_security_event("staff_added", request, {"email": email, "staff_id": staff.staff_id}, level="info")
 

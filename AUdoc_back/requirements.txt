@@ -15,3 +15,5 @@ sendgrid
 django-allauth==65.16.1
 PyJWT
 resend
+django-redis
+django-csp
