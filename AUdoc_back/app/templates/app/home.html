@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -467,7 +467,7 @@
   <div class="container d-flex justify-content-between align-items-center">
     <div class="d-flex gap-4">
       <span><i class="bi bi-geo-alt me-1"></i>AUS Health Center, Academic Block C, Room 101</span>
-      <span><i class="bi bi-clock me-1"></i>Mon – Sat: 9:00 AM – 5:00 PM</span>
+      <span><i class="bi bi-clock me-1"></i>Open 24 × 7</span>
     </div>
     <div class="d-flex gap-3">
       <span><i class="bi bi-telephone me-1"></i>+91 6900577470</span>
@@ -545,7 +545,7 @@
         </div>
         <div class="mt-4 notice-banner">
           <i class="bi bi-info-circle text-warning me-2"></i>
-          <strong>Walk-in hours:</strong> Mon – Sat &nbsp;|&nbsp; 9:00 AM – 12:30 PM &nbsp;|&nbsp; No appointment needed.
+          <strong>Walk-in hours:</strong> Open 24 × 7 &nbsp;|&nbsp; No appointment needed for walk-ins.
         </div>
       </div>
       <div class="col-lg-6">
@@ -618,14 +618,11 @@
                 <i class="bi bi-clock-fill me-1" style="color:var(--primary);"></i>Clinic Hours
               </span>
               <span class="badge rounded-pill" style="background:#d5f0e2;color:#1d8348;font-size:.72rem;">
-                <i class="bi bi-circle-fill me-1" style="font-size:.45rem;vertical-align:middle;"></i>Open Mon – Sat
+                <i class="bi bi-circle-fill me-1" style="font-size:.45rem;vertical-align:middle;"></i>Open 24 × 7
               </span>
             </div>
             <div class="d-flex justify-content-between" style="font-size:.82rem;color:#555;">
-              <span>Morning OPD</span><span class="fw-semibold" style="color:#0d2a1a;">9:00 AM – 1:00 PM</span>
-            </div>
-            <div class="d-flex justify-content-between mt-1" style="font-size:.82rem;color:#555;">
-              <span>Afternoon OPD</span><span class="fw-semibold" style="color:#0d2a1a;">2:00 PM – 5:00 PM</span>
+              <span>Availability</span><span class="fw-semibold" style="color:#0d2a1a;">24 Hours, 7 Days</span>
             </div>
             <div class="d-flex justify-content-between mt-1" style="font-size:.82rem;">
               <span style="color:#555;">Location</span>
@@ -664,8 +661,8 @@
       <div class="lbl"><i class="bi bi-mortarboard me-1"></i>Students Served</div>
     </div>
     <div class="col-6 col-md-3 stat-item">
-      <div class="num" data-count="6" data-suffix=" Days">6 Days</div>
-      <div class="lbl"><i class="bi bi-calendar-week me-1"></i>Mon – Sat Open</div>
+      <div class="num" data-count="7" data-suffix=" Days">7 Days</div>
+      <div class="lbl"><i class="bi bi-clock-history me-1"></i>Open 24 × 7</div>
     </div>
   </div>
 </div>
@@ -864,7 +861,7 @@
         <div class="info-box">
           <div class="info-icon"><i class="bi bi-clock"></i></div>
           <h6 class="fw-bold">Clinic Hours</h6>
-          <p class="text-muted small mb-0">Monday – Saturday<br>9:00 AM – 5:00 PM<br><span class="text-warning">Lunch: 1:00 PM – 2:00 PM</span><br><span class="text-danger">Closed on Sundays &amp; holidays</span></p>
+          <p class="text-muted small mb-0">Open 24 × 7<br>Every day, including weekends<br><span class="text-success">Always available for emergencies</span></p>
         </div>
       </div>
       <div class="col-md-6 col-lg-3 reveal">
@@ -954,14 +951,13 @@
       <!-- Clinic Info -->
       <div class="col-lg-4">
         <h6>Clinic Hours</h6>
-        <div class="office-hours-row"><span>Monday – Friday</span><span class="text-white">9:00 AM – 5:00 PM</span></div>
-        <div class="office-hours-row"><span>Saturday</span><span class="text-white">9:00 AM – 1:00 PM</span></div>
-        <div class="office-hours-row"><span>Sunday</span><span class="text-danger">Closed</span></div>
-        <div class="office-hours-row"><span>Lunch Break</span><span class="text-warning">1:00 PM – 2:00 PM</span></div>
-        <div class="office-hours-row"><span>Public Holidays</span><span class="text-danger">Closed</span></div>
+        <div class="office-hours-row"><span>Every Day</span><span class="text-white">Open 24 × 7</span></div>
+        <div class="office-hours-row"><span>Including Weekends</span><span class="text-success">Always Open</span></div>
+        <div class="office-hours-row"><span>Public Holidays</span><span class="text-success">Open</span></div>
         <div class="mt-3" style="font-size:.85rem;">
           <i class="bi bi-geo-alt me-1"></i> Block C, Room 101, AU Main Campus<br>
-          <i class="bi bi-envelope me-1 mt-1"></i> health@au.edu
+          <i class="bi bi-telephone me-1 mt-1"></i> +91 6900577470<br>
+          <i class="bi bi-envelope me-1 mt-1"></i> sayankumarr02@gmail.com
         </div>
       </div>
     </div>
@@ -1244,9 +1240,9 @@
   "openingHoursSpecification": [
     {
       "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-      "opens": "09:00",
-      "closes": "17:00"
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "opens": "00:00",
+      "closes": "23:59"
     }
   ]
 }
@@ -1281,7 +1277,7 @@
       "name": "What are the clinic hours?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The clinic is open Monday through Saturday from 9:00 AM to 5:00 PM, with a lunch break from 1:00 PM to 2:00 PM."
+        "text": "The health center is open 24 hours a day, 7 days a week, including weekends and public holidays."
       }
     },
     {
