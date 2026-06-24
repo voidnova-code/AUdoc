@@ -6,6 +6,7 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("student-login/", views.student_login, name="student_login"),
     path("send-otp/", views.send_otp, name="send_otp"),
+    path("verify-registration-otp/", views.verify_registration_otp, name="verify_registration_otp"),
     path("send-login-otp/", views.send_login_otp, name="send_login_otp"),
     path("appointment/", views.appointment, name="appointment"),
     path("donation/", views.donation, name="donation"),

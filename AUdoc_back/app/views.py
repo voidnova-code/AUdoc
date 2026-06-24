@@ -624,6 +624,36 @@ def send_otp(request):
         return JsonResponse({"error": "Could not send email: " + str(e)}, status=500)
 
 
+@require_POST
+def verify_registration_otp(request):
+    """AJAX endpoint to verify the registration OTP before the user proceeds."""
+    otp_entered = sanitize_string(request.POST.get("otp", ""), max_length=10)
+    email = sanitize_string(request.POST.get("email", ""), max_length=254)
+    otp_data = request.session.get("otp_data", {})
+
+    if not otp_entered or len(otp_entered) != 6:
+        return JsonResponse({"error": "Please enter the full 6-digit OTP."}, status=400)
+
+    if not otp_data:
+        return JsonResponse({"error": "No OTP was requested. Please send an OTP first."}, status=400)
+
+    if otp_data.get("email") != email:
+        return JsonResponse({"error": "OTP was sent to a different email. Please re-send."}, status=400)
+
+    if time.time() > otp_data.get("expires", 0):
+        return JsonResponse({"error": "Your OTP has expired. Please request a new one."}, status=400)
+
+    stored_hash = otp_data.get("otp_hash", "")
+    salt = otp_data.get("otp_salt", "")
+
+    if not stored_hash or not verify_otp_hash(otp_entered, stored_hash, salt):
+        return JsonResponse({"error": "Incorrect OTP. Please check your email and try again."}, status=400)
+
+    # Mark email as verified in session
+    request.session["email_otp_verified"] = email
+    return JsonResponse({"success": True, "message": "Email verified successfully!"})
+
+
 def register(request):
     form = StudentRegistrationForm(request.POST or None)
     otp_error = None

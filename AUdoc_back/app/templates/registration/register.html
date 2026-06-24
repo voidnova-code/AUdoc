@@ -215,6 +215,58 @@
       text-decoration: underline; padding: 0; display: none;
     }
 
+    /* ── Verify OTP button ── */
+    .btn-verify-otp {
+      display: none;
+      width: 100%;
+      padding: .6rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; border: none; border-radius: 10px;
+      font-size: .88rem; font-weight: 700; cursor: pointer;
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 3px 12px rgba(74,124,89,.3);
+      margin-top: 12px;
+      align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-verify-otp:hover { opacity: .92; transform: translateY(-1px); }
+    .btn-verify-otp:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .otp-verify-error {
+      color: #e53e3e; font-size: .8rem; margin-top: 8px;
+      display: none;
+    }
+
+    /* ── Locked section overlay ── */
+    .sections-locked {
+      position: relative;
+      opacity: .45;
+      pointer-events: none;
+      user-select: none;
+      transition: opacity .4s;
+    }
+    .sections-locked::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      cursor: not-allowed;
+    }
+    .sections-unlocked {
+      opacity: 1;
+      pointer-events: auto;
+      user-select: auto;
+    }
+    .lock-notice {
+      text-align: center;
+      padding: 14px 20px;
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 10px;
+      margin: 16px 28px;
+      font-size: .84rem;
+      color: #7a5800;
+    }
+    .lock-notice i { margin-right: 6px; }
+
     /* ── Blood group picker ── */
     .blood-grid {
       display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
@@ -430,8 +482,8 @@
                    placeholder="yourname@au.ac.in"
                    value="{{ form.email.value|default:'' }}"
                    autocomplete="email" oninput="onEmailChange()" />
-            <button type="button" class="ia-btn" id="btnVerify" onclick="sendOtp()">
-              <i class="bi bi-send me-1"></i>Verify
+            <button type="button" class="ia-btn" id="btnSendOtp" onclick="sendOtp()">
+              <i class="bi bi-send me-1"></i>Send OTP
             </button>
           </div>
           {% if form.email.errors %}<p class="invalid-msg">{{ form.email.errors|join:", " }}</p>{% endif %}
@@ -457,6 +509,10 @@
               <span id="otpTimer" class="otp-timer"></span>
               <button type="button" class="btn-resend" id="btnResend" onclick="sendOtp()">Resend OTP</button>
             </div>
+            <button type="button" class="btn-verify-otp" id="btnVerifyOtp" onclick="verifyOtp()">
+              <i class="bi bi-patch-check me-1"></i>Verify
+            </button>
+            <p class="otp-verify-error" id="otpVerifyError"></p>
             {% if otp_error %}
               <p class="invalid-msg mt-2"><i class="bi bi-exclamation-circle me-1"></i>{{ otp_error }}</p>
             {% endif %}
@@ -464,6 +520,15 @@
           <input type="hidden" name="otp" id="otpHidden" />
         </div>
       </div>
+
+      <!-- Lock notice (shown when email not yet verified) -->
+      <div class="lock-notice" id="lockNotice">
+        <i class="bi bi-lock-fill"></i>
+        Please verify your email above to unlock the remaining sections.
+      </div>
+
+      <!-- Locked sections wrapper -->
+      <div id="lockedSections" class="sections-locked">
 
       <!-- ══ SECTION 2: Student / Academic Details ══ -->
       <div class="sec-head">
@@ -578,6 +643,8 @@
         </div>
       </div>
 
+      </div><!-- /lockedSections -->
+
     </form>
   </div>
 </div>
@@ -634,18 +701,40 @@
     document.getElementById('otpHidden').value = '';
     document.getElementById('verifiedBadge').style.display = 'none';
     document.getElementById('otpSection').style.display = 'none';
-    document.getElementById('btnVerify').innerHTML = '<i class="bi bi-send me-1"></i>Verify';
-    document.getElementById('btnVerify').disabled = false;
+    document.getElementById('btnSendOtp').innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
+    document.getElementById('btnSendOtp').disabled = false;
+    document.getElementById('btnVerifyOtp').style.display = 'none';
+    document.getElementById('otpVerifyError').style.display = 'none';
+    lockSections();
     clearInterval(timerInterval);
+  }
+
+  function lockSections() {
+    document.getElementById('lockedSections').classList.add('sections-locked');
+    document.getElementById('lockedSections').classList.remove('sections-unlocked');
+    document.getElementById('lockNotice').style.display = 'block';
+  }
+
+  function unlockSections() {
+    document.getElementById('lockedSections').classList.remove('sections-locked');
+    document.getElementById('lockedSections').classList.add('sections-unlocked');
+    document.getElementById('lockNotice').style.display = 'none';
   }
 
   async function sendOtp() {
     const email = document.getElementById('id_email').value.trim();
     if (!email) { alert('Please enter your email address first.'); return; }
 
-    const btn = document.getElementById('btnVerify');
+    const btn = document.getElementById('btnSendOtp');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" style="width:12px;height:12px;"></span>Sending…';
+
+    // Reset verify state
+    emailVerified = false;
+    document.getElementById('verifiedBadge').style.display = 'none';
+    document.getElementById('btnVerifyOtp').style.display = 'none';
+    document.getElementById('otpVerifyError').style.display = 'none';
+    lockSections();
 
     const formData = new FormData();
     formData.append('email', email);
@@ -663,16 +752,83 @@
         regOtpBoxes[0].focus();
         btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend';
         btn.disabled = false;
+        document.getElementById('btnVerifyOtp').style.display = 'flex';
         startTimer(600);
       } else {
-        btn.innerHTML = '<i class="bi bi-send me-1"></i>Verify';
+        btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
         btn.disabled = false;
         alert(data.error || 'Failed to send OTP. Please try again.');
       }
     } catch (e) {
-      btn.innerHTML = '<i class="bi bi-send me-1"></i>Verify';
+      btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
       btn.disabled = false;
       alert('Network error. Please try again.');
+    }
+  }
+
+  async function verifyOtp() {
+    const otp = document.getElementById('otpHidden').value.trim();
+    const email = document.getElementById('id_email').value.trim();
+    const btn = document.getElementById('btnVerifyOtp');
+    const errEl = document.getElementById('otpVerifyError');
+
+    if (!otp || otp.length < 6) {
+      errEl.textContent = 'Please enter the full 6-digit OTP.';
+      errEl.style.display = 'block';
+      regOtpBoxes[0].focus();
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" style="width:12px;height:12px;"></span>Verifying…';
+    errEl.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('otp', otp);
+    formData.append('email', email);
+    formData.append('csrfmiddlewaretoken', getCsrf());
+
+    try {
+      const res  = await fetch('{% url "verify_registration_otp" %}', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.success) {
+        emailVerified = true;
+        clearInterval(timerInterval);
+
+        // Hide OTP panel and show verified badge
+        document.getElementById('otpSection').style.display = 'none';
+        document.getElementById('verifiedBadge').style.display = 'flex';
+
+        // Update the Send OTP button
+        document.getElementById('btnSendOtp').innerHTML = '<i class="bi bi-check-lg me-1"></i>Verified';
+        document.getElementById('btnSendOtp').disabled = true;
+        document.getElementById('btnSendOtp').style.background = '#28a745';
+
+        // Make email input read-only
+        document.getElementById('id_email').readOnly = true;
+        document.getElementById('id_email').style.background = '#f0f8f2';
+
+        // Unlock Academic Details & Address sections
+        unlockSections();
+
+        // Advance the step bar
+        markStep(2);
+
+        // Focus first field of academic section
+        const sid = document.getElementById('id_student_id');
+        if (sid) setTimeout(() => sid.focus(), 300);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-patch-check me-1"></i>Verify';
+        errEl.textContent = data.error || 'Verification failed. Please try again.';
+        errEl.style.display = 'block';
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-patch-check me-1"></i>Verify';
+      errEl.textContent = 'Network error. Please try again.';
+      errEl.style.display = 'block';
     }
   }
 
@@ -693,6 +849,7 @@
         clearInterval(timerInterval);
         el.textContent = 'OTP expired. Please resend.';
         resendBtn.style.display = 'inline';
+        document.getElementById('btnVerifyOtp').style.display = 'none';
       }
     }, 1000);
   }
@@ -707,25 +864,22 @@
   }
 
   // ══ Step progress highlight ══════════════════════════════
-  (function () {
-    const sections = [
-      document.querySelector('.sec-head:nth-of-type(1)'),
-    ];
-    const fields1 = ['id_first_name', 'id_last_name', 'id_email'];
-    const fields2 = ['id_student_id', 'id_department', 'id_phone', 'id_emergency_contact'];
-    const fields3 = ['id_home_address', 'id_present_address'];
+  const fields1 = ['id_first_name', 'id_last_name', 'id_email'];
+  const fields2 = ['id_student_id', 'id_department', 'id_phone', 'id_emergency_contact'];
+  const fields3 = ['id_home_address', 'id_present_address'];
 
-    function markStep(n) {
-      for (let i = 1; i <= 3; i++) {
-        const s = document.getElementById('step' + i);
-        s.classList.toggle('active', i === n);
-        s.classList.toggle('done',   i < n);
-      }
-      for (let i = 1; i <= 2; i++) {
-        document.getElementById('line' + i).classList.toggle('done', i < n);
-      }
+  function markStep(n) {
+    for (let i = 1; i <= 3; i++) {
+      const s = document.getElementById('step' + i);
+      s.classList.toggle('active', i === n);
+      s.classList.toggle('done',   i < n);
     }
+    for (let i = 1; i <= 2; i++) {
+      document.getElementById('line' + i).classList.toggle('done', i < n);
+    }
+  }
 
+  (function () {
     [...fields1.map(id => document.getElementById(id)).filter(Boolean)].forEach(el => {
       el.addEventListener('focus', () => markStep(1));
     });
@@ -741,15 +895,18 @@
     });
   })();
 
-  // ══ Block submit if OTP not entered ═════════════════════
+  // ══ Block submit if email not verified ══════════════════
   document.querySelector('form[method="post"]').addEventListener('submit', function (e) {
-    const otp = document.getElementById('otpHidden').value.trim();
-    if (!otp) {
+    if (!emailVerified) {
       e.preventDefault();
-      document.getElementById('otpSection').style.display = 'block';
-      regOtpBoxes[0].focus();
-      regOtpBoxes.forEach(b => { b.style.borderColor = '#e53e3e'; setTimeout(() => b.style.borderColor = '', 1800); });
-      alert('Please verify your email with the OTP first.');
+      const otp = document.getElementById('otpHidden').value.trim();
+      if (!otp) {
+        // No OTP entered yet — show OTP section and highlight
+        document.getElementById('otpSection').style.display = 'block';
+        regOtpBoxes[0].focus();
+        regOtpBoxes.forEach(b => { b.style.borderColor = '#e53e3e'; setTimeout(() => b.style.borderColor = '', 1800); });
+      }
+      alert('Please verify your email with the OTP first. Click "Send OTP", enter the code, then click "Verify".');
     }
   });
 
