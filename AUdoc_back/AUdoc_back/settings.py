@@ -168,11 +168,13 @@ else:
     }
 
 # Cache Configuration (C-2)
-if os.environ.get("REDIS_URL") or not DEBUG:
+# Only use Redis when REDIS_URL is explicitly provided.
+# Otherwise fall back to Django's in-memory cache (works everywhere).
+if os.environ.get("REDIS_URL"):
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/1"),
+            "LOCATION": os.environ.get("REDIS_URL"),
             "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
         }
     }
