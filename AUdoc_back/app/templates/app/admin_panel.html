@@ -2141,7 +2141,7 @@
                       <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('feedback', {{ fb.id }})">
                         <i class="bi bi-eye"></i>
                       </button>
-                      <a href="{% url 'admin:app_helpdesk_delete' fb.pk %}" class="btn btn-sm btn-outline-danger">
+                      <a href="#" class="btn btn-sm btn-outline-danger" onclick="alert('Deletion currently disabled per security policy'); return false;">
                         <i class="bi bi-trash"></i>
                       </a>
                     </td>
@@ -2196,7 +2196,7 @@
                       <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('login-log', {{ log.id }})">
                         <i class="bi bi-eye"></i>
                       </button>
-                      <a href="{% url 'admin:app_loginlog_delete' log.pk %}" class="btn btn-sm btn-outline-danger">
+                      <a href="#" class="btn btn-sm btn-outline-danger" onclick="alert('Deletion currently disabled per security policy'); return false;">
                         <i class="bi bi-trash"></i>
                       </a>
                     </td>
