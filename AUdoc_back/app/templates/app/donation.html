@@ -169,6 +169,20 @@
 <meta property="og:description" content="Support AUdoc Campus Health. Your donation helps provide better healthcare resources for every AUS student. Donate now.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://voiddoc.me{% url 'donation' %}">
+
+  <!-- Anti-DevTools Snippet -->
+  <script>
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || 
+          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+          (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+      }
+    });
+  </script>
 </head>
 <body>
 

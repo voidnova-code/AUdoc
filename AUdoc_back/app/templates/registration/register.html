@@ -347,6 +347,20 @@
 <meta property="og:description" content="Create your AUdoc account to book campus doctor appointments online, access the blood bank, and get student healthcare resources.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://voiddoc.me{% url 'register' %}">
+
+  <!-- Anti-DevTools Snippet -->
+  <script>
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || 
+          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+          (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+      }
+    });
+  </script>
 </head>
 <body>
 

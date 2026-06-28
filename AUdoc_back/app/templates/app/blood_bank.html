@@ -225,6 +225,20 @@
 <meta property="og:description" content="Save lives by donating blood or find the blood you need. Manage your donations and requests at the AUdoc Campus Health Blood Bank.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://voiddoc.me{% url 'blood_bank' %}">
+
+  <!-- Anti-DevTools Snippet -->
+  <script>
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || 
+          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+          (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+      }
+    });
+  </script>
 </head>
 <body>
 
