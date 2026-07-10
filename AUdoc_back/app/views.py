@@ -2290,7 +2290,7 @@ def admin_send_confirmations_test(request):
 @require_POST
 @rate_limit_api
 def chat_api(request):
-    """Stateless AI chat endpoint powered by Groq (free tier)."""
+    """Stateless AI chat endpoint powered by NVIDIA NIM / Local LLM."""
     import urllib.request as _urllib
     import urllib.error as _urlerr
 
@@ -2308,9 +2308,9 @@ def chat_api(request):
     if len(message) > 1000:
         return JsonResponse({"error": "Message too long."}, status=400)
 
-    api_key = os.environ.get("GROQ_API_KEY") or getattr(settings, "GROQ_API_KEY", "")
-    if not api_key:
-        return JsonResponse({"error": "Chatbot not configured — add GROQ_API_KEY to .env"}, status=503)
+    api_key = os.environ.get("NVIDIA_API_KEY") or getattr(settings, "NVIDIA_API_KEY", "")
+    nim_url = os.environ.get("NIM_BASE_URL") or getattr(settings, "NIM_BASE_URL", "http://localhost:8000/v1/chat/completions")
+    nim_model = os.environ.get("NIM_MODEL") or getattr(settings, "NIM_MODEL", "meta/llama3-70b-instruct")
 
     system_prompt = (
         "You are a friendly health assistant for AUdoc — the Assam University Silchar Campus Health Center portal. "
@@ -2319,8 +2319,34 @@ def chat_api(request):
         "Campus emergency contact: 0389-2330931. Clinic hours: Monday–Saturday, 9 AM–4 PM. "
         "Available services: Appointment booking, Blood Bank, Donor Network, Monetary Donations, Help Desk. "
         "For serious medical emergencies, always advise calling the emergency number immediately. "
-        "Keep responses under 150 words."
+        "Keep responses under 150 words.\n\n"
+        "STRICT TOPIC GUARDRAIL: You must ONLY answer questions related to healthcare, the AUdoc portal, or Assam University medical services. "
+        "If a user asks anything unrelated (e.g., writing code, math, general knowledge, sports, etc.), you MUST politely decline and redirect them to health-related topics."
     )
+
+    # Dynamic Context: Fetch Doctors
+    doctors = Doctor.objects.filter(is_available=True)
+    if doctors.exists():
+        doc_info = "\n\nAvailable Doctors:\n"
+        for d in doctors:
+            doc_info += f"- Dr. {d.name} ({d.get_specialized_in_display()}): Available on {d.available_days}, Timings: {d.available_time}\n"
+        system_prompt += doc_info
+
+    # Dynamic Context: User Info
+    if request.user.is_authenticated:
+        try:
+            student = StudentProfile.objects.get(user=request.user)
+            name = request.user.first_name or request.user.username
+            user_info = f"\n\nYou are talking to {name}, a student in the {student.get_department_display()} department. Their blood group is {student.blood_group}."
+            
+            upcoming = Appointment.objects.filter(student_id=student.student_id, status__in=["PENDING", "CONFIRMED"])
+            if upcoming.exists():
+                user_info += "\nThey have upcoming appointments:\n"
+                for appt in upcoming:
+                    user_info += f"- {appt.get_medical_department_display()} on {appt.appointment_date} at {appt.appointment_time} ({appt.status})\n"
+            system_prompt += user_info
+        except StudentProfile.DoesNotExist:
+            pass
 
     messages_payload = [{"role": "system", "content": system_prompt}]
     for turn in history[-10:]:
@@ -2329,22 +2355,20 @@ def chat_api(request):
     messages_payload.append({"role": "user", "content": message})
 
     payload = json.dumps({
-        "model": "llama-3.1-8b-instant",
+        "model": nim_model,
         "messages": messages_payload,
         "max_tokens": 512,
         "temperature": 0.7,
     }).encode("utf-8")
 
-    req = _urllib.Request(
-        "https://api.groq.com/openai/v1/chat/completions",
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-            "User-Agent": "AUdoc-HealthPortal/1.0",
-        },
-        method="POST",
-    )
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "AUdoc-HealthPortal/1.0",
+    }
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    req = _urllib.Request(nim_url, data=payload, headers=headers, method="POST")
 
     try:
         with _urllib.urlopen(req, timeout=30) as resp:
@@ -2356,9 +2380,7 @@ def chat_api(request):
         except Exception:
             err_msg = body[:200]
         if e.code == 401:
-            return JsonResponse({"error": "Invalid Groq API key — check your GROQ_API_KEY in .env."}, status=500)
-        if e.code == 429:
-            return JsonResponse({"error": "Groq rate limit reached. Please wait a moment and try again."}, status=500)
+            return JsonResponse({"error": "Invalid API key — check your NVIDIA_API_KEY in .env."}, status=500)
         return JsonResponse({"error": f"API error {e.code}: {err_msg}"}, status=500)
     except Exception as e:
         return JsonResponse({"error": f"Could not reach AI service: {e}"}, status=500)
