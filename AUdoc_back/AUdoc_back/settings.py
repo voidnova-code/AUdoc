@@ -431,4 +431,4 @@ SOCIALACCOUNT_PROVIDERS = {
 # Redirect URLs after Google OAuth
 LOGIN_REDIRECT_URL = "/post-login/"
 SOCIALACCOUNT_AUTO_SIGNUP = True    # Auto-signup approved students (validation happens in pre_social_login signal)
-SOCIALACCOUNT_LOGIN_ON_GET = False  # Skip intermediate page, go directly to Google
+SOCIALACCOUNT_LOGIN_ON_GET = True   # Skip intermediate page, go directly to Google
