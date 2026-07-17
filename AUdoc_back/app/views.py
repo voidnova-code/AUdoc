@@ -26,6 +26,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm
 from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
+from .storage import upload_doctor_photo, delete_doctor_photo
 from .security import (
     generate_secure_otp,
     constant_time_compare,
@@ -1974,7 +1975,15 @@ def admin_doctor_save(request):
         photo = request.FILES.get('photo')
         if photo:
             try:
-                doc.photo = _validate_and_process_image(photo)
+                processed_photo = _validate_and_process_image(photo)
+                public_url = upload_doctor_photo(processed_photo)
+                if public_url:
+                    if doc.photo:
+                        delete_doctor_photo(doc.photo)
+                    doc.photo = public_url
+                else:
+                    messages.error(request, "Failed to upload photo to storage.")
+                    return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
             except ValueError as e:
                 messages.error(request, str(e))
                 return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
@@ -1982,9 +1991,14 @@ def admin_doctor_save(request):
         messages.success(request, f"Doctor '{name}' updated.")
     else:
         photo = request.FILES.get('photo')
+        photo_url = None
         if photo:
             try:
-                photo = _validate_and_process_image(photo)
+                processed_photo = _validate_and_process_image(photo)
+                photo_url = upload_doctor_photo(processed_photo)
+                if not photo_url:
+                    messages.error(request, "Failed to upload photo to storage.")
+                    return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
             except ValueError as e:
                 messages.error(request, str(e))
                 return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
@@ -1995,7 +2009,7 @@ def admin_doctor_save(request):
             available_days=available_days,
             available_time=available_time,
             is_available=is_available,
-            photo=photo,
+            photo=photo_url,
         )
         messages.success(request, f"Doctor '{name}' added.")
 
@@ -2007,6 +2021,8 @@ def admin_doctor_save(request):
 def admin_doctor_delete(request, pk):
     doc = get_object_or_404(Doctor, pk=pk)
     name = doc.name
+    if doc.photo:
+        delete_doctor_photo(doc.photo)
     doc.delete()
     return JsonResponse({'success': True, 'message': f"Doctor '{name}' deleted successfully"})
 
@@ -2703,7 +2719,7 @@ def api_doctors(request):
             "available_days": doc.available_days_list,
             "available_time": doc.available_time,
             "is_available": doc.is_available,
-            "photo_url": doc.photo.url if doc.photo else None,
+            "photo_url": doc.photo if doc.photo else None,
         })
 
     return JsonResponse(doctor_list, safe=False)
@@ -3319,8 +3335,13 @@ def add_doctor(request):
         # Handle photo upload if provided
         if 'photo' in request.FILES:
             try:
-                doctor.photo = _validate_and_process_image(request.FILES['photo'])
-                doctor.save(update_fields=['photo'])
+                processed_photo = _validate_and_process_image(request.FILES['photo'])
+                photo_url = upload_doctor_photo(processed_photo)
+                if photo_url:
+                    if doctor.photo:
+                        delete_doctor_photo(doctor.photo)
+                    doctor.photo = photo_url
+                    doctor.save(update_fields=['photo'])
             except ValueError as e:
                 # If image validation fails, we still created the doctor, but we let them know.
                 pass

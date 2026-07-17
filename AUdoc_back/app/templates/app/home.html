@@ -817,7 +817,7 @@
             <!-- ── FRONT (photo) ── -->
             <div class="flip-card-face flip-card-front">
               {% if doctor.photo %}
-                <img class="doctor-photo-front" src="{{ doctor.photo.url }}" alt="{{ doctor.name }}">
+                <img class="doctor-photo-front" src="{{ doctor.photo }}" alt="{{ doctor.name }}">
               {% else %}
                 <div class="doctor-photo-placeholder"><i class="bi bi-person-circle"></i></div>
               {% endif %}

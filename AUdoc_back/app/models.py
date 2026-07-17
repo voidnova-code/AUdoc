@@ -213,11 +213,12 @@ class Doctor(models.Model):
     lunch_break_start = models.TimeField(null=True, blank=True, verbose_name="Lunch Break Start")
     lunch_break_end = models.TimeField(null=True, blank=True, verbose_name="Lunch Break End")
     is_available    = models.BooleanField(default=True, verbose_name="Available")
-    photo           = models.ImageField(
-        upload_to='doctors/',
+    photo           = models.URLField(
+        max_length=500,
         blank=True,
         null=True,
-        verbose_name="Profile Photo",
+        verbose_name="Profile Photo URL",
+        help_text="Public URL of the doctor's profile photo (stored in Supabase Storage)",
     )
 
     @property
