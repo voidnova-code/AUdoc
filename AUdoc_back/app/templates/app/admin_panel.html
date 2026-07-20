@@ -2933,8 +2933,12 @@
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label"><strong>Available Time</strong></label>
-                <input type="text" id="doctorTime" name="available_time" class="form-control"
-                  placeholder="e.g., 09:00 AM - 05:00 PM">
+                <div class="d-flex align-items-center gap-2">
+                  <input type="time" id="editStartTime" class="form-control">
+                  <span>-</span>
+                  <input type="time" id="editEndTime" class="form-control">
+                </div>
+                <input type="hidden" id="doctorTime" name="available_time">
               </div>
             </div>
 
@@ -2969,6 +2973,28 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
+    // Time Format Helpers
+    function formatToAMPM(time24) {
+      if (!time24) return '';
+      const [hour, minute] = time24.split(':');
+      let h = parseInt(hour, 10);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h ? h : 12; 
+      return `${h.toString().padStart(2, '0')}:${minute} ${ampm}`;
+    }
+    
+    function parseFromAMPM(timeStr) {
+      if (!timeStr) return '';
+      const match = timeStr.trim().match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!match) return '';
+      let [_, h, m, ampm] = match;
+      h = parseInt(h, 10);
+      if (ampm.toUpperCase() === 'PM' && h < 12) h += 12;
+      if (ampm.toUpperCase() === 'AM' && h === 12) h = 0;
+      return `${h.toString().padStart(2, '0')}:${m}`;
+    }
+
     // Edit Staff Member Modal Function
     function editStaff(id, staff_id, name, email, phone, is_doctor) {
       document.getElementById('staffPk').value = id;
@@ -2992,6 +3018,17 @@
       document.getElementById('doctorDays').value = days;
       document.getElementById('doctorTime').value = time;
       document.getElementById('doctorAvailable').checked = is_available;
+
+      if (time) {
+        const parts = time.split('-');
+        if (parts.length === 2) {
+          document.getElementById('editStartTime').value = parseFromAMPM(parts[0]);
+          document.getElementById('editEndTime').value = parseFromAMPM(parts[1]);
+        }
+      } else {
+        document.getElementById('editStartTime').value = '';
+        document.getElementById('editEndTime').value = '';
+      }
 
       // Show the modal
       new bootstrap.Modal(document.getElementById('editDoctorModal')).show();
@@ -4299,7 +4336,7 @@
                   <div class="col-md-6">
                     <div class="form-check">
                       <input type="checkbox" class="form-check-input" id="day-monday" name="available_days"
-                        value="Monday" required>
+                        value="Monday">
                       <label class="form-check-label" for="day-monday">Monday</label>
                     </div>
                     <div class="form-check">
@@ -4338,11 +4375,17 @@
                 </div>
               </div>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Available Time *</label>
-              <input type="text" class="form-control" name="available_time" placeholder="e.g. 9:00 AM – 5:00 PM"
-                required>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Start Time *</label>
+                <input type="time" class="form-control" id="addStartTime" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">End Time *</label>
+                <input type="time" class="form-control" id="addEndTime" required>
+              </div>
             </div>
+            <input type="hidden" name="available_time" id="addDoctorAvailableTime">
             <div class="mb-3">
               <label class="form-label">Profile Photo (Optional)</label>
               <input type="file" class="form-control" name="photo" accept="image/*">
@@ -4414,9 +4457,30 @@
   </div>
 
   <script>
+    // Handle Edit Doctor Form Submit
+    document.getElementById('editDoctorForm')?.addEventListener('submit', function(e) {
+      const startTime = document.getElementById('editStartTime').value;
+      const endTime = document.getElementById('editEndTime').value;
+      if (startTime && endTime) {
+        document.getElementById('doctorTime').value = `${formatToAMPM(startTime)} - ${formatToAMPM(endTime)}`;
+      }
+    });
+
     // Handle Add Doctor Form
     document.getElementById('addDoctorForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Validate at least one day is selected
+      const checkedDays = e.target.querySelectorAll('input[name="available_days"]:checked');
+      if (checkedDays.length === 0) {
+        alert('❌ Please select at least one available day.');
+        return;
+      }
+      
+      const startTime = document.getElementById('addStartTime').value;
+      const endTime = document.getElementById('addEndTime').value;
+      document.getElementById('addDoctorAvailableTime').value = `${formatToAMPM(startTime)} - ${formatToAMPM(endTime)}`;
+
       const formData = new FormData(e.target);
 
       try {
