@@ -161,6 +161,32 @@
     .btn-loading .btn-spinner { display: inline-block; }
     .btn-loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════════════════════
+       MOBILE RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 767px) {
+      .page-header { padding: 32px 0 28px; }
+      .page-header h1 { font-size: 1.4rem; }
+      .page-header p { font-size: .88rem; }
+
+      .donate-card { padding: 20px 16px; border-radius: 14px; }
+
+      .amount-btn { padding: 10px 6px; font-size: .85rem; border-radius: 10px; }
+
+      .impact-card { padding: 18px; }
+      .impact-icon { width: 40px; height: 40px; font-size: 1.1rem; }
+
+      .section-label { font-size: .68rem; }
+
+      footer { padding: 28px 0 14px; }
+    }
+
+    @media (max-width: 480px) {
+      .page-header h1 { font-size: 1.2rem; }
+      .donate-card { padding: 16px 12px; }
+      .amount-btn { padding: 8px 4px; font-size: .8rem; }
+    }
   </style>
 
   <!-- SEO Enhancements -->

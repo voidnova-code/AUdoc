@@ -162,6 +162,31 @@
       z-index: 0;
     }
     .navbar-nav .nav-link { position: relative; z-index: 1; }
+
+    /* ══════════════════════════════════════════
+       MOBILE RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 767px) {
+      .page-header { padding: 32px 0 28px; }
+      .page-header h1 { font-size: 1.4rem; }
+      .page-header p { font-size: .88rem; }
+
+      .filter-card { padding: 16px; margin-bottom: 20px; }
+      
+      .donor-card { padding: 16px; border-radius: 14px; }
+      .donor-name { font-size: 1.05rem; }
+      .blood-group-badge { padding: 6px 12px; font-size: .9rem; }
+
+      .empty-state { padding: 40px 16px; }
+      .empty-state-icon { font-size: 2.4rem; }
+
+      footer { padding: 28px 0 14px; }
+    }
+
+    @media (max-width: 480px) {
+      .page-header h1 { font-size: 1.2rem; }
+      .donor-card { padding: 12px; }
+    }
   </style>
 
   <!-- Anti-DevTools Snippet -->

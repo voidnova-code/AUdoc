@@ -451,6 +451,87 @@
     }
     .chat-welcome i { font-size: 2rem; color: var(--primary); display: block; margin-bottom: 8px; }
 
+    /* ══════════════════════════════════════════
+       MOBILE RESPONSIVE
+    ══════════════════════════════════════════ */
+
+    /* ── Tablet (≤991px) ── */
+    @media (max-width: 991px) {
+      .hero { padding: 52px 0 44px; }
+      .hero h1 { font-size: 2rem; }
+      .search-card { max-width: 100%; }
+      .section-title { font-size: 1.5rem; }
+      .flip-card { height: 300px; }
+      #scroll-top { right: 20px; }
+    }
+
+    /* ── Mobile (≤767px) ── */
+    @media (max-width: 767px) {
+      .hero { padding: 36px 0 32px; }
+      .hero h1 { font-size: 1.6rem; }
+      .hero p { font-size: .95rem; }
+      .campus-badge { font-size: .75rem; padding: 5px 12px; }
+
+      .search-card { padding: 18px; max-width: 100%; }
+
+      .stats-bar { margin-top: -20px; border-radius: 12px; }
+      .stat-item { padding: 16px 8px; }
+      .stat-item .num { font-size: 1.4rem; }
+      .stat-item .lbl { font-size: .75rem; }
+
+      section { padding: 48px 0; }
+      .section-title { font-size: 1.3rem; }
+      .section-sub { font-size: .88rem; }
+
+      .service-card { padding: 20px 18px; }
+      .dept-card { padding: 16px 10px; }
+
+      .flip-card { height: 280px; }
+      .front-overlay { padding: 28px 10px 10px; }
+
+      .info-box { padding: 18px; }
+
+      .cta-section { padding: 28px 20px !important; border-radius: 14px; }
+      .cta-section h2 { font-size: 1.3rem; }
+      .cta-section p { font-size: .95rem; }
+      .cta-section .btn-lg { font-size: .88rem; padding: 10px 20px; }
+
+      /* FABs */
+      .fab { width: 50px; height: 50px; font-size: 1.2rem; bottom: 20px; right: 20px; }
+      .fab-chat { bottom: 82px; }
+      .fab-label { display: none; }
+      #scroll-top { right: 20px; bottom: 82px; width: 38px; height: 38px; font-size: .95rem; }
+
+      /* Chat panel */
+      .chat-panel { width: 100vw; height: 100vh; border-radius: 0; }
+      .chat-panel-header { border-radius: 0; }
+
+      /* Footer */
+      footer { padding: 36px 0 18px; }
+      footer h6 { margin-top: 8px; }
+      .office-hours-row { font-size: .8rem; }
+    }
+
+    /* ── Small phone (≤480px) ── */
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 1.35rem; }
+      .hero p { font-size: .88rem; }
+      .hero .btn-lg { font-size: .85rem; padding: 8px 16px; }
+
+      .search-card { padding: 14px; }
+
+      .stat-item .num { font-size: 1.2rem; }
+      .stat-item .lbl { font-size: .7rem; }
+
+      .flip-card { height: 260px; }
+
+      .section-title { font-size: 1.15rem; }
+
+      .cta-section .btn { display: block; width: 100%; margin-bottom: 8px; }
+      .cta-section .btn:last-child { margin-bottom: 0; }
+      .cta-section .me-2 { margin-right: 0 !important; }
+    }
+
   </style>
 
   <!-- SEO Enhancements -->
