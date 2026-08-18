@@ -4,6 +4,7 @@ import string
 
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
 
 
 STUDENT_DEPT_CHOICES = [
@@ -752,3 +753,161 @@ class StaffPasswordResetToken(models.Model):
 
 # Update Appointment model to add no-show tracking fields
 # Add these fields to the Appointment model STATUS_CHOICES
+
+
+class Medicine(models.Model):
+    """Catalog of medicines available at the health center."""
+    name = models.CharField(max_length=200, verbose_name="Medicine Name")
+    generic_name = models.CharField(
+        max_length=200, blank=True,
+        verbose_name="Generic / Salt Name",
+        help_text="e.g., Acetaminophen for Paracetamol",
+    )
+    category = models.CharField(
+        max_length=100, blank=True,
+        verbose_name="Category",
+        help_text="e.g., Painkiller, Antibiotic, Syrup, Ointment",
+    )
+    manufacturer = models.CharField(max_length=200, blank=True, verbose_name="Manufacturer")
+    description = models.TextField(blank=True, verbose_name="Description / Usage Notes")
+    unit = models.CharField(
+        max_length=50, default="Tablets",
+        verbose_name="Unit of Measurement",
+        help_text="e.g., Tablets, Capsules, Bottles, Strips, mL",
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Medicine"
+        verbose_name_plural = "Medicines"
+
+    def __str__(self):
+        if self.generic_name:
+            return f"{self.name} ({self.generic_name})"
+        return self.name
+
+    @property
+    def total_available_quantity(self):
+        """Sum of quantities from non-expired stocks only."""
+        from django.utils import timezone
+        return sum(
+            s.quantity for s in self.stocks.filter(
+                expiry_date__gt=timezone.now().date()
+            )
+        )
+
+    @property
+    def has_expiring_soon(self):
+        """True if any stock expires within 20 days."""
+        from django.utils import timezone
+        threshold = timezone.now().date() + timedelta(days=20)
+        return self.stocks.filter(
+            expiry_date__lte=threshold,
+            expiry_date__gt=timezone.now().date(),
+            quantity__gt=0,
+        ).exists()
+
+    @property
+    def has_expired(self):
+        """True if any stock is already expired and still has quantity."""
+        from django.utils import timezone
+        return self.stocks.filter(
+            expiry_date__lte=timezone.now().date(),
+            quantity__gt=0,
+        ).exists()
+
+
+class MedicineStock(models.Model):
+    """Individual batch/stock entry for a medicine."""
+    medicine = models.ForeignKey(
+        "Medicine",
+        on_delete=models.CASCADE,
+        related_name="stocks",
+        verbose_name="Medicine",
+    )
+    batch_number = models.CharField(
+        max_length=100, verbose_name="Batch Number",
+        help_text="Manufacturer batch/lot number",
+    )
+    quantity = models.PositiveIntegerField(default=0, verbose_name="Current Quantity")
+    expiry_date = models.DateField(verbose_name="Expiry Date")
+    received_date = models.DateField(verbose_name="Date Received")
+    supplier = models.CharField(max_length=200, blank=True, verbose_name="Supplier")
+    purchase_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        null=True, blank=True,
+        verbose_name="Purchase Price (₹)",
+    )
+    notes = models.TextField(blank=True, verbose_name="Notes")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["expiry_date"]
+        verbose_name = "Medicine Stock"
+        verbose_name_plural = "Medicine Stocks"
+        unique_together = ("medicine", "batch_number")
+
+    def __str__(self):
+        return f"{self.medicine.name} — Batch {self.batch_number} (Qty: {self.quantity}, Exp: {self.expiry_date})"
+
+    @property
+    def is_expired(self):
+        from django.utils import timezone
+        return self.expiry_date <= timezone.now().date()
+
+    @property
+    def is_expiring_soon(self):
+        """True if expiry is within 20 days and not yet expired."""
+        from django.utils import timezone
+        today = timezone.now().date()
+        threshold = today + timedelta(days=20)
+        return today < self.expiry_date <= threshold
+
+    @property
+    def days_until_expiry(self):
+        from django.utils import timezone
+        return (self.expiry_date - timezone.now().date()).days
+
+    @property
+    def status_label(self):
+        if self.is_expired:
+            return "EXPIRED"
+        elif self.is_expiring_soon:
+            return "EXPIRING_SOON"
+        return "OK"
+
+
+class MedicineStockTransaction(models.Model):
+    """Tracks additions and deductions from a medicine stock batch."""
+    TRANSACTION_TYPES = (
+        ('ADD', 'Addition'),
+        ('SUBTRACT', 'Subtraction/Dispense'),
+    )
+
+    stock = models.ForeignKey(
+        MedicineStock,
+        on_delete=models.CASCADE,
+        related_name="transactions",
+        verbose_name="Stock Batch",
+    )
+    transaction_type = models.CharField(
+        max_length=10, choices=TRANSACTION_TYPES, verbose_name="Type"
+    )
+    quantity = models.PositiveIntegerField(verbose_name="Quantity Changed")
+    date = models.DateTimeField(auto_now_add=True, verbose_name="Transaction Date")
+    performed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, verbose_name="Performed By"
+    )
+    reason = models.CharField(max_length=255, blank=True, verbose_name="Reason/Notes")
+
+    class Meta:
+        ordering = ["-date"]
+        verbose_name = "Medicine Transaction"
+        verbose_name_plural = "Medicine Transactions"
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} of {self.quantity} for {self.stock.medicine.name} (Batch {self.stock.batch_number})"

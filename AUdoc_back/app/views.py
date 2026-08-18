@@ -25,7 +25,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm
-from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
+from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, Medicine, MedicineStock, MedicineStockTransaction, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
 from .storage import upload_doctor_photo, delete_doctor_photo
 from .security import (
     generate_secure_otp,
@@ -1561,6 +1561,16 @@ def admin_dashboard(request):
         'total_donations':        Donation.objects.count(),
 
         # ── misc ────────────────────────────────────────────
+        # ── Medicine Management data ──────────────────────
+        'med_medicines': Medicine.objects.all().order_by('name'),
+        'med_stocks': MedicineStock.objects.select_related('medicine').all().order_by('expiry_date'),
+        'med_expiring_soon': [s for s in MedicineStock.objects.select_related('medicine').all() if s.is_expiring_soon],
+        'med_expired': [s for s in MedicineStock.objects.select_related('medicine').all() if s.is_expired and s.quantity > 0],
+        'med_transactions': MedicineStockTransaction.objects.select_related('stock__medicine', 'performed_by').all()[:100],
+        'med_stat_total': Medicine.objects.count(),
+        'med_stat_expiring': len([s for s in MedicineStock.objects.all() if s.is_expiring_soon]),
+        'med_stat_expired': len([s for s in MedicineStock.objects.all() if s.is_expired and s.quantity > 0]),
+
         'active_tab':    request.GET.get('tab', 'dashboard'),
         'dept_choices':  MEDICAL_DEPT_CHOICES,
         'day_choices':   DAY_CHOICES,
@@ -3579,3 +3589,189 @@ def sitemap_xml(request):
     xml.append('</urlset>')
     return HttpResponse("\n".join(xml), content_type="application/xml")
 
+# ── Advanced Medicine Management ─────────────────────────────────────────────
+
+@_admin_required
+def admin_medicine_dashboard(request):
+    """Redirect to admin panel medicine tab (medicine is now integrated)."""
+    return redirect(f"{reverse('admin_dashboard')}?tab=medicine")
+
+
+@require_POST
+@_admin_required
+def admin_medicine_save(request):
+    """Create or update a Medicine record."""
+    try:
+        med_id = request.POST.get('medicine_id')
+        name = request.POST.get('name')
+        generic_name = request.POST.get('generic_name', '')
+        category = request.POST.get('category', '')
+        manufacturer = request.POST.get('manufacturer', '')
+        unit = request.POST.get('unit', 'Tablets')
+        description = request.POST.get('description', '')
+        is_active = request.POST.get('is_active') == 'on'
+        
+        if med_id:
+            med = get_object_or_404(Medicine, pk=med_id)
+            med.name = name
+            med.generic_name = generic_name
+            med.category = category
+            med.manufacturer = manufacturer
+            med.unit = unit
+            med.description = description
+            med.is_active = is_active
+            med.save()
+            messages.success(request, f"Updated medicine {med.name} successfully.")
+        else:
+            Medicine.objects.create(
+                name=name,
+                generic_name=generic_name,
+                category=category,
+                manufacturer=manufacturer,
+                unit=unit,
+                description=description,
+                is_active=is_active
+            )
+            messages.success(request, f"Added new medicine {name}.")
+            
+    except Exception as e:
+        logger.error(f"Error saving medicine: {e}")
+        messages.error(request, "Failed to save medicine details.")
+        
+    return redirect(f"{reverse('admin_dashboard')}?tab=medicine")
+
+
+@require_POST
+@_admin_required
+def admin_medicine_delete(request, pk):
+    """Delete a Medicine record."""
+    try:
+        med = get_object_or_404(Medicine, pk=pk)
+        name = med.name
+        med.delete()
+        messages.success(request, f"Deleted medicine {name}.")
+    except Exception as e:
+        logger.error(f"Error deleting medicine: {e}")
+        messages.error(request, "Failed to delete medicine.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=medicine")
+
+
+@require_POST
+@_admin_required
+def admin_medicine_stock_save(request):
+    """Add or update Medicine Stock."""
+    try:
+        stock_id = request.POST.get('stock_id')
+        medicine_id = request.POST.get('medicine_id')
+        batch_number = request.POST.get('batch_number')
+        quantity = int(request.POST.get('quantity', 0))
+        
+        # Parse dates
+        expiry_date_str = request.POST.get('expiry_date')
+        received_date_str = request.POST.get('received_date')
+        
+        expiry_date = datetime.strptime(expiry_date_str, "%Y-%m-%d").date() if expiry_date_str else None
+        received_date = datetime.strptime(received_date_str, "%Y-%m-%d").date() if received_date_str else timezone.now().date()
+        
+        supplier = request.POST.get('supplier', '')
+        purchase_price = request.POST.get('purchase_price')
+        if purchase_price:
+            purchase_price = Decimal(purchase_price)
+        else:
+            purchase_price = None
+            
+        notes = request.POST.get('notes', '')
+        
+        if stock_id:
+            stock = get_object_or_404(MedicineStock, pk=stock_id)
+            stock.batch_number = batch_number
+            stock.quantity = quantity
+            stock.expiry_date = expiry_date
+            stock.received_date = received_date
+            stock.supplier = supplier
+            stock.purchase_price = purchase_price
+            stock.notes = notes
+            stock.save()
+            messages.success(request, f"Updated stock for batch {batch_number}.")
+        else:
+            medicine = get_object_or_404(Medicine, pk=medicine_id)
+            MedicineStock.objects.create(
+                medicine=medicine,
+                batch_number=batch_number,
+                quantity=quantity,
+                expiry_date=expiry_date,
+                received_date=received_date,
+                supplier=supplier,
+                purchase_price=purchase_price,
+                notes=notes
+            )
+            messages.success(request, f"Added stock batch {batch_number} for {medicine.name}.")
+            
+    except Exception as e:
+        logger.error(f"Error saving medicine stock: {e}")
+        messages.error(request, "Failed to save stock details. Check batch number uniqueness.")
+        
+    return redirect(f"{reverse('admin_dashboard')}?tab=medicine")
+
+
+@require_POST
+@_admin_required
+def admin_medicine_stock_delete(request, pk):
+    """Delete a Medicine Stock record."""
+    try:
+        stock = get_object_or_404(MedicineStock, pk=pk)
+        med_name = stock.medicine.name
+        batch = stock.batch_number
+        stock.delete()
+        messages.success(request, f"Deleted stock batch {batch} for {med_name}.")
+    except Exception as e:
+        logger.error(f"Error deleting medicine stock: {e}")
+        messages.error(request, "Failed to delete stock.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=medicine")
+
+
+@require_POST
+@_admin_required
+def admin_medicine_transaction_save(request):
+    """Add or subtract stock, logging a transaction."""
+    try:
+        stock_id = request.POST.get('stock_id')
+        transaction_type = request.POST.get('transaction_type')
+        quantity = int(request.POST.get('quantity', 0))
+        reason = request.POST.get('reason', '')
+        
+        stock = get_object_or_404(MedicineStock, pk=stock_id)
+        
+        if quantity <= 0:
+            messages.error(request, "Quantity must be greater than 0.")
+            return redirect(f"{reverse('admin_dashboard')}?tab=medicine")
+            
+        if transaction_type == 'SUBTRACT':
+            if stock.quantity < quantity:
+                messages.error(request, f"Cannot deduct {quantity}. Only {stock.quantity} available in batch {stock.batch_number}.")
+                return redirect(f"{reverse('admin_dashboard')}?tab=medicine")
+            stock.quantity -= quantity
+            msg = f"Deducted {quantity} from batch {stock.batch_number}."
+        elif transaction_type == 'ADD':
+            stock.quantity += quantity
+            msg = f"Added {quantity} to batch {stock.batch_number}."
+        else:
+            messages.error(request, "Invalid transaction type.")
+            return redirect(f"{reverse('admin_dashboard')}?tab=medicine")
+            
+        # Save stock and create transaction record
+        stock.save()
+        MedicineStockTransaction.objects.create(
+            stock=stock,
+            transaction_type=transaction_type,
+            quantity=quantity,
+            performed_by=request.user,
+            reason=reason
+        )
+        
+        messages.success(request, msg)
+    except Exception as e:
+        logger.error(f"Error saving medicine transaction: {e}")
+        messages.error(request, "Failed to record transaction.")
+        
+    return redirect(f"{reverse('admin_dashboard')}?tab=medicine")

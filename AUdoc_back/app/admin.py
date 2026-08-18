@@ -6,7 +6,8 @@ from django.core.mail import EmailMultiAlternatives
 from .models import (
     BloodRequest, BloodDonation, DonorResponse, HelpDesk, LoginLog, 
     Doctor, Appointment, Donation, StudentProfile, StaffProfile, 
-    StudentRegistration, TodaysAppointment, DoctorLeave, StudentNoShowRecord
+    StudentRegistration, TodaysAppointment, DoctorLeave, StudentNoShowRecord,
+    Medicine, MedicineStock, MedicineStockTransaction
 )
 
 
@@ -466,4 +467,37 @@ class StudentNoShowRecordAdmin(admin.ModelAdmin):
     @admin.display(description="Student Name", ordering="student__user__first_name")
     def get_student_name(self, obj):
         return obj.student.user.get_full_name() or obj.student.student_id
+
+
+# ── Medicine Management ──────────────────────────────────────────────────────
+
+class MedicineStockInline(admin.TabularInline):
+    model = MedicineStock
+    extra = 1
+    fields = ("batch_number", "quantity", "expiry_date", "received_date", "supplier", "purchase_price")
+
+
+@admin.register(Medicine)
+class MedicineAdmin(admin.ModelAdmin):
+    list_display = ("name", "generic_name", "category", "unit", "is_active")
+    list_filter = ("is_active", "category")
+    search_fields = ("name", "generic_name", "category", "manufacturer")
+    ordering = ("name",)
+    inlines = [MedicineStockInline]
+
+
+@admin.register(MedicineStock)
+class MedicineStockAdmin(admin.ModelAdmin):
+    list_display = ("medicine", "batch_number", "quantity", "expiry_date", "received_date", "supplier")
+    list_filter = ("medicine", "expiry_date")
+    search_fields = ("medicine__name", "batch_number", "supplier")
+    ordering = ("expiry_date",)
+
+
+@admin.register(MedicineStockTransaction)
+class MedicineStockTransactionAdmin(admin.ModelAdmin):
+    list_display = ("stock", "transaction_type", "quantity", "date", "performed_by", "reason")
+    list_filter = ("transaction_type", "date")
+    search_fields = ("stock__medicine__name", "stock__batch_number", "performed_by__username", "reason")
+    ordering = ("-date",)
 

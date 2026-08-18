@@ -1012,6 +1012,13 @@
       </a>
     </nav>
 
+    <div class="sidebar-section">Inventory</div>
+    <nav>
+      <a href="#" data-tab="medicine" class="tab-link">
+        <i class="bi bi-capsule"></i> Medicine Stock
+      </a>
+    </nav>
+
     <div class="sidebar-section">Management</div>
     <nav>
       <a href="#" data-tab="doctors" class="tab-link">
@@ -1400,6 +1407,22 @@
                   </div>
                   <span class="badge"
                     style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Review</span>
+                </button>
+
+                <button class="btn d-flex align-items-center justify-content-between"
+                  onclick="showTab('medicine')"
+                  style="background: linear-gradient(135deg, #0d6efd 0%, #3b82f6 100%); color: white; padding: 12px 14px; border: none; border-radius: 8px; transition: all 0.3s ease;"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(13,110,253,0.3)'"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                  <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                    <i class="bi bi-capsule" style="font-size: 1.1rem;"></i>
+                    <div style="text-align: left;">
+                      <div style="font-weight: 600; font-size: 0.95rem;">Medicine Inventory</div>
+                      <small style="opacity: 0.85;">Manage stocks & alerts</small>
+                    </div>
+                  </div>
+                  <span class="badge"
+                    style="background: rgba(255,255,255,0.3); color: white; padding: 4px 8px; font-size: 0.75rem;">Manage</span>
                 </button>
               </div>
 
@@ -2225,6 +2248,234 @@
             </div>
           </div>
         </div>
+      </div>
+
+
+      <!-- ══════════════════ MEDICINE MANAGEMENT Tab ══════════════════ -->
+      <div id="medicine" class="tab-content">
+        <style>
+          .med-stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid var(--primary); transition: transform 0.2s; }
+          .med-stat-card:hover { transform: translateY(-3px); }
+          .med-stat-card h3 { font-size: 2rem; margin-bottom: 5px; color: var(--primary-dark); }
+          .med-stat-card p { margin: 0; color: #6c757d; font-weight: 500; }
+          .med-alert-row { background: #fff5f5; border-left: 4px solid #dc3545; }
+          .med-warning-row { background: #fff8e6; border-left: 4px solid #ffc107; }
+          .med-sub-tabs .nav-link { color: #666; font-weight: 500; border: none; border-bottom: 3px solid transparent; border-radius: 0; padding: 12px 20px; }
+          .med-sub-tabs .nav-link.active { color: var(--primary); border-bottom-color: var(--primary); background: transparent; }
+          .med-sub-tabs .nav-link:hover { color: var(--primary); }
+        </style>
+
+        <!-- Medicine Sub-Tab Navigation -->
+        <ul class="nav med-sub-tabs mb-4" style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); overflow: hidden;">
+          <li class="nav-item">
+            <a class="nav-link active" href="#" onclick="showMedTab('med-overview', this); return false;">
+              <i class="bi bi-speedometer2 me-1"></i> Overview
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showMedTab('med-catalog', this); return false;">
+              <i class="bi bi-journal-medical me-1"></i> Catalog
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showMedTab('med-stocks', this); return false;">
+              <i class="bi bi-boxes me-1"></i> Stocks & Batches
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showMedTab('med-transactions', this); return false;">
+              <i class="bi bi-clock-history me-1"></i> Transactions
+            </a>
+          </li>
+        </ul>
+
+        <!-- Medicine Overview Sub-Tab -->
+        <div id="med-overview" class="med-sub-content">
+          <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+              <div class="med-stat-card">
+                <h3>{{ med_stat_total }}</h3>
+                <p>Total Medicines</p>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="med-stat-card" style="border-bottom-color: #ffc107;">
+                <h3 class="text-warning">{{ med_stat_expiring }}</h3>
+                <p>Expiring Soon</p>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="med-stat-card" style="border-bottom-color: #dc3545;">
+                <h3 class="text-danger">{{ med_stat_expired }}</h3>
+                <p>Expired Batches</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0 text-warning"><i class="bi bi-exclamation-triangle me-2"></i>Expiring Soon (20 Days)</h5>
+                </div>
+                <div class="card-body p-0">
+                  <ul class="list-group list-group-flush">
+                    {% for stock in med_expiring_soon %}
+                    <li class="list-group-item med-warning-row">
+                      <strong>{{ stock.medicine.name }}</strong> — Batch: {{ stock.batch_number }}
+                      <br><small class="text-muted">Expires: {{ stock.expiry_date }} ({{ stock.days_until_expiry }} days left)</small>
+                      <span class="badge bg-warning text-dark float-end">{{ stock.quantity }} units</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-3">No medicines expiring soon.</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-4">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0 text-danger"><i class="bi bi-x-circle me-2"></i>Expired Stock</h5>
+                </div>
+                <div class="card-body p-0">
+                  <ul class="list-group list-group-flush">
+                    {% for stock in med_expired %}
+                    <li class="list-group-item med-alert-row">
+                      <strong>{{ stock.medicine.name }}</strong> — Batch: {{ stock.batch_number }}
+                      <br><small class="text-danger">Expired: {{ stock.expiry_date }}</small>
+                      <span class="badge bg-danger float-end">{{ stock.quantity }} units</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-3">No expired stock.</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Medicine Catalog Sub-Tab -->
+        <div id="med-catalog" class="med-sub-content" style="display:none;">
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="bi bi-journal-medical me-2"></i>Medicine Catalog</h5>
+              <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#medicineModal">
+                <i class="bi bi-plus-lg me-1"></i>Add Medicine
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr><th>Name</th><th>Category</th><th>Description</th><th>Available Stock</th><th class="text-end">Actions</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for med in med_medicines %}
+                    <tr>
+                      <td><strong>{{ med.name }}</strong></td>
+                      <td><span class="badge bg-secondary">{{ med.category|default:"-" }}</span></td>
+                      <td class="text-muted text-truncate" style="max-width:200px;">{{ med.description|default:"-" }}</td>
+                      <td>
+                        <span class="badge bg-success" style="font-size:.9rem;">{{ med.total_available_quantity }}</span>
+                        {% if med.has_expired %}<span class="badge bg-danger ms-1" title="Has Expired Batches"><i class="bi bi-exclamation-triangle"></i></span>{% endif %}
+                        {% if med.has_expiring_soon %}<span class="badge bg-warning text-dark ms-1" title="Expiring Soon"><i class="bi bi-clock"></i></span>{% endif %}
+                      </td>
+                      <td class="text-end">
+                        <a href="{% url 'admin_medicine_delete' med.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this medicine and ALL its stock batches?');"><i class="bi bi-trash"></i></a>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No medicines in catalog yet.</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Medicine Stocks Sub-Tab -->
+        <div id="med-stocks" class="med-sub-content" style="display:none;">
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="bi bi-boxes me-2"></i>Stock Batches</h5>
+              <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#stockModal">
+                <i class="bi bi-plus-lg me-1"></i>Add Batch
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr><th>Medicine</th><th>Batch No.</th><th>Quantity</th><th>Expiry Date</th><th>Status</th><th class="text-end">Actions</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for stock in med_stocks %}
+                    <tr class="{% if stock.is_expired %}med-alert-row{% elif stock.is_expiring_soon %}med-warning-row{% endif %}">
+                      <td><strong>{{ stock.medicine.name }}</strong></td>
+                      <td>{{ stock.batch_number }}</td>
+                      <td><strong>{{ stock.quantity }}</strong></td>
+                      <td>{{ stock.expiry_date }}</td>
+                      <td>
+                        {% if stock.is_expired %}<span class="badge bg-danger">Expired</span>
+                        {% elif stock.is_expiring_soon %}<span class="badge bg-warning text-dark">Expiring ({{ stock.days_until_expiry }}d)</span>
+                        {% else %}<span class="badge bg-success">Valid</span>{% endif %}
+                      </td>
+                      <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="openTransactionModal('{{ stock.id }}', '{{ stock.medicine.name|escapejs }}', '{{ stock.batch_number|escapejs }}')">
+                          <i class="bi bi-arrow-left-right"></i> Add/Sub
+                        </button>
+                        <a href="{% url 'admin_medicine_stock_delete' stock.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this batch?');"><i class="bi bi-trash"></i></a>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No stock batches added.</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Medicine Transactions Sub-Tab -->
+        <div id="med-transactions" class="med-sub-content" style="display:none;">
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+              <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Transaction History</h5>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr><th>Date & Time</th><th>Medicine (Batch)</th><th>Type</th><th>Qty</th><th>By</th><th>Notes</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for t in med_transactions %}
+                    <tr>
+                      <td>{{ t.date|date:"M d, Y H:i" }}</td>
+                      <td><strong>{{ t.stock.medicine.name }}</strong><br><small class="text-muted">Batch: {{ t.stock.batch_number }}</small></td>
+                      <td>
+                        {% if t.transaction_type == 'ADD' %}<span class="badge bg-success"><i class="bi bi-plus"></i> ADDED</span>
+                        {% else %}<span class="badge bg-danger"><i class="bi bi-dash"></i> DEDUCTED</span>{% endif %}
+                      </td>
+                      <td><strong>{{ t.quantity }}</strong></td>
+                      <td>{{ t.performed_by.username|default:"Unknown" }}</td>
+                      <td class="text-muted">{{ t.reason|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No transactions yet.</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
       </div>
 
       <!-- DANGER ZONE Tab -->
@@ -4648,7 +4899,94 @@
         input.focus();
       });
     })();
-  </script>
+  
+    // ── Medicine sub-tab switching ──
+    function showMedTab(tabId, clickedLink) {
+      document.querySelectorAll('.med-sub-content').forEach(el => el.style.display = 'none');
+      document.getElementById(tabId).style.display = 'block';
+      document.querySelectorAll('.med-sub-tabs .nav-link').forEach(el => el.classList.remove('active'));
+      if (clickedLink) clickedLink.classList.add('active');
+    }
+    function openTransactionModal(stockId, medName, batchNo) {
+      document.getElementById('txStockId').value = stockId;
+      document.getElementById('txMedName').innerText = medName + ' (Batch: ' + batchNo + ')';
+      new bootstrap.Modal(document.getElementById('transactionModal')).show();
+    }
+
+</script>
+<!-- Medicine Modals -->
+
+        <!-- Add Medicine Modal -->
+        <div class="modal fade" id="medicineModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header"><h5 class="modal-title">Add Medicine</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <form method="POST" action="{% url 'admin_medicine_save' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <div class="mb-3"><label class="form-label">Medicine Name</label><input type="text" name="name" class="form-control" required></div>
+                  <div class="mb-3"><label class="form-label">Category</label><input type="text" name="category" class="form-control" placeholder="e.g. Painkiller, Antibiotic"></div>
+                  <div class="mb-3"><label class="form-label">Description (Optional)</label><textarea name="description" class="form-control" rows="3"></textarea></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Stock Modal -->
+        <div class="modal fade" id="stockModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header"><h5 class="modal-title">Add Stock Batch</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <form method="POST" action="{% url 'admin_medicine_stock_save' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Medicine</label>
+                    <select name="medicine_id" class="form-select" required>
+                      <option value="">-- Select Medicine --</option>
+                      {% for med in med_medicines %}<option value="{{ med.id }}">{{ med.name }}</option>{% endfor %}
+                    </select>
+                  </div>
+                  <div class="mb-3"><label class="form-label">Batch Number</label><input type="text" name="batch_number" class="form-control" required></div>
+                  <div class="mb-3"><label class="form-label">Quantity</label><input type="number" name="quantity" class="form-control" required min="1"></div>
+                  <div class="row">
+                    <div class="col-6 mb-3"><label class="form-label">Received Date</label><input type="date" name="received_date" class="form-control" required></div>
+                    <div class="col-6 mb-3"><label class="form-label">Expiry Date</label><input type="date" name="expiry_date" class="form-control" required></div>
+                  </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction Modal -->
+        <div class="modal fade" id="transactionModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header"><h5 class="modal-title">Log Transaction — <span id="txMedName"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <form method="POST" action="{% url 'admin_medicine_transaction_save' %}">
+                {% csrf_token %}
+                <input type="hidden" name="stock_id" id="txStockId">
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Transaction Type</label>
+                    <select name="transaction_type" class="form-select" required>
+                      <option value="SUBTRACT">Deduct / Dispense</option>
+                      <option value="ADD">Restock / Add</option>
+                    </select>
+                  </div>
+                  <div class="mb-3"><label class="form-label">Quantity</label><input type="number" name="quantity" class="form-control" required min="1"></div>
+                  <div class="mb-3"><label class="form-label">Reason (Optional)</label><input type="text" name="reason" class="form-control" placeholder="e.g. Dispensed to student"></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Transaction</button></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      
 </body>
 
 </html>

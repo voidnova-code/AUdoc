@@ -46,6 +46,14 @@ urlpatterns = [
     path("manage/staff/add/", views.add_staff_member, name="add_staff_member"),
     path("manage/send-confirmations-test/", views.admin_send_confirmations_test, name="admin_send_confirmations_test"),
 
+    # ── Advanced Medicine Management ─────────────────────────────
+    path("manage/medicine/", views.admin_medicine_dashboard, name="admin_medicine_dashboard"),
+    path("manage/medicine/save/", views.admin_medicine_save, name="admin_medicine_save"),
+    path("manage/medicine/<int:pk>/delete/", views.admin_medicine_delete, name="admin_medicine_delete"),
+    path("manage/medicine/stock/save/", views.admin_medicine_stock_save, name="admin_medicine_stock_save"),
+    path("manage/medicine/stock/<int:pk>/delete/", views.admin_medicine_stock_delete, name="admin_medicine_stock_delete"),
+    path("manage/medicine/transaction/save/", views.admin_medicine_transaction_save, name="admin_medicine_transaction_save"),
+
     # ── AI Chatbot ───────────────────────────────────────────────
     path("chat/", views.chat_api, name="chat_api"),
 
