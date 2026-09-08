@@ -316,6 +316,10 @@ def about(request):
     return render(request, "app/about.html", {"form": form, "submitted": False})
 
 
+def terms_and_conditions(request):
+    return render(request, "app/terms_and_conditions.html")
+
+
 @rate_limit_login
 def student_login(request):
     if request.method == "POST":
@@ -2661,6 +2665,10 @@ def api_register(request):
     for field in required_fields:
         if not data.get(field):
             return JsonResponse({"error": f"{field} is required"}, status=400)
+
+    # Validate terms acceptance
+    if not data.get("agree_terms"):
+        return JsonResponse({"error": "You must agree to the Terms and Conditions to register."}, status=400)
 
     # Sanitize inputs
     student_id = sanitize_string(data.get("student_id", ""), max_length=50)

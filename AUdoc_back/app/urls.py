@@ -18,6 +18,7 @@ urlpatterns = [
     path("appointment/confirm/<uuid:token>/<str:action>/", views.appointment_confirm, name="appointment_confirm"),
     path("set-password/<uuid:token>/", views.set_staff_password, name="set_staff_password"),
     path("about/", views.about, name="about"),
+    path("terms-and-conditions/", views.terms_and_conditions, name="terms_and_conditions"),
 
     # ── post-login redirect ──────────────────────────────────────
     path("post-login/", views.post_login_redirect, name="post_login"),

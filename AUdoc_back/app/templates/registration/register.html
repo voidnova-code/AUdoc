@@ -313,6 +313,33 @@
     }
     .btn-submit:hover { opacity: .92; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(74,124,89,.4); }
     .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* ── Terms checkbox ── */
+    .terms-check {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 14px 16px; margin-bottom: 18px;
+      background: #f4f8f5; border: 1px solid #d5e8d9;
+      border-radius: 10px; cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .terms-check:hover { border-color: var(--primary); background: #eef7f1; }
+    .terms-check.has-error { border-color: #e53e3e; background: #fff0f0; }
+    .terms-check input[type="checkbox"] {
+      width: 18px; height: 18px; margin-top: 2px;
+      accent-color: var(--primary); cursor: pointer; flex-shrink: 0;
+    }
+    .terms-check label {
+      font-size: .88rem; color: #444; cursor: pointer; margin: 0; line-height: 1.5;
+    }
+    .terms-check label a {
+      color: var(--primary); font-weight: 600; text-decoration: underline;
+    }
+    .terms-check label a:hover { color: var(--primary-dark); }
+    .terms-error-msg {
+      color: #e53e3e; font-size: .8rem; margin-top: -12px; margin-bottom: 14px;
+      padding-left: 44px;
+    }
 
     /* ── Alert boxes ── */
     .msg-box {
@@ -646,7 +673,21 @@
           {% if form.present_address.errors %}<p class="invalid-msg">{{ form.present_address.errors|join:", " }}</p>{% endif %}
         </div>
 
-        <button type="submit" class="btn-submit">
+        <!-- ── Terms & Conditions checkbox ── -->
+        <div class="terms-check {% if form.agree_terms.errors %}has-error{% endif %}" id="termsCheckWrapper">
+          <input type="checkbox" name="agree_terms" id="id_agree_terms"
+                 {% if form.agree_terms.value %}checked{% endif %}>
+          <label for="id_agree_terms">
+            I have read and agree to the
+            <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms &amp; Conditions</a>
+            of the AUdoc Campus Health Portal.
+          </label>
+        </div>
+        {% if form.agree_terms.errors %}
+          <p class="terms-error-msg"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ form.agree_terms.errors|join:", " }}</p>
+        {% endif %}
+
+        <button type="submit" class="btn-submit" id="btnSubmitReg">
           <i class="bi bi-person-check-fill"></i>Submit Registration
         </button>
 
@@ -909,8 +950,23 @@
     });
   })();
 
-  // ══ Block submit if email not verified ══════════════════
+  // ══ Block submit if email not verified or terms not accepted ══
   document.querySelector('form[method="post"]').addEventListener('submit', function (e) {
+    const termsBox = document.getElementById('id_agree_terms');
+    const termsWrapper = document.getElementById('termsCheckWrapper');
+
+    // Check terms first
+    if (!termsBox.checked) {
+      e.preventDefault();
+      termsWrapper.classList.add('has-error');
+      termsWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      alert('You must agree to the Terms & Conditions to register.');
+      return;
+    } else {
+      termsWrapper.classList.remove('has-error');
+    }
+
+    // Then check OTP
     if (!emailVerified) {
       e.preventDefault();
       const otp = document.getElementById('otpHidden').value.trim();
@@ -921,6 +977,14 @@
         regOtpBoxes.forEach(b => { b.style.borderColor = '#e53e3e'; setTimeout(() => b.style.borderColor = '', 1800); });
       }
       alert('Please verify your email with the OTP first. Click "Send OTP", enter the code, then click "Verify".');
+    }
+  });
+
+  // Clear terms error styling when checkbox is toggled
+  document.getElementById('id_agree_terms').addEventListener('change', function () {
+    const wrapper = document.getElementById('termsCheckWrapper');
+    if (this.checked) {
+      wrapper.classList.remove('has-error');
     }
   });
 

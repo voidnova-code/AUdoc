@@ -57,6 +57,15 @@ class StudentRegistrationForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Current / on-campus address"}),
     )
 
+    # ── Terms & Conditions ──────────────────────────────────
+    agree_terms = forms.BooleanField(
+        required=True,
+        label="I agree to the Terms and Conditions",
+        error_messages={
+            "required": "You must agree to the Terms and Conditions to register.",
+        },
+    )
+
     # ── Validation ───────────────────────────────────────────
     def clean_email(self):
         email = self.cleaned_data["email"]
