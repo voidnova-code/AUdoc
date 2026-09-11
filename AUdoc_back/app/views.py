@@ -1085,6 +1085,13 @@ def blood_bank(request):
             )
             log_security_event("blood_donation_registered", request,
                 {"donation_id": donation.id, "blood_group": cd["blood_group"]}, level="info")
+
+            # ── Send confirmation email to the donor ─────────────────────
+            try:
+                _send_blood_donor_registration_email(donation)
+            except Exception as e:
+                logger.error(f"Failed to send blood donor registration email to {cd['email']}: {str(e)}")
+
             messages.success(
                 request,
                 "Thank you for registering as a blood donor! The health center will review your application and contact you soon.",
@@ -1336,6 +1343,131 @@ def _send_donor_request_email(request, blood_req, donor, token):
         send_email_async(msg)
     except Exception:
         pass
+
+
+def _send_blood_donor_registration_email(donation):
+    """Send a confirmation email to a user who just registered as a blood donor."""
+    donor_name = donation.donor_name
+    blood_group = donation.blood_group
+    email = donation.email
+    date_str = donation.created_at.strftime("%B %d, %Y at %I:%M %p") if donation.created_at else "just now"
+
+    plain_text = (
+        f"Dear {donor_name},\n\n"
+        f"Thank you for registering as a blood donor on AUdoc!\n\n"
+        f"Here are your registration details:\n"
+        f"  Name       : {donor_name}\n"
+        f"  Blood Group: {blood_group}\n"
+        f"  Registered : {date_str}\n\n"
+        f"Your application is currently PENDING review by the health center.\n"
+        f"Once approved, you will be eligible to receive blood donation requests\n"
+        f"from fellow students in need.\n\n"
+        f"We will notify you by email once your application has been reviewed.\n\n"
+        f"Thank you for being a hero! 🩸\n\n"
+        "-- AUdoc Campus Health\n"
+        "Academic Block C, Room 101 | health@au.edu"
+    )
+
+    html_body = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+</head>
+<body style="margin:0;padding:0;background:#fef0f0;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef0f0;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(196,30,58,.15);">
+
+        <!-- ═══ Header ═══ -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#c41e3a 0%,#8b1a2b 100%);padding:36px 40px;text-align:center;">
+            <div style="display:inline-block;background:rgba(255,255,255,.15);border-radius:14px;padding:12px 18px;margin-bottom:14px;">
+              <span style="font-size:2rem;">&#129656;</span>
+            </div>
+            <h1 style="margin:0;color:#ffffff;font-size:1.6rem;font-weight:700;letter-spacing:-.5px;">Blood Donor Registration Confirmed</h1>
+            <p style="margin:6px 0 0;color:#f0c0c8;font-size:.9rem;">AUdoc Campus Health &mdash; Assam University</p>
+          </td>
+        </tr>
+
+        <!-- ═══ Body ═══ -->
+        <tr>
+          <td style="padding:40px 40px 32px;">
+            <p style="margin:0 0 8px;font-size:1.5rem;">&#128075; Dear {donor_name},</p>
+            <p style="margin:0 0 24px;color:#555;font-size:.97rem;line-height:1.6;">
+              Thank you for registering as a <strong style="color:#c41e3a;">blood donor</strong> on AUdoc!
+              Your willingness to help can save lives. Here are the details of your registration:
+            </p>
+
+            <!-- ─── Registration Details Card ─── -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;background:#fef0f0;border-radius:12px;overflow:hidden;border:1px solid #f0c0c8;">
+              <tr><td style="padding:20px 24px;">
+                <p style="margin:0 0 14px;font-size:.78rem;text-transform:uppercase;letter-spacing:2px;color:#c41e3a;font-weight:700;">Your Registration Details</p>
+                <table width="100%" cellpadding="5" cellspacing="0">
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;width:38%;">&#128100; Name</td>
+                    <td style="font-size:.92rem;color:#333;font-weight:600;">{donor_name}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;">&#129656; Blood Group</td>
+                    <td><span style="background:#c41e3a;color:#fff;padding:3px 12px;border-radius:20px;font-size:.85rem;font-weight:700;">{blood_group}</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;">&#128197; Registered</td>
+                    <td style="font-size:.92rem;color:#333;font-weight:600;">{date_str}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.85rem;color:#888;">&#9201; Status</td>
+                    <td><span style="background:#f39c12;color:#fff;padding:3px 12px;border-radius:20px;font-size:.85rem;font-weight:700;">Pending Review</span></td>
+                  </tr>
+                </table>
+              </td></tr>
+            </table>
+
+            <!-- ─── What Happens Next ─── -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+              <tr>
+                <td style="background:#e8f5e9;border-left:4px solid #27ae60;border-radius:0 10px 10px 0;padding:14px 16px;">
+                  <p style="margin:0 0 6px;font-size:.9rem;color:#1b5e20;font-weight:700;">&#9989; What happens next?</p>
+                  <p style="margin:0;font-size:.85rem;color:#2e7d32;line-height:1.5;">
+                    The health center will review your application. Once <strong>approved</strong>,
+                    you will be able to receive blood donation requests from fellow students who need your blood group.
+                    We&rsquo;ll notify you by email when your status is updated.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0;color:#999;font-size:.85rem;text-align:center;">
+              &#10084;&#65039; Thank you for being a hero. Your generosity matters!
+            </p>
+          </td>
+        </tr>
+
+        <!-- ═══ Footer ═══ -->
+        <tr>
+          <td style="background:#f4f8fc;padding:20px 40px;text-align:center;border-top:1px solid #e5edf5;">
+            <p style="margin:0;font-size:.8rem;color:#999;">
+              &copy; 2026 <strong style="color:#c41e3a;">AUdoc</strong> &mdash; Assam University Silchar Campus Health<br/>
+              Academic Block C, Room 101 &nbsp;|&nbsp; health@au.edu
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+    msg = EmailMultiAlternatives(
+        subject="[AUdoc] Blood Donor Registration — Thank You! 🩸",
+        body=plain_text,
+        from_email=None,
+        to=[email],
+    )
+    msg.attach_alternative(html_body, "text/html")
+    send_email_async(msg)
 
 
 def donor_respond(request, token, action):
@@ -1894,7 +2026,136 @@ def admin_registration_action(request, pk):
     elif action == 'reject':
         reg.status = 'REJECTED'
         reg.save()
-        messages.success(request, f"Registration for {reg.get_full_name()} has been rejected.")
+
+        # ── Send rejection email to the student ──────────────────────
+        try:
+            subject = f"❌ Registration Update — AUdoc"
+            plain = (
+                f"Dear {reg.first_name},\n\n"
+                f"We regret to inform you that your registration on AUdoc has not been approved at this time.\n\n"
+                f"Registration Details:\n"
+                f"  Student ID : {reg.student_id}\n"
+                f"  Name       : {reg.get_full_name()}\n"
+                f"  Department : {reg.get_department_display()}\n\n"
+                f"This could be due to:\n"
+                f"  • Incorrect or unverifiable Student ID\n"
+                f"  • Incomplete or inaccurate information\n"
+                f"  • Duplicate registration\n\n"
+                f"What you can do:\n"
+                f"  1. Double-check your Student ID and details\n"
+                f"  2. Re-register with correct information at the AUdoc portal\n"
+                f"  3. Contact the health center at health@au.edu for clarification\n\n"
+                f"We appreciate your interest in AUdoc and encourage you to try again.\n\n"
+                f"Best regards,\n"
+                f"The AUdoc Team\n"
+                f"Academic Block C, Room 101 | health@au.edu"
+            )
+            register_url = request.build_absolute_uri('/register/')
+            html_body = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                body {{ margin: 0; padding: 0; background-color: #f0f0f0; font-family: 'Segoe UI', Arial, sans-serif; }}
+                .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,.12); overflow: hidden; }}
+                .header {{ background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: #ffffff; padding: 42px 20px; text-align: center; }}
+                .header h1 {{ margin: 10px 0; font-size: 26px; font-weight: bold; }}
+                .header .badge {{ background: rgba(255,255,255,0.18); color: #ffffff; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 10px; font-size: 14px; }}
+                .content {{ padding: 30px 25px; background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%); }}
+                .content p {{ color: #1f2a44; line-height: 1.6; margin: 0 0 15px 0; }}
+                .details-box {{ background-color: #f3f4f6; border: 1px solid #d1d5db; border-radius: 14px; padding: 18px 22px; margin: 18px 0; }}
+                .details-row {{ display: flex; padding: 6px 0; }}
+                .details-label {{ color: #6b7280; font-size: 14px; min-width: 120px; }}
+                .details-value {{ color: #1f2937; font-weight: 600; font-size: 14px; }}
+                .reason-box {{ background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 0 12px 12px 0; padding: 16px 18px; margin: 18px 0; }}
+                .reason-box p {{ margin: 0; font-size: 14px; color: #92400e; }}
+                .action-box {{ background-color: #eff6ff; border: 2px solid #3b82f6; border-radius: 14px; padding: 20px; margin: 20px 0; }}
+                .section-title {{ font-weight: bold; color: #3b82f6; margin-bottom: 12px; font-size: 15px; }}
+                .step {{ margin: 10px 0; display: flex; align-items: flex-start; }}
+                .step-number {{ background-color: #3b82f6; color: #ffffff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; font-size: 13px; }}
+                .step-text {{ color: #1f2a44; flex: 1; font-size: 14px; }}
+                .footer {{ background-color: #f9fafb; border-top: 1px solid #e5e7eb; padding: 20px; text-align: center; }}
+                .footer p {{ margin: 5px 0; color: #6b7280; font-size: 13px; }}
+                a {{ color: #3b82f6; text-decoration: none; font-weight: 600; }}
+                </style>
+                </head>
+                <body>
+                <div class="container">
+                    <div class="header">
+                        <div style="font-size: 32px; margin-bottom: 10px;">📋</div>
+                        <h1>Registration Update</h1>
+                        <div class="badge">❌ NOT APPROVED AT THIS TIME</div>
+                    </div>
+                    <div class="content">
+                        <p>Dear <strong>{name}</strong>,</p>
+                        <p>Thank you for your interest in AUdoc. Unfortunately, your registration could not be approved at this time.</p>
+
+                        <div class="details-box">
+                            <table width="100%" cellpadding="4" cellspacing="0">
+                              <tr>
+                                <td style="color:#6b7280;font-size:14px;width:40%;">🎓 Student ID</td>
+                                <td style="color:#1f2937;font-weight:600;font-size:14px;font-family:monospace;">{sid}</td>
+                              </tr>
+                              <tr>
+                                <td style="color:#6b7280;font-size:14px;">👤 Name</td>
+                                <td style="color:#1f2937;font-weight:600;font-size:14px;">{full_name}</td>
+                              </tr>
+                              <tr>
+                                <td style="color:#6b7280;font-size:14px;">🏛️ Department</td>
+                                <td style="color:#1f2937;font-weight:600;font-size:14px;">{department}</td>
+                              </tr>
+                            </table>
+                        </div>
+
+                        <div class="reason-box">
+                            <p><strong>⚠️ Common reasons for rejection:</strong></p>
+                            <p style="margin-top:8px;">
+                              • Incorrect or unverifiable Student ID<br>
+                              • Incomplete or inaccurate information<br>
+                              • Duplicate registration attempt
+                            </p>
+                        </div>
+
+                        <div class="action-box">
+                            <p class="section-title">🔄 What you can do</p>
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-text">Double-check your Student ID and personal details</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-text">Re-register with correct information at the <a href="{register_url}">AUdoc Registration Page</a></div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-text">Contact <a href="mailto:health@au.edu">health@au.edu</a> if you believe this was a mistake</div>
+                            </div>
+                        </div>
+
+                        <p style="color:#6b7280;font-size:14px;">We appreciate your interest in AUdoc and encourage you to try again with the correct details. 💙</p>
+                    </div>
+                    <div class="footer">
+                        <p><strong>The AUdoc Team 🏥</strong></p>
+                        <p style="color: #999;">© 2026 <strong style="color: #1a5c96;">AUdoc</strong> — Assam University Silchar Campus Health</p>
+                    </div>
+                </div>
+                </body>
+                </html>""".format(
+                    name=reg.first_name,
+                    sid=reg.student_id,
+                    full_name=reg.get_full_name(),
+                    department=reg.get_department_display(),
+                    register_url=register_url,
+                )
+            msg = EmailMultiAlternatives(subject, plain, None, [reg.email])
+            msg.attach_alternative(html_body, "text/html")
+            send_email_async(msg)
+        except Exception as e:
+            logger.error(f"Failed to send rejection email to {reg.email}: {str(e)}")
+
+        messages.success(request, f"Registration for {reg.get_full_name()} has been rejected & rejection email sent.")
 
     return redirect(f"{reverse('admin_dashboard')}?tab=registrations")
 
