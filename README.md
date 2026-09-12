@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/readme-banner.svg" alt="AUdoc — Campus Healthcare Portal" width="100%">
+<img src="readme-banner.svg" alt="AUdoc — Campus Healthcare Portal" width="100%">
 
 ### *Because "I Googled my symptoms" is NOT a treatment plan.*
 ### *(And because voidnova got tired of students calling the health center like it's 1995)*
