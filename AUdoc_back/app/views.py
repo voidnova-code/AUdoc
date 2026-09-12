@@ -737,7 +737,15 @@ def register(request):
 
 def home(request):
     doctors = Doctor.objects.filter(is_available=True).order_by("specialized_in", "name")
-    return render(request, "app/home.html", {"doctors": doctors})
+    total_blood_donors = BloodDonation.objects.filter(status="APPROVED").count()
+    active_blood_requests = BloodRequest.objects.filter(status="APPROVED").order_by('-created_at')
+    active_blood_requests_count = active_blood_requests.count()
+    return render(request, "app/home.html", {
+        "doctors": doctors,
+        "total_blood_donors": total_blood_donors,
+        "active_blood_requests": active_blood_requests,
+        "active_blood_requests_count": active_blood_requests_count,
+    })
 
 
 @login_required
