@@ -1176,7 +1176,7 @@ def blood_bank(request):
                 hospital_name=cd["hospital_name"],
                 hospital_contact=cd["hospital_contact"],
                 notes=cd["notes"],
-                status="PENDING",
+                status="APPROVED",
             )
 
             # Notify all approved donors with matching blood group via email

@@ -399,8 +399,8 @@ class Donation(models.Model):
 
 class BloodRequest(models.Model):
     STATUS_CHOICES = [
-        ("PENDING",    "Pending"),
-        ("APPROVED",   "Approved"),
+        ("APPROVED",   "Verified / Approved"),
+        ("PENDING",    "Unverified / Pending"),
         ("FULFILLED",  "Fulfilled"),
         ("REJECTED",   "Rejected"),
     ]
@@ -461,7 +461,7 @@ class BloodRequest(models.Model):
     status            = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
-        default="PENDING",
+        default="APPROVED",
         verbose_name="Status",
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Requested At")
