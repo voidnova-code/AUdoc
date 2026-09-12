@@ -1,31 +1,20 @@
 <div align="center">
 
-```
-    ╔═══════════════════════════════════════════════════╗
-    ║   █████╗ ██╗   ██╗██████╗  ██████╗  ██████╗      ║
-    ║  ██╔══██╗██║   ██║██╔══██╗██╔═══██╗██╔════╝      ║
-    ║  ███████║██║   ██║██║  ██║██║   ██║██║           ║
-    ║  ██╔══██║██║   ██║██║  ██║██║   ██║██║           ║
-    ║  ██║  ██║╚██████╔╝██████╔╝╚██████╔╝╚██████╗      ║
-    ║  ╚═╝  ╚═╝ ╚═════╝ ╚═════╝  ╚═════╝  ╚═════╝      ║
-    ╚═══════════════════════════════════════════════════╝
-```
-
-# 🏥 AUdoc — Campus Healthcare Portal
+<img src="assets/readme-banner.svg" alt="AUdoc — Campus Healthcare Portal" width="100%">
 
 ### *Because "I Googled my symptoms" is NOT a treatment plan.*
 ### *(And because voidnova got tired of students calling the health center like it's 1995)*
 
 **The official campus health management system for Assam University Silchar — built by someone who actually cares**
 
-[![Django](https://img.shields.io/badge/Django-6.0.3-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
-[![DRF](https://img.shields.io/badge/DRF-3.16.1-ff1709?style=for-the-badge&logo=django&logoColor=white)](https://www.django-rest-framework.org/)
-[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev/)
-[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![Security](https://img.shields.io/badge/Security-Hardened-success?style=for-the-badge&logo=shield&logoColor=white)](#-security)
-[![Sleep Deprivation](https://img.shields.io/badge/Sleep-Optional-red?style=for-the-badge)](#-important-notes)
+[![Django](https://img.shields.io/badge/Django-6.0.3-4a7c59?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![DRF](https://img.shields.io/badge/DRF-3.16.1-2e5c3a?style=for-the-badge&logo=django&logoColor=white)](https://www.django-rest-framework.org/)
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-4a7c59?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
+[![Python](https://img.shields.io/badge/Python-3.12-2e5c3a?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Dart](https://img.shields.io/badge/Dart-3.x-4a7c59?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-2e5c3a?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Security](https://img.shields.io/badge/Security-Hardened-1d8348?style=for-the-badge&logo=shield&logoColor=white)](#-security)
+[![Sleep Deprivation](https://img.shields.io/badge/Sleep-Optional-c41e3a?style=for-the-badge)](#-important-notes)
 
 [✨ Features](#-features) · [🛠️ Tech Stack](#️-tech-stack) · [🔒 Security](#-security) · [📁 Structure](#️-project-structure) · [⚡ Quick Start](#-getting-started) · [🗺️ API Routes](#️-url-routes) · [🎛️ Admin Panel](#️-modern-admin-panel)
 
@@ -97,6 +86,7 @@ The system has two layers working together:
 | 👨‍⚕️ **Doctor Management** | Manage docs, specialties, availability | Control the chaos |
 | 👥 **Staff Management** | Add and manage staff | No more "who's working today?" calls |
 | 🩸 **Blood Bank Admin** | Donor registrations with urgency levels | URGENT = I really need this |
+| 💊 **Medicine Inventory** | Catalog, batch stock, and expiry tracking for health center meds | No more "wait, do we even have paracetamol?" |
 | 📊 **Login Audit Log** | Every login timestamped with IP | Big Brother is watching (jk, it's just logs) |
 | 🔍 **Smart Search & Filters** | Instant search across registrations & blood donors | Find any student or donor in real-time |
 | 📤 **Export Data** | Download as CSV/Excel | Flex on Excel spreadsheet people |
@@ -118,7 +108,8 @@ The system has two layers working together:
     │                            │                          │
     │   (First time? Register!)  │                          │
     │──── Fill reg form ────────>│                          │
-    │     + email OTP verify     │                          │
+    │     + verify email OTP     │ ← checked before submit  │
+    │     + agree to T&C ────────│ (checkbox, required)     │
     │                            │──── Pending queue ──────>│ ← voidnova reads this
     │                            │<─── Approve/Reject ───────│ ← voidnova approves this
     │<─── Welcome email! ────────│  (auto-provisions account)│
@@ -195,13 +186,14 @@ AUdoc/
 │   │   ├── security.py              # 🔒 Security utilities (rate limiting, OTP)
 │   │   ├── backends.py              # Custom OTP authentication backend
 │   │   ├── signals.py               # Login audit signal handler
+│   │   ├── storage.py               # ☁️ Supabase Storage uploads (local fallback for dev)
 │   │   ├── urls.py                  # App URL routes
 │   │   ├── 📂 templates/app/        # HTML templates
 │   │   └── 📂 management/commands/  # Custom Django commands
 │   │       ├── send_appointment_confirmations.py
 │   │       └── cleanup_todays_appointments.py
 │   │
-│   ├── 📂 media/                    # Uploaded files (doctor photos)
+│   ├── 📂 media/                    # Local fallback storage (dev only — prod uses Supabase)
 │   ├── SECURITY.md                  # 📄 Security documentation
 │   ├── .env.example                 # 👈 Copy this to .env and add your secrets
 │   ├── requirements.txt             # Python dependencies
@@ -231,16 +223,33 @@ AUdoc/
 │  API Framework   │  Django REST Framework 3.16.1                │
 │  Mobile/Desktop  │  Flutter  ·  Dart SDK ^3.11.1                │
 │  Database        │  PostgreSQL (Render)  ·  SQLite (dev)        │
+│  File Storage    │  Supabase Storage  ·  local fallback (dev)   │
+│  Caching         │  Redis (optional)  ·  in-memory fallback     │
 │  Authentication  │  OTP-based + Google OAuth (no passwords!)    │
 │  Email           │  Resend / SendGrid  ·  TLS  ·  Free tier     │
 │  SMS             │  Twilio / Nexmo (Vonage) / Optional          │
 │  Charts          │  Chart.js (make stats look pretty)           │
 │  UI Theme        │  Material Design 3  ·  Glass-morphism vibes  │
 │  Admin Panel     │  Custom UI (voidnova's pride and joy)           │
-│  AI Chatbot      │  Groq API (free, surprisingly good)          │
+│  AI Chatbot      │  NVIDIA NIM (OpenAI-compatible LLM endpoint) │
 │  Payments        │  Razorpay (accepts money, ironically)        │
 └──────────────────┴──────────────────────────────────────────────┘
 ```
+
+### 🎨 Design Language *(For Contributors Who Care About Pixels)*
+
+The whole UI — student pages, admin panel, and now this README — pulls from one palette. If you're touching templates or CSS, stay on these:
+
+| Swatch | Hex | Used For |
+|:---:|:---|:---|
+| ![#4a7c59](https://img.shields.io/badge/-%20%20%20%20%20%20%20%20-4a7c59?style=for-the-badge) | `#4a7c59` **Primary** | Buttons, links, nav highlights, icon chips |
+| ![#2e5c3a](https://img.shields.io/badge/-%20%20%20%20%20%20%20%20-2e5c3a?style=for-the-badge) | `#2e5c3a` **Primary Dark** | Gradients, topbar, hover states |
+| ![#e8f5ec](https://img.shields.io/badge/-%20%20%20%20%20%20%20%20-e8f5ec?style=for-the-badge) | `#e8f5ec` **Mint Accent** | Soft backgrounds, tags, badges |
+| ![#1d8348](https://img.shields.io/badge/-%20%20%20%20%20%20%20%20-1d8348?style=for-the-badge) | `#1d8348` **Success Green** | Confirmations, "Live" status |
+| ![#c41e3a](https://img.shields.io/badge/-%20%20%20%20%20%20%20%20-c41e3a?style=for-the-badge) | `#c41e3a` **Blood Red** | Blood Bank urgency, warnings |
+| ![#faf9f4](https://img.shields.io/badge/-%20%20%20%20%20%20%20%20-faf9f4?style=for-the-badge) | `#faf9f4` **Page Background** | Base background across student pages |
+
+Body font is `'Segoe UI', sans-serif` everywhere — match it and things stay consistent. Pulled straight from the `:root` CSS variables in `home.html` / `blood_bank.html` / `admin_panel.html`, so if you rebrand, update it there first and this table second.
 
 ---
 
@@ -263,6 +272,9 @@ AUdoc/
 | `DoctorLeave` | Doctor unavailabilities and leave days |
 | `StudentNoShowRecord`| Tracks missed appointments and auto-restricts booking |
 | `StaffPasswordResetToken`| Secure expiring tokens for staff password resets |
+| `Medicine` | Catalog of medicines stocked at the health center |
+| `MedicineStock` | Per-batch stock entries (quantity, expiry, supplier, batch number) |
+| `MedicineStockTransaction` | Audit log of every stock addition/dispense, with who did it |
 
 ---
 
@@ -275,8 +287,9 @@ AUdoc/
 | Method | URL | Description |
 |--------|-----|-------------|
 | `GET/POST` | `/` | Home — top doctors, donor spotlights |
-| `GET/POST` | `/register/` | Student registration + email OTP verification |
+| `GET/POST` | `/register/` | Student registration + email OTP verification + T&C consent |
 | `POST` | `/send-otp/` | **[AJAX]** Send OTP for registration |
+| `POST` | `/verify-registration-otp/` | **[AJAX]** Verify email OTP before the form can be submitted |
 | `POST` | `/student-login/` | Validate OTP and log student in |
 | `POST` | `/send-login-otp/` | **[AJAX]** Send OTP for login |
 | `GET/POST` | `/donation/` | Submit a monetary donation |
@@ -284,6 +297,7 @@ AUdoc/
 | `GET` | `/blood-donors/` | Filterable blood donor directory |
 | `GET` | `/blood/respond/<token>/<action>/` | Donor accept/decline blood request |
 | `GET` | `/about/` | About page |
+| `GET` | `/terms-and-conditions/` | Terms & Conditions (linked from registration) |
 
 ### Authenticated Routes
 
@@ -312,6 +326,12 @@ AUdoc/
 | `POST` | `/manage/staff/save/` | Add/edit staff |
 | `DELETE` | `/manage/staff/<pk>/delete/` | Delete staff |
 | `POST` | `/manage/clear-all-data/` | Clear all data (danger!) |
+| `GET` | `/manage/medicine/` | Medicine tab of the admin dashboard |
+| `POST` | `/manage/medicine/save/` | Add/edit a medicine catalog entry |
+| `DELETE` | `/manage/medicine/<pk>/delete/` | Delete a medicine |
+| `POST` | `/manage/medicine/stock/save/` | Add/edit a stock batch (qty, expiry, supplier) |
+| `DELETE` | `/manage/medicine/stock/<pk>/delete/` | Delete a stock batch |
+| `POST` | `/manage/medicine/transaction/save/` | Log a stock addition/dispense |
 
 ### Flutter API Routes (Mobile App)
 
@@ -400,12 +420,17 @@ Create the file `AUdoc_back/.env` (it's in `.gitignore`, your secrets are safe):
 DJANGO_SECRET_KEY=your-super-long-random-secret-key-here
 RESEND_API_KEY=re_your_resend_api_key_here
 DEFAULT_FROM_EMAIL=onboarding@resend.dev
-GROQ_API_KEY=your_groq_api_key_for_chatbot
+NIM_BASE_URL=http://localhost:8000/v1/chat/completions
+NVIDIA_API_KEY=your_nvidia_api_key_if_using_the_cloud_endpoint
+NIM_MODEL=meta/llama3-70b-instruct
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
 GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
 SMS_PROVIDER=disabled  # or twilio/nexmo
+# Optional — omit both and doctor photos just save to local media/
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_KEY=your_supabase_service_role_key
 ```
 
 #### For Production (PostgreSQL on Render):
@@ -415,7 +440,9 @@ DJANGO_DEBUG=False
 DATABASE_URL=postgresql://user:password@host:5432/dbname
 RESEND_API_KEY=re_your_resend_api_key_here
 DEFAULT_FROM_EMAIL=noreply@yourdomain.com
-GROQ_API_KEY=your_groq_api_key_for_chatbot
+NIM_BASE_URL=https://integrate.api.nvidia.com/v1/chat/completions
+NVIDIA_API_KEY=your_nvidia_api_key
+NIM_MODEL=meta/llama3-70b-instruct
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
@@ -424,13 +451,20 @@ SMS_PROVIDER=twilio
 TWILIO_ACCOUNT_SID=your_twilio_sid
 TWILIO_AUTH_TOKEN=your_twilio_token
 TWILIO_PHONE_NUMBER=your_twilio_phone
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_KEY=your_supabase_service_role_key
+SUPABASE_STORAGE_BUCKET=media
+# Optional — speeds up rate limiting under multiple Render workers
+REDIS_URL=redis://user:password@host:6379
 ```
 
 > ⚠️ **Never commit `.env` to git.** It's gitignored for a reason. We are not animals.
 >
 > 💡 **Resend API Key:** Get it from [resend.com/api-keys](https://resend.com/api-keys)
 >
-> 💡 **Groq API Key:** Get free tier at [console.groq.com](https://console.groq.com)
+> 💡 **NVIDIA API Key:** Get one at [build.nvidia.com](https://build.nvidia.com) (NIM also runs against any OpenAI-compatible endpoint, including a local model)
+>
+> 💡 **Supabase Storage:** optional — without it, uploaded files (doctor photos) just fall back to local `media/`, which is fine for dev but gets wiped on every Render redeploy
 
 ---
 
@@ -529,16 +563,18 @@ AUdoc is deployed on **Render** with the following setup:
 |-----------|---------|--------|
 | **Backend** | Render Web Service | ✅ Live |
 | **Database** | Render PostgreSQL | ✅ Live |
+| **File Storage** | Supabase Storage | ✅ Live |
 | **Email** | Resend | ✅ Live |
 | **Domain** | voiddoc.me | ✅ Live |
-| **AI Chatbot** | Groq API | ✅ Live |
+| **AI Chatbot** | NVIDIA NIM | ✅ Live |
 
 ### Environment Variables on Render
 
 1. Set `DATABASE_URL` to your Render PostgreSQL connection string
 2. Set `RESEND_API_KEY` from https://resend.com
 3. Set `DEFAULT_FROM_EMAIL` to your verified domain
-4. Set `GROQ_API_KEY` from https://console.groq.com
+4. Set `NIM_BASE_URL`, `NVIDIA_API_KEY`, and `NIM_MODEL` for the chatbot
+5. Set `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` so uploads persist across deploys
 
 ### Deploy to Render
 
@@ -589,12 +625,15 @@ python manage.py cleanup_todays_appointments
 - [x] ~~Modern admin panel with charts~~ ✅ Glass-morphism UI
 - [x] ~~Quick Actions section~~ ✅ Enhanced with priority alerts & keyboard shortcuts
 - [x] ~~FCFS queue system~~ ✅ Today's Appointments
-- [x] ~~AI Chatbot~~ ✅ Groq API integration
+- [x] ~~AI Chatbot~~ ✅ NVIDIA NIM integration
 - [x] ~~PostgreSQL support for production~~ ✅ Render deployment
 - [x] ~~Email with Resend~~ ✅ Custom domain support
 - [x] ~~Custom error pages~~ ✅ Creative 404/500 incident report pages
+- [x] ~~Medicine inventory & stock management~~ ✅ Batch/expiry tracking in the admin panel
+- [x] ~~Cloud file storage~~ ✅ Doctor photos on Supabase Storage
+- [x] ~~Terms & Conditions + two-step registration verification~~ ✅
 - [ ] Push notifications for appointment confirmations
-- [ ] Prescription & medical history records
+- [ ] Per-student prescription & medical history records
 - [ ] Docker + CI/CD pipeline
 - [ ] Dark mode for student portal (admin has it! 🌑)
 
@@ -607,13 +646,15 @@ python manage.py cleanup_todays_appointments
 - **Email:** Powered by **Resend** (free tier with custom domain support)
   - Use `onboarding@resend.dev` for testing (it works, trust us)
   - Add your domain in Resend dashboard for production (yes, you have to do this)
-- **AI Chatbot:** Uses **Groq API** (free tier, `llama-3.1-8b-instant` model — it's not GPT-4, but it's free)
+- **AI Chatbot:** Uses **NVIDIA NIM** — an OpenAI-compatible endpoint (`meta/llama3-70b-instruct` by default), which also means it'll happily talk to a local model if you point `NIM_BASE_URL` at one
 - **Custom Error Pages:** 404/500 errors display creative incident report-style pages (actually makes errors fun)
 - **DEBUG = True** is development-only. Set it to `False` in production, or wake up to a security audit.
 - The `myenv/` folder is gitignored. Always create your own virtual environment. (voidnova is tired of debugging envs)
 - The Flutter app is a **UI prototype** — backend integration with DRF is in progress (voidnova is working on it, give him a break)
 - The modern admin panel is at `/manage/`, not `/admin/`. (We know it's confusing)
-- Doctor profile photos are stored in `media/doctors/`. (Yes, they're real photos, not Lorem Ipsum)
+- Doctor profile photos live in **Supabase Storage** in production; without Supabase credentials configured, they just fall back to local `media/doctors/` for dev
+- Registration now requires **verifying the email OTP before submitting** the form, plus a **Terms & Conditions checkbox** — no more half-finished signups
+- Medicine inventory (`/manage/medicine/`) tracks stock by **batch and expiry date**, not just a single quantity — check the expiring-soon flag before you assume something's in stock
 - **Never commit `.env`** — it contains secrets and is gitignored. If you commit secrets, voidnova will find you. 👀
 
 ---
