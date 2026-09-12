@@ -39,7 +39,7 @@ STUDENT_DEPT_CHOICES = [
     ("CHEM",    "Chemistry"),
     ("MATH",    "Mathematics"),
     ("STAT",    "Statistics"),
-    ("CSE",     "Computer Science"),
+    ("CS",     "Computer Science"),
     # Life Sciences
     ("LSBIO",   "Life Science & Bioinformatics"),
     ("MICRO",   "Microbiology"),
