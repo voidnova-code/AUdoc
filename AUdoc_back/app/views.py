@@ -1121,7 +1121,7 @@ def blood_bank(request):
                 previous_donation=cd["previous_donation"],
                 health_condition=cd["health_condition"],
                 message=cd["message"],
-                status="PENDING",
+                status="APPROVED",
             )
             log_security_event("blood_donation_registered", request,
                 {"donation_id": donation.id, "blood_group": cd["blood_group"]}, level="info")
@@ -1134,7 +1134,7 @@ def blood_bank(request):
 
             messages.success(
                 request,
-                "Thank you for registering as a blood donor! The health center will review your application and contact you soon.",
+                "Thank you for registering as a blood donor! You are now an approved donor.",
             )
             return redirect("blood_bank")
 
