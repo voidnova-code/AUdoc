@@ -654,8 +654,11 @@ def verify_registration_otp(request):
     if not stored_hash or not verify_otp_hash(otp_entered, stored_hash, salt):
         return JsonResponse({"error": "Incorrect OTP. Please check your email and try again."}, status=400)
 
-    # Mark email as verified in session
-    request.session["email_otp_verified"] = email
+    # Mark email as verified in session (with timestamp for time-bound safety)
+    request.session["email_otp_verified"] = {
+        "email": email,
+        "verified_at": time.time(),
+    }
     return JsonResponse({"success": True, "message": "Email verified successfully!"})
 
 
@@ -663,25 +666,49 @@ def register(request):
     form = StudentRegistrationForm(request.POST or None)
     otp_error = None
 
-    if request.method == "POST" and form.is_valid():
-        email       = form.cleaned_data["email"]
-        otp_entered = sanitize_string(request.POST.get("otp", ""), max_length=10)
-        otp_data    = request.session.get("otp_data", {})
+    # Check if email was already verified via AJAX in this session
+    verified_data = request.session.get("email_otp_verified")
+    is_email_verified = False
 
-        stored_hash = otp_data.get("otp_hash", "")
-        salt = otp_data.get("otp_salt", "")
-
-        if not otp_entered:
-            otp_error = "Please verify your email before submitting."
-        elif otp_data.get("email") != email:
-            otp_error = "OTP was sent to a different email. Please re-verify."
-        elif time.time() > otp_data.get("expires", 0):
-            otp_error = "Your OTP has expired. Please request a new one."
-        elif not stored_hash or not verify_otp_hash(otp_entered, stored_hash, salt):
-            otp_error = "Incorrect OTP. Please check your email and try again."
+    if request.method == "POST" and verified_data:
+        submitted_email = request.POST.get("email", "").strip()
+        # Support both dict (new) and plain string (legacy) formats
+        if isinstance(verified_data, dict):
+            verified_email = verified_data.get("email", "")
+            verified_at = verified_data.get("verified_at", 0)
         else:
-            # OTP valid — clear it and save registration
-            del request.session["otp_data"]
+            verified_email = verified_data
+            verified_at = 0
+        # Accept if same email AND verified within last 30 minutes
+        if (verified_email.lower() == submitted_email.lower()
+                and (time.time() - verified_at) < 1800):
+            is_email_verified = True
+
+    if request.method == "POST" and form.is_valid():
+        email = form.cleaned_data["email"]
+
+        if not is_email_verified:
+            # Fallback: re-check OTP from hidden field (original behavior)
+            otp_entered = sanitize_string(request.POST.get("otp", ""), max_length=10)
+            otp_data    = request.session.get("otp_data", {})
+            stored_hash = otp_data.get("otp_hash", "")
+            salt = otp_data.get("otp_salt", "")
+
+            if not otp_entered:
+                otp_error = "Please verify your email before submitting."
+            elif otp_data.get("email") != email:
+                otp_error = "OTP was sent to a different email. Please re-verify."
+            elif time.time() > otp_data.get("expires", 0):
+                otp_error = "Your OTP has expired. Please request a new one."
+            elif not stored_hash or not verify_otp_hash(otp_entered, stored_hash, salt):
+                otp_error = "Incorrect OTP. Please check your email and try again."
+            else:
+                is_email_verified = True
+
+        if is_email_verified and not otp_error:
+            # Email verified — clear session keys and save registration
+            request.session.pop("otp_data", None)
+            request.session.pop("email_otp_verified", None)
             cd = form.cleaned_data
             StudentRegistration.objects.create(
                 first_name=cd["first_name"],
@@ -704,6 +731,7 @@ def register(request):
     return render(request, "registration/register.html", {
         "form": form,
         "otp_error": otp_error,
+        "is_email_verified": is_email_verified,
     })
 
 

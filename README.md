@@ -3,6 +3,7 @@
 <img src="readme-banner.svg" alt="AUdoc — Campus Healthcare Portal" width="100%">
 
 ### *Because "I Googled my symptoms" is NOT a treatment plan.*
+
 ### *(And because voidnova got tired of students calling the health center like it's 1995)*
 
 **The official campus health management system for Assam University Silchar — built by someone who actually cares**
@@ -31,6 +32,7 @@ Welcome to the 21st century. 🚀
 AUdoc is a full-stack **campus healthcare management system** built for **Assam University Silchar** by someone (voidnova) who realized that making students call the health center on a landline was objectively criminal.
 
 **Features that'll make you wonder why we didn't have this sooner:**
+
 - 📅 Book doctor appointments without a phone call
 - 🩸 Donate blood (be a hero, but digitally)
 - 💬 AI Chatbot that actually helps (unlike WebMD, which will convince you that you're dying)
@@ -41,7 +43,8 @@ AUdoc is a full-stack **campus healthcare management system** built for **Assam 
 > *No further questions. voidnova took this personally."* — Internal memo, circa 2024
 
 The system has two layers working together:
-- 🐍 **Django Web Backend** — Fully functional, actually works, no "brb coffee break" 
+
+- 🐍 **Django Web Backend** — Fully functional, actually works, no "brb coffee break"
 - 📱 **Flutter Mobile App** — Beautiful UI that'll make you forget you're sick (almost)
 
 ---
@@ -51,7 +54,7 @@ The system has two layers working together:
 ### For Students 🎓 *(AKA: People Who Don't Want to Call Anyone)*
 
 | Feature | What it does | Status | voidnova's Note |
-|---------|-------------|--------|--------------|
+| --------- | ------------- | -------- | -------------- |
 | 🔐 **Passwordless Login** | Student ID + OTP to email. No forgotten passwords. Ever. | ✅ Live | Finally, no more "I forgot my password" emails |
 | 📋 **Self Registration** | Sign up, verify email via OTP, get approved by admin | ✅ Live | Rejected students cry less this way |
 | 📅 **Doctor Appointments** | Book 30-min slots across 8 specialties | ✅ Live | No more "can you squeeze me in?" calls |
@@ -76,7 +79,7 @@ The system has two layers working together:
 ### For Admins ⚙️ *(AKA: The Brave Souls Managing Everything)*
 
 | Feature | Description | Why You'll Love It |
-|---------|-------------|-------------------|
+| --------- | ------------- | ------------------- |
 | 🎨 **Modern Admin Panel** | Glass-morphism UI with dark/light mode | Your eyes won't melt at 3 AM |
 | 📊 **Interactive Dashboard** | Real-time stats, charts, and indicators | Look important in meetings |
 | 📈 **Live Charts** | Appointment & blood group trends | Impress non-technical people |
@@ -128,7 +131,7 @@ AUdoc takes security seriously. The application has been hardened against common
 ### Security Features
 
 | Feature | Protection Against | Status | voidnova's Confidence Level |
-|---------|-------------------|--------|--------------------------|
+| --------- | ------------------- | -------- | -------------------------- |
 | 🛡️ **Rate Limiting** | Brute force attacks on login/OTP | ✅ Active | 9/10 (unless someone is REALLY persistent) |
 | 🔐 **Secure OTP** | Cryptographically secure random generation | ✅ Active | 10/10 (Python's `secrets` module ftw) |
 | ⏱️ **Timing Attack Protection** | Constant-time OTP comparison | ✅ Active | 10/10 (zero nanoseconds given to attackers) |
@@ -143,7 +146,7 @@ AUdoc takes security seriously. The application has been hardened against common
 ### Rate Limits *(To Stop You From Breaking Things)*
 
 | Endpoint | Limit | Window | Why? |
-|----------|-------|--------|------|
+| ---------- | ------- | -------- | ------ |
 | OTP Send | 5 requests | 5 minutes | So you don't spam your inbox with OTPs |
 | Login | 10 requests | 5 minutes | Attackers give up. We've seen it happen. |
 | API | 100 requests | 1 minute | Be nice to the server. It has feelings. |
@@ -241,7 +244,7 @@ AUdoc/
 The whole UI — student pages, admin panel, and now this README — pulls from one palette. If you're touching templates or CSS, stay on these:
 
 | Swatch | Hex | Used For |
-|:---:|:---|:---|
+| :---: | :--- | :--- |
 | ![#4a7c59](https://img.shields.io/badge/-%20%20%20%20%20%20%20%20-4a7c59?style=for-the-badge) | `#4a7c59` **Primary** | Buttons, links, nav highlights, icon chips |
 | ![#2e5c3a](https://img.shields.io/badge/-%20%20%20%20%20%20%20%20-2e5c3a?style=for-the-badge) | `#2e5c3a` **Primary Dark** | Gradients, topbar, hover states |
 | ![#e8f5ec](https://img.shields.io/badge/-%20%20%20%20%20%20%20%20-e8f5ec?style=for-the-badge) | `#e8f5ec` **Mint Accent** | Soft backgrounds, tags, badges |
@@ -256,7 +259,7 @@ Body font is `'Segoe UI', sans-serif` everywhere — match it and things stay co
 ## 🏛️ Database Models
 
 | Model | Purpose |
-|-------|---------|
+| ------- | --------- |
 | `StudentProfile` | Approved student records linked to auth users |
 | `StaffProfile` | Campus staff & doctor directory |
 | `Doctor` | Doctors with specialties, availability slots & profile photos |
@@ -270,8 +273,8 @@ Body font is `'Segoe UI', sans-serif` everywhere — match it and things stay co
 | `HelpDesk` | User feedback with star ratings |
 | `LoginLog` | Security audit trail — every login, timestamped |
 | `DoctorLeave` | Doctor unavailabilities and leave days |
-| `StudentNoShowRecord`| Tracks missed appointments and auto-restricts booking |
-| `StaffPasswordResetToken`| Secure expiring tokens for staff password resets |
+| `StudentNoShowRecord` | Tracks missed appointments and auto-restricts booking |
+| `StaffPasswordResetToken` | Secure expiring tokens for staff password resets |
 | `Medicine` | Catalog of medicines stocked at the health center |
 | `MedicineStock` | Per-batch stock entries (quantity, expiry, supplier, batch number) |
 | `MedicineStockTransaction` | Audit log of every stock addition/dispense, with who did it |
@@ -285,7 +288,7 @@ Body font is `'Segoe UI', sans-serif` everywhere — match it and things stay co
 ### Public Routes
 
 | Method | URL | Description |
-|--------|-----|-------------|
+| -------- | ----- | ------------- |
 | `GET/POST` | `/` | Home — top doctors, donor spotlights |
 | `GET/POST` | `/register/` | Student registration + email OTP verification + T&C consent |
 | `POST` | `/send-otp/` | **[AJAX]** Send OTP for registration |
@@ -302,7 +305,7 @@ Body font is `'Segoe UI', sans-serif` everywhere — match it and things stay co
 ### Authenticated Routes
 
 | Method | URL | Auth | Description |
-|--------|-----|------|-------------|
+| -------- | ----- | ------ | ------------- |
 | `GET/POST` | `/appointment/` | ✅ Login | Book & view appointments |
 | `GET` | `/appointment/confirm/<token>/<action>/` | ✅ | Confirm/decline appointment |
 | `POST` | `/chat/` | ✅ | **[AJAX]** AI Chatbot API |
@@ -310,7 +313,7 @@ Body font is `'Segoe UI', sans-serif` everywhere — match it and things stay co
 ### Admin Panel Routes
 
 | Method | URL | Description |
-|--------|-----|-------------|
+| -------- | ----- | ------------- |
 | `GET` | `/manage/` | Modern admin dashboard |
 | `GET` | `/manage/stats/` | **[AJAX]** Real-time statistics |
 | `GET` | `/manage/system-health/` | Monitor database & system health |
@@ -415,7 +418,8 @@ flutter run
 
 Create the file `AUdoc_back/.env` (it's in `.gitignore`, your secrets are safe):
 
-#### For Development (SQLite):
+#### For Development (SQLite)
+
 ```env
 DJANGO_SECRET_KEY=your-super-long-random-secret-key-here
 RESEND_API_KEY=re_your_resend_api_key_here
@@ -433,7 +437,8 @@ SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_KEY=your_supabase_service_role_key
 ```
 
-#### For Production (PostgreSQL on Render):
+#### For Production (PostgreSQL on Render)
+
 ```env
 DJANGO_SECRET_KEY=your-super-long-random-secret-key-here
 DJANGO_DEBUG=False
@@ -475,7 +480,7 @@ The admin panel has been completely redesigned with a modern glass-morphism UI!
 ### ✨ Features
 
 | Feature | Description |
-|---------|-------------|
+| --------- | ------------- |
 | 🎨 **Glass-morphism UI** | Modern translucent interface with backdrop blur |
 | 🌗 **Dark/Light Mode** | Toggle button with smooth transitions |
 | 📊 **Interactive Charts** | Line charts & doughnut charts with real data |
@@ -488,6 +493,7 @@ The admin panel has been completely redesigned with a modern glass-morphism UI!
 ### Quick Actions
 
 The enhanced Quick Actions section provides:
+
 - **Priority Alert** — Shows pending registrations and appointments count
 - **Primary Actions** — 3 main buttons with gradient backgrounds and live stats:
   - Registrations (green) — View pending student registrations
@@ -502,7 +508,7 @@ The enhanced Quick Actions section provides:
 Admin panel sections include built-in, instant search bars for quickly locating records:
 
 | Section | Search By | Filter By |
-|---------|-----------|----------|
+| --------- | ----------- | ---------- |
 | 📋 **Student Registrations** | Student Name, Student ID | — |
 | 🩸 **Blood Donations** | Donor Name, Student ID | Blood Group (A±, B±, AB±, O±) |
 
@@ -560,7 +566,7 @@ AUdoc is deployed on **Render** with the following setup:
 ### Current Setup
 
 | Component | Service | Status |
-|-----------|---------|--------|
+| ----------- | --------- | -------- |
 | **Backend** | Render Web Service | ✅ Live |
 | **Database** | Render PostgreSQL | ✅ Live |
 | **File Storage** | Supabase Storage | ✅ Live |
@@ -571,7 +577,7 @@ AUdoc is deployed on **Render** with the following setup:
 ### Environment Variables on Render
 
 1. Set `DATABASE_URL` to your Render PostgreSQL connection string
-2. Set `RESEND_API_KEY` from https://resend.com
+2. Set `RESEND_API_KEY` from <https://resend.com>
 3. Set `DEFAULT_FROM_EMAIL` to your verified domain
 4. Set `NIM_BASE_URL`, `NVIDIA_API_KEY`, and `NIM_MODEL` for the chatbot
 5. Set `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` so uploads persist across deploys
@@ -584,7 +590,7 @@ AUdoc is deployed on **Render** with the following setup:
 # 3. Render auto-deploys on git push to main
 ```
 
-Visit: https://voiddoc.me
+Visit: <https://voiddoc.me>
 
 ---
 
@@ -672,6 +678,7 @@ Contributions are welcome! Found a bug? Have a cool idea? Here's the drill:
 ```
 
 > **Pro Tips:**
+>
 > - Write a meaningful PR description. "fixed stuff" will be gently mocked. 😄
 > - Don't commit your `.env` file. We've all been there. We've learned. Move on. 🙈
 > - If you fix a bug, buy voidnova a coffee (UPI accepted)

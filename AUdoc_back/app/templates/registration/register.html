@@ -1107,6 +1107,21 @@
     document.getElementById('id_email').value || 'your email';
   {% endif %}
 
+  // ══ Auto-restore verified state after form re-render with errors ═══
+  {% if is_email_verified %}
+  emailVerified = true;
+  document.getElementById('verifiedBadge').style.display = 'flex';
+  document.getElementById('otpSection').style.display = 'none';
+  document.getElementById('btnSendOtp').innerHTML = '<i class="bi bi-check-lg me-1"></i>Verified';
+  document.getElementById('btnSendOtp').disabled = true;
+  document.getElementById('btnSendOtp').style.background = '#28a745';
+  document.getElementById('id_email').readOnly = true;
+  document.getElementById('id_email').style.background = '#f0f8f2';
+  document.getElementById('lockNotice').style.display = 'none';
+  unlockSections();
+  markStep(2);
+  {% endif %}
+
   // ══ T&C Modal ════════════════════════════════════════════
   function openTncModal() {
     document.getElementById('tncModal').style.display = 'block';
