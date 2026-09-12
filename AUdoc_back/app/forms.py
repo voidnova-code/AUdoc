@@ -173,8 +173,8 @@ class AppointmentForm(forms.Form):
         elif booking_method == "date":
             if not appointment_date:
                 self.add_error("appointment_date", "Please select a date.")
-            elif appointment_date < timezone.localdate():
-                self.add_error("appointment_date", "Appointment date cannot be in the past.")
+            elif appointment_date <= timezone.localdate():
+                self.add_error("appointment_date", "Appointment date must be from tomorrow onwards (cannot book for today or in the past).")
 
         if student_id and appointment_date:
             if Appointment.objects.filter(

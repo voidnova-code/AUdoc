@@ -881,11 +881,14 @@ def appointment(request):
     elif request.method == "POST":
         messages.error(request, "Please correct the highlighted appointment fields and try again.")
 
+    from datetime import timedelta
+    tomorrow_date = today_date + timedelta(days=1)
     doctors = Doctor.objects.filter(is_available=True).order_by("specialized_in", "name")
     return render(request, "app/appointment.html", {
         "form": form,
         "doctors": doctors,
         "today_str": today_date.isoformat(),
+        "tomorrow_str": tomorrow_date.isoformat(),
         "upcoming_appointments": upcoming_appointments,
         "history_appointments": history_appointments,
         "is_restricted": restriction_info["is_restricted"],

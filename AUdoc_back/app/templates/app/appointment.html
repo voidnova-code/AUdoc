@@ -655,12 +655,12 @@
                   id="id_appointment_date"
                   class="form-control{% if form.appointment_date.errors %} is-invalid{% endif %}"
                   value="{{ form.appointment_date.value|default_if_none:'' }}"
-                  min="{{ today_str }}"
+                  min="{{ tomorrow_str }}"
                 />
-                <button type="button" class="btn btn-outline-primary" id="btn-today"
-                  onclick="document.getElementById('id_appointment_date').value='{{ today_str }}';"
-                  title="Set to today">
-                  Today
+                <button type="button" class="btn btn-outline-primary" id="btn-tomorrow"
+                  onclick="document.getElementById('id_appointment_date').value='{{ tomorrow_str }}';"
+                  title="Set to tomorrow">
+                  Tomorrow
                 </button>
               </div>
               {% for err in form.appointment_date.errors %}
