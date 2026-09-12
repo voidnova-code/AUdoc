@@ -847,7 +847,8 @@ def appointment(request):
         # If booking by doctor, find the next available date
         if booking_method == "doctor" and doctor:
             from app.doctor_availability import get_doctor_next_available_date
-            appointment_date = get_doctor_next_available_date(doctor.id, today_date)
+            from datetime import timedelta
+            appointment_date = get_doctor_next_available_date(doctor.id, today_date + timedelta(days=1))
             if not appointment_date:
                 messages.error(
                     request,
