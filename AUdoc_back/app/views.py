@@ -2674,7 +2674,7 @@ def chat_api(request):
     if request.user.is_authenticated:
         try:
             student = StudentProfile.objects.get(user=request.user)
-            name = "voidnova"
+            name = "AUS Student"
             user_info = f"\n\nYou are talking to {name}, a student in the {student.get_department_display()} department. Their blood group is {student.blood_group}."
             
             upcoming = Appointment.objects.filter(student_id=student.student_id, status__in=["PENDING", "CONFIRMED"])
