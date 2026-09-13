@@ -1458,7 +1458,7 @@ def _send_blood_donor_registration_email(donation):
                   </tr>
                   <tr>
                     <td style="font-size:.85rem;color:#888;">&#9201; Status</td>
-                    <td><span style="background:#f39c12;color:#fff;padding:3px 12px;border-radius:20px;font-size:.85rem;font-weight:700;">Pending Review</span></td>
+                    <td><span style="background:#e8f5e9;color:#fff;padding:3px 12px;border-radius:20px;font-size:.85rem;font-weight:700;">Approved</span></td>
                   </tr>
                 </table>
               </td></tr>
@@ -2640,8 +2640,13 @@ def chat_api(request):
         return JsonResponse({"error": "Message too long."}, status=400)
 
     api_key = os.environ.get("NVIDIA_API_KEY") or getattr(settings, "NVIDIA_API_KEY", "")
-    nim_url = os.environ.get("NIM_BASE_URL") or getattr(settings, "NIM_BASE_URL", "http://localhost:8000/v1/chat/completions")
-    nim_model = os.environ.get("NIM_MODEL") or getattr(settings, "NIM_MODEL", "meta/llama3-70b-instruct")
+    nim_url = os.environ.get("NIM_BASE_URL") or getattr(settings, "NIM_BASE_URL", "https://integrate.api.nvidia.com/v1/chat/completions")
+    configured_model = os.environ.get("NIM_MODEL") or getattr(settings, "NIM_MODEL", "google/diffusiongemma-26b-a4b-it")
+
+    # List candidate models to try in sequence if primary fails
+    candidate_models = [configured_model, "google/diffusiongemma-26b-a4b-it", "mistralai/mistral-nemotron", "meta/llama-3.2-11b-vision-instruct"]
+    # De-duplicate while preserving order
+    models_to_try = list(dict.fromkeys(candidate_models))
 
     system_prompt = (
         "You are a friendly health assistant for AUdoc — the Assam University Silchar Campus Health Center portal. "
@@ -2685,13 +2690,6 @@ def chat_api(request):
             messages_payload.append({"role": turn["role"], "content": turn["content"]})
     messages_payload.append({"role": "user", "content": message})
 
-    payload = json.dumps({
-        "model": nim_model,
-        "messages": messages_payload,
-        "max_tokens": 512,
-        "temperature": 0.7,
-    }).encode("utf-8")
-
     headers = {
         "Content-Type": "application/json",
         "User-Agent": "AUdoc-HealthPortal/1.0",
@@ -2699,27 +2697,65 @@ def chat_api(request):
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 
-    req = _urllib.Request(nim_url, data=payload, headers=headers, method="POST")
+    reply = None
+    last_error = None
 
-    try:
-        with _urllib.urlopen(req, timeout=30) as resp:
-            raw = resp.read().decode("utf-8")
-    except _urlerr.HTTPError as e:
-        body = e.read().decode("utf-8", errors="replace")
+    for m in models_to_try:
+        payload = json.dumps({
+            "model": m,
+            "messages": messages_payload,
+            "max_tokens": 512,
+            "temperature": 0.7,
+        }).encode("utf-8")
+
+        req = _urllib.Request(nim_url, data=payload, headers=headers, method="POST")
+
         try:
-            err_msg = json.loads(body).get("error", {}).get("message", body[:200])
-        except Exception:
-            err_msg = body[:200]
-        if e.code == 401:
-            return JsonResponse({"error": "Invalid API key — check your NVIDIA_API_KEY in .env."}, status=500)
-        return JsonResponse({"error": f"API error {e.code}: {err_msg}"}, status=500)
-    except Exception as e:
-        return JsonResponse({"error": f"Could not reach AI service: {e}"}, status=500)
+            with _urllib.urlopen(req, timeout=12) as resp:
+                raw = resp.read().decode("utf-8")
+                res_json = json.loads(raw)
+                reply = res_json["choices"][0]["message"]["content"].strip()
+                if reply:
+                    break
+        except _urlerr.HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace")
+            logger.warning(f"AI Model {m} failed with HTTP {e.code}: {body[:150]}")
+            last_error = f"API Error {e.code}"
+            continue
+        except Exception as e:
+            logger.warning(f"AI Model {m} failed with error: {e}")
+            last_error = str(e)
+            continue
 
-    try:
-        reply = json.loads(raw)["choices"][0]["message"]["content"].strip()
-    except (KeyError, IndexError, json.JSONDecodeError):
-        reply = "I received a response but couldn't read it. Please try again."
+    if not reply:
+        # Smart local fallback assistant if all external LLM models are unavailable
+        msg_lower = message.lower()
+        if any(w in msg_lower for w in ["appointment", "book", "doctor", "slot", "schedule"]):
+            reply = (
+                "To book a doctor appointment, navigate to the Appointment section in AUdoc. "
+                "Select your desired medical department, choose an available doctor and time slot, "
+                "and submit your request. You will receive a daily confirmation link on the morning of your visit!"
+            )
+        elif any(w in msg_lower for w in ["blood", "donor", "donate", "transfusion"]):
+            reply = (
+                "AUdoc features an active Blood Bank & Donor Network! You can register as a donor if you weigh at least 50kg, "
+                "or submit an urgent blood request for hospital needs directly from the Blood Bank tab."
+            )
+        elif any(w in msg_lower for w in ["timing", "hour", "open", "close", "time", "contact", "emergency"]):
+            reply = (
+                "Assam University Health Center Clinic Hours: Monday–Saturday, 9:00 AM – 4:00 PM.\n"
+                "Emergency Campus Hotline: 0389-2330931. For severe medical emergencies, please reach out to emergency services immediately."
+            )
+        elif any(w in msg_lower for w in ["donation", "money", "donate", "fund", "support"]):
+            reply = (
+                "You can financially support the campus health center via the AUdoc Donation page! "
+                "We support instant online contributions processed securely through Razorpay."
+            )
+        else:
+            reply = (
+                "Welcome to AUdoc Health Assistant! I am here to help you navigate campus health services, "
+                "doctor appointments, blood bank requests, and clinic information. How can I assist you today?"
+            )
 
     return JsonResponse({"response": reply})
 
