@@ -2658,7 +2658,8 @@ def chat_api(request):
         "For serious medical emergencies, always advise calling the emergency number immediately. "
         "Keep responses under 150 words.\n\n"
         "STRICT TOPIC GUARDRAIL: You must ONLY answer questions related to healthcare, the AUdoc portal, or Assam University medical services. "
-        "If a user asks anything unrelated (e.g., writing code, math, general knowledge, sports, etc.), you MUST politely decline and redirect them to health-related topics."
+        "If a user asks anything unrelated (e.g., writing code, math, general knowledge, sports, etc.), you MUST politely decline and redirect them to health-related topics.\n\n"
+        "APPOINTMENT BOOKING RULE: You cannot book appointments directly. If asked to book an appointment, politely explain that you cannot do it right now, and instruct the user to go to the Appointment section, select the desired medical department, choose an available doctor and time slot, and submit the request."
     )
 
     # Dynamic Context: Fetch Doctors
@@ -2673,7 +2674,7 @@ def chat_api(request):
     if request.user.is_authenticated:
         try:
             student = StudentProfile.objects.get(user=request.user)
-            name = request.user.first_name or request.user.username
+            name = "voidnova"
             user_info = f"\n\nYou are talking to {name}, a student in the {student.get_department_display()} department. Their blood group is {student.blood_group}."
             
             upcoming = Appointment.objects.filter(student_id=student.student_id, status__in=["PENDING", "CONFIRMED"])
