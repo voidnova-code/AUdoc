@@ -2618,6 +2618,7 @@ def admin_send_confirmations_test(request):
 
 # ── AI Chatbot ────────────────────────────────────────────────────────────────
 
+@csrf_exempt
 @require_POST
 @rate_limit_api
 def chat_api(request):
