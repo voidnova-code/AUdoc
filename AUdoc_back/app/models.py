@@ -911,3 +911,29 @@ class MedicineStockTransaction(models.Model):
 
     def __str__(self):
         return f"{self.get_transaction_type_display()} of {self.quantity} for {self.stock.medicine.name} (Batch {self.stock.batch_number})"
+
+
+class AIChatLog(models.Model):
+    """Tracks token consumption and metadata for AI Chatbot interactions."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ai_chat_logs",
+        verbose_name="User",
+    )
+    model_used = models.CharField(max_length=100, default="unknown", verbose_name="Model Used")
+    prompt_tokens = models.PositiveIntegerField(default=0, verbose_name="Prompt Tokens")
+    completion_tokens = models.PositiveIntegerField(default=0, verbose_name="Completion Tokens")
+    total_tokens = models.PositiveIntegerField(default=0, verbose_name="Total Tokens")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Timestamp")
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "AI Chat Log"
+        verbose_name_plural = "AI Chat Logs"
+
+    def __str__(self):
+        return f"AI Chat ({self.model_used}) — {self.total_tokens} tokens at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+

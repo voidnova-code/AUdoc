@@ -25,7 +25,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm
-from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, Medicine, MedicineStock, MedicineStockTransaction, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
+from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, Medicine, MedicineStock, MedicineStockTransaction, AIChatLog, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
 from .storage import upload_doctor_photo, delete_doctor_photo
 from .security import (
     generate_secure_otp,
@@ -1809,6 +1809,13 @@ def system_health(request):
         except:
             active_sessions = 0
 
+        # AI Chatbot Token Metrics
+        from django.db.models import Sum
+        today_date = timezone.now().date()
+        total_tokens = AIChatLog.objects.aggregate(Sum('total_tokens'))['total_tokens__sum'] or 0
+        today_tokens = AIChatLog.objects.filter(created_at__date=today_date).aggregate(Sum('total_tokens'))['total_tokens__sum'] or 0
+        total_requests = AIChatLog.objects.count()
+
         return JsonResponse({
             'status': 'healthy',
             'cpu': {
@@ -1835,6 +1842,11 @@ def system_health(request):
             'sessions': {
                 'active': active_sessions,
                 'total_users': User.objects.count()
+            },
+            'ai_chat': {
+                'total_tokens': total_tokens,
+                'today_tokens': today_tokens,
+                'total_requests': total_requests,
             }
         })
     except Exception as e:
@@ -1845,7 +1857,8 @@ def system_health(request):
             'memory': {'percent': 0, 'status': 'Unavailable', 'total_gb': 'N/A', 'available_gb': 'N/A'},
             'disk': {'percent': 0, 'status': 'Unavailable', 'total_gb': 'N/A', 'free_gb': 'N/A'},
             'database': {'status': 'Checking...', 'response_time': 'N/A'},
-            'sessions': {'active': 0, 'total_users': 0}
+            'sessions': {'active': 0, 'total_users': 0},
+            'ai_chat': {'total_tokens': 0, 'today_tokens': 0, 'total_requests': 0}
         })
 
 
@@ -2701,6 +2714,10 @@ def chat_api(request):
 
     reply = None
     last_error = None
+    used_model = "local-fallback"
+    prompt_tokens = 0
+    completion_tokens = 0
+    total_tokens = 0
 
     for m in models_to_try:
         payload = json.dumps({
@@ -2718,6 +2735,11 @@ def chat_api(request):
                 res_json = json.loads(raw)
                 reply = res_json["choices"][0]["message"]["content"].strip()
                 if reply:
+                    used_model = m
+                    usage = res_json.get("usage", {})
+                    prompt_tokens = usage.get("prompt_tokens", 0)
+                    completion_tokens = usage.get("completion_tokens", 0)
+                    total_tokens = usage.get("total_tokens", 0)
                     break
         except _urlerr.HTTPError as e:
             body = e.read().decode("utf-8", errors="replace")
@@ -2731,6 +2753,7 @@ def chat_api(request):
 
     if not reply:
         # Smart local fallback assistant if all external LLM models are unavailable
+        used_model = "local-fallback"
         msg_lower = message.lower()
         if any(w in msg_lower for w in ["appointment", "book", "doctor", "slot", "schedule"]):
             reply = (
@@ -2758,6 +2781,27 @@ def chat_api(request):
                 "Welcome to AUdoc Health Assistant! I am here to help you navigate campus health services, "
                 "doctor appointments, blood bank requests, and clinic information. How can I assist you today?"
             )
+
+    # Estimate token counts if not provided by API or if fallback used
+    if not prompt_tokens:
+        total_prompt_chars = sum(len(m.get("content", "")) for m in messages_payload)
+        prompt_tokens = max(1, total_prompt_chars // 4)
+    if not completion_tokens and reply:
+        completion_tokens = max(1, len(reply) // 4)
+    if not total_tokens:
+        total_tokens = prompt_tokens + completion_tokens
+
+    # Log token usage to database
+    try:
+        AIChatLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            model_used=used_model,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=total_tokens,
+        )
+    except Exception as log_err:
+        logger.warning(f"Failed to log AI Chat metrics: {log_err}")
 
     return JsonResponse({"response": reply})
 

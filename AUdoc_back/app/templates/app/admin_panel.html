@@ -1331,6 +1331,16 @@
                 <span class="metric-label">Active Sessions</span>
                 <span class="metric-value" id="active-sessions">--</span>
               </div>
+
+              <div class="metric-row">
+                <span class="metric-label"><i class="bi bi-robot me-1" style="color: var(--primary);"></i> AI Chatbot Tokens</span>
+                <span class="metric-value" id="ai-chat-tokens">--</span>
+              </div>
+
+              <div class="metric-row">
+                <span class="metric-label"><i class="bi bi-chat-dots me-1" style="color: var(--primary);"></i> AI Chat Requests</span>
+                <span class="metric-value" id="ai-chat-requests">--</span>
+              </div>
             </div>
           </div>
 
@@ -3545,6 +3555,14 @@
 
             // Update Active Sessions
             document.getElementById('active-sessions').textContent = data.sessions.active + ' Sessions';
+
+            // Update AI Chatbot Token Usage
+            if (data.ai_chat) {
+              const totalTokens = data.ai_chat.total_tokens ? data.ai_chat.total_tokens.toLocaleString() : '0';
+              const todayTokens = data.ai_chat.today_tokens ? data.ai_chat.today_tokens.toLocaleString() : '0';
+              document.getElementById('ai-chat-tokens').textContent = totalTokens + ' Tokens (' + todayTokens + ' today)';
+              document.getElementById('ai-chat-requests').textContent = (data.ai_chat.total_requests || 0).toLocaleString() + ' Queries';
+            }
           }
         })
         .catch(error => {
