@@ -1549,7 +1549,7 @@
                 </thead>
                 <tbody>
                   {% for today_appt in todays_appointments %}
-                  <tr>
+                  <tr id="row-todays-{{ today_appt.id }}" data-student-id="{{ today_appt.appointment.student_id }}" data-student-name="{{ today_appt.appointment.student_name }}" data-email="{{ today_appt.appointment.email }}" data-phone="{{ today_appt.appointment.phone }}" data-department="{{ today_appt.appointment.student_department }}" data-medical-department="{{ today_appt.appointment.medical_department }}" data-doctor="{{ today_appt.appointment.doctor.name|default:'Any' }}" data-date="{{ today_appt.appointment.appointment_date|date:'Y-m-d' }}" data-time="{{ today_appt.appointment.appointment_time|default:'Any time' }}" data-status="{{ today_appt.status }}" data-created-at="{{ today_appt.appointment.created_at|date:'M d, Y H:i' }}">
                     <td><span class="badge bg-primary">#{{ forloop.counter }}</span></td>
                     <td><strong>{{ today_appt.appointment.student_id }}</strong></td>
                     <td>{{ today_appt.appointment.student_name }}</td>
@@ -1696,7 +1696,7 @@
                 </thead>
                 <tbody>
                   {% for appointment in appointments %}
-                  <tr>
+                  <tr id="row-appointment-{{ appointment.id }}" data-student-id="{{ appointment.student_id }}" data-student-name="{{ appointment.student_name }}" data-email="{{ appointment.email }}" data-phone="{{ appointment.phone }}" data-department="{{ appointment.student_department }}" data-medical-department="{{ appointment.medical_department }}" data-doctor="{{ appointment.doctor.name|default:'Any' }}" data-date="{{ appointment.appointment_date|date:'Y-m-d' }}" data-time="{{ appointment.appointment_time|default:'Any time' }}" data-status="{{ appointment.status }}" data-created-at="{{ appointment.created_at|date:'M d, Y H:i' }}">
                     <td><strong>{{ appointment.student_id }}</strong></td>
                     <td>{{ appointment.student_name }}</td>
                     <td>{{ appointment.doctor.name }}</td>
@@ -1791,6 +1791,7 @@
                     <th>Blood Group</th>
                     <th>Phone</th>
                     <th>Email</th>
+                    <th>Date of Birth</th>
                     <th>Weight</th>
                     <th>Health Condition</th>
                     <th>Status</th>
@@ -1805,6 +1806,7 @@
                     <td><span class="badge bg-danger">{{ donor.blood_group }}</span></td>
                     <td>{{ donor.phone }}</td>
                     <td>{{ donor.email }}</td>
+                    <td>{{ donor.date_of_birth|date:"M d, Y" }}</td>
                     <td>{{ donor.weight }} kg</td>
                     <td>{{ donor.health_condition }}</td>
                     <td>
@@ -1845,7 +1847,7 @@
                   </tr>
                   {% empty %}
                   <tr>
-                    <td colspan="9" class="text-center text-muted">No blood donors found</td>
+                    <td colspan="10" class="text-center text-muted">No blood donors found</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -1879,7 +1881,7 @@
                 </thead>
                 <tbody>
                   {% for request in blood_requests %}
-                  <tr>
+                  <tr data-email="{{ request.email }}" data-phone="{{ request.phone }}" data-reason="{{ request.reason }}" data-required-date="{{ request.required_date|date:'M d, Y' }}" data-hospital-contact="{{ request.hospital_contact }}" data-notes="{{ request.notes }}" data-created-at="{{ request.created_at|date:'M d, Y H:i' }}" data-requested-donor="{{ request.requested_donor.donor_name|default:'Any' }}">
                     <td><strong>{{ request.student_id }}</strong></td>
                     <td>{{ request.requester_name }}</td>
                     <td><span class="badge bg-info">{{ request.blood_group }}</span></td>
@@ -3026,6 +3028,7 @@
           {% csrf_token %}
           <input type="hidden" id="confirmationInput" name="confirmation" value="">
           <input type="hidden" id="selectedDataInput" name="selected_data" value="">
+          <input type="hidden" id="adminPasswordHiddenInput" name="admin_password" value="">
         </form>
 
         <!-- Security Notice -->
@@ -3049,13 +3052,19 @@
                 <strong style="color: #991b1b;">The following data will be permanently deleted:</strong>
                 <ul id="purgeItemsList" class="mt-2 mb-0" style="list-style: none; padding-left: 0;"></ul>
               </div>
-              <label for="purgeConfirmInput">
-                Type <code
+              <label for="purgeConfirmInput" style="display: block; margin-bottom: 8px;">
+                Type <code id="purgeExpectedPhraseText"
                   style="color: #dc2626; background: #fef2f2; padding: 2px 8px; border-radius: 4px;">DELETE_ALL_STUDENT_DATA</code>
                 to confirm:
               </label>
               <input type="text" id="purgeConfirmInput" placeholder="Type the confirmation phrase..." autocomplete="off"
-                spellcheck="false">
+                spellcheck="false" style="width: 100%; margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+              
+              <label for="purgePasswordInput" style="display: block; margin-bottom: 8px; margin-top: 10px;">
+                Admin Password:
+              </label>
+              <input type="password" id="purgePasswordInput" placeholder="Enter your admin password" autocomplete="off"
+                style="width: 100%; margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
             </div>
             <div class="purge-modal-footer">
               <button class="btn btn-outline-secondary" onclick="dzClosePurgeModal()">
@@ -3804,10 +3813,10 @@
           showFeedbackDetails(id);
           break;
         case 'appointment':
-          showAppointmentDetails(id);
+          showAppointmentDetails('appointment', id);
           break;
         case 'todays':
-          showAppointmentDetails(id);
+          showAppointmentDetails('todays', id);
           break;
         case 'registration':
           showRegistrationDetails(id);
@@ -4026,14 +4035,14 @@
     }
 
     // Show Appointment Details Modal
-    function showAppointmentDetails(id) {
-      const row = document.querySelector(`button[onclick*="viewDetails.*${id})"]`)?.closest('tr');
+    function showAppointmentDetails(type, id) {
+      const rowId = type === 'todays' ? `row-todays-${id}` : `row-appointment-${id}`;
+      const row = document.getElementById(rowId);
       if (!row) {
         alert('Could not find appointment information');
         return;
       }
 
-      const cells = row.querySelectorAll('td');
       const modal = document.getElementById('viewDetailsModal');
       const content = document.getElementById('viewDetailsContent');
 
@@ -4042,42 +4051,57 @@
         
         <div class="detail-row">
           <label>Student ID:</label>
-          <span>${cells[0]?.textContent || 'N/A'}</span>
+          <span>${row.dataset.studentId || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Student Name:</label>
-          <span>${cells[1]?.textContent || 'N/A'}</span>
+          <span>${row.dataset.studentName || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Email:</label>
-          <span>${cells[2]?.textContent || 'N/A'}</span>
+          <span>${row.dataset.email || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Phone:</label>
-          <span>${cells[3]?.textContent || 'N/A'}</span>
+          <span>${row.dataset.phone || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
-          <label>Department:</label>
-          <span>${cells[4]?.textContent || 'N/A'}</span>
+          <label>Student Dept:</label>
+          <span>${row.dataset.department || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <label>Medical Dept:</label>
+          <span>${row.dataset.medicalDepartment || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Doctor:</label>
-          <span>${cells[5]?.textContent || 'N/A'}</span>
+          <span>${row.dataset.doctor || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Appointment Date:</label>
-          <span>${cells[6]?.textContent || 'N/A'}</span>
+          <span>${row.dataset.date || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Time:</label>
-          <span>${cells[7]?.textContent || 'N/A'}</span>
+          <span>${row.dataset.time || 'N/A'}</span>
+        </div>
+
+        <div class="detail-row">
+          <label>Created At:</label>
+          <span>${row.dataset.createdAt || 'N/A'}</span>
+        </div>
+
+        <div class="detail-row">
+          <label>Status:</label>
+          <span>${row.dataset.status || 'N/A'}</span>
         </div>
       `;
 
@@ -4191,8 +4215,13 @@
         </div>
         
         <div class="detail-row">
-          <label>Status:</label>
+          <label>Health Condition:</label>
           <span>${cells[7]?.textContent || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <label>Status:</label>
+          <span>${cells[8]?.textContent || 'N/A'}</span>
         </div>
       `;
 
@@ -4225,6 +4254,16 @@
         </div>
         
         <div class="detail-row">
+          <label>Email:</label>
+          <span>${row.dataset.email || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <label>Phone:</label>
+          <span>${row.dataset.phone || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
           <label>Blood Group:</label>
           <span style="display: inline-block; padding: 6px 12px; background: #f8d7da; border-radius: 20px; color: #721c24; font-weight: 600;">
             ${cells[2]?.textContent || 'N/A'}
@@ -4237,13 +4276,43 @@
         </div>
         
         <div class="detail-row">
-          <label>Hospital:</label>
+          <label>Reason:</label>
+          <span>${row.dataset.reason || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <label>Required Date:</label>
+          <span>${row.dataset.requiredDate || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <label>Hospital Name:</label>
           <span>${cells[4]?.textContent || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <label>Hospital Contact:</label>
+          <span>${row.dataset.hospitalContact || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Urgency:</label>
           <span>${cells[5]?.textContent || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <label>Requested Donor:</label>
+          <span>${row.dataset.requestedDonor || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <label>Notes:</label>
+          <span>${row.dataset.notes || 'N/A'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <label>Created At:</label>
+          <span>${row.dataset.createdAt || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
@@ -4486,9 +4555,12 @@
       const overlay = document.getElementById('purgeModalOverlay');
       const list = document.getElementById('purgeItemsList');
       const input = document.getElementById('purgeConfirmInput');
+      const passInput = document.getElementById('purgePasswordInput');
       const execBtn = document.getElementById('purgeExecuteBtn');
+      const phraseText = document.getElementById('purgeExpectedPhraseText');
 
       input.value = '';
+      if (passInput) passInput.value = '';
       execBtn.disabled = true;
 
       // Build items list
@@ -4507,10 +4579,18 @@
         `<li><i class="bi bi-x-circle-fill me-2" style="color:#dc2626;"></i>${name}</li>`
       ).join('');
 
+      const expectedPhrase = isNuclear ? 'DELETE_ALL_STUDENT_DATA' : 'DELETE_SELECTED_DATA';
+      if (phraseText) phraseText.innerText = expectedPhrase;
+
       // Wire up real-time input validation
-      input.oninput = () => {
-        execBtn.disabled = input.value !== 'DELETE_ALL_STUDENT_DATA';
+      const validateInputs = () => {
+        const isPhraseValid = input.value === expectedPhrase;
+        const isPassValid = passInput ? passInput.value.length > 0 : true;
+        execBtn.disabled = !(isPhraseValid && isPassValid);
       };
+
+      input.oninput = validateInputs;
+      if (passInput) passInput.oninput = validateInputs;
 
       overlay.classList.add('active');
       setTimeout(() => input.focus(), 300);
@@ -4519,12 +4599,18 @@
     function dzClosePurgeModal() {
       document.getElementById('purgeModalOverlay').classList.remove('active');
       document.getElementById('purgeConfirmInput').value = '';
+      const passInput = document.getElementById('purgePasswordInput');
+      if (passInput) passInput.value = '';
       document.getElementById('purgeExecuteBtn').disabled = true;
     }
 
     function dzExecutePurge() {
       const input = document.getElementById('purgeConfirmInput');
-      if (input.value !== 'DELETE_ALL_STUDENT_DATA') return;
+      const expectedPhrase = dzPurgeAll ? 'DELETE_ALL_STUDENT_DATA' : 'DELETE_SELECTED_DATA';
+      if (input.value !== expectedPhrase) return;
+
+      const passInput = document.getElementById('purgePasswordInput');
+      if (passInput && passInput.value.length === 0) return;
 
       const execBtn = document.getElementById('purgeExecuteBtn');
       execBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Deleting...';
@@ -4538,6 +4624,10 @@
         const deleteKeys = cats.map(c => dzCategoryToDeleteKey[c] || c);
         document.getElementById('confirmationInput').value = 'CONFIRMED_SELECTIVE_DELETE';
         document.getElementById('selectedDataInput').value = deleteKeys.join(',');
+      }
+
+      if (passInput) {
+        document.getElementById('adminPasswordHiddenInput').value = passInput.value;
       }
 
       document.getElementById('purgeForm').submit();

@@ -103,7 +103,7 @@ class Command(BaseCommand):
             from_email = "AUdoc Campus Health <noreply@voiddoc.me>"
 
         self.stdout.write(
-            f"  → Sending to {appt.email} | from: {from_email} | domain: {domain}"
+            f"  -> Sending to {appt.email} | from: {from_email} | domain: {domain}"
         )
 
         # ── Plain-text fallback ──────────────────────────────────────────
