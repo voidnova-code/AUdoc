@@ -2050,7 +2050,7 @@
                 </thead>
                 <tbody>
                   {% for staff in staff_members %}
-                  <tr>
+                  <tr id="row-staff-{{ staff.staff_id }}">
                     <td><strong>{{ staff.staff_id }}</strong></td>
                     <td>{{ staff.name }}</td>
                     <td>{{ staff.email }}</td>
@@ -2064,7 +2064,7 @@
                     </td>
                     <td>
                       <button class="btn btn-sm btn-outline-primary"
-                        onclick="viewDetails('staff', '{{ staff.staff_id }}')">
+                        onclick="viewDetails('staff', '{{ staff.staff_id }}', this)">
                         <i class="bi bi-eye"></i>
                       </button>
                       <button class="btn btn-sm btn-outline-secondary"
@@ -3798,37 +3798,37 @@
     }
 
     // View details function (enhanced with modal-like effect)
-    function viewDetails(type, id) {
+    function viewDetails(type, id, btn = null) {
       switch (type) {
         case 'doctor':
-          showDoctorDetails(id);
+          showDoctorDetails(id, btn);
           break;
         case 'staff':
-          showStaffDetails(id);
+          showStaffDetails(id, btn);
           break;
         case 'donation':
-          showDonationDetails(id);
+          showDonationDetails(id, btn);
           break;
         case 'feedback':
-          showFeedbackDetails(id);
+          showFeedbackDetails(id, btn);
           break;
         case 'appointment':
-          showAppointmentDetails('appointment', id);
+          showAppointmentDetails('appointment', id, btn);
           break;
         case 'todays':
-          showAppointmentDetails('todays', id);
+          showAppointmentDetails('todays', id, btn);
           break;
         case 'registration':
-          showRegistrationDetails(id);
+          showRegistrationDetails(id, btn);
           break;
         case 'blood-donation':
-          showBloodDonorDetails(id);
+          showBloodDonorDetails(id, btn);
           break;
         case 'blood-request':
-          showBloodRequestDetails(id);
+          showBloodRequestDetails(id, btn);
           break;
         case 'login-log':
-          showLoginLogDetails(id);
+          showLoginLogDetails(id, btn);
           break;
         default:
           alert(`View details for ${type} ID: ${id}`);
@@ -3836,9 +3836,12 @@
     }
 
     // Show Doctor Details Modal
-    function showDoctorDetails(id) {
+    function showDoctorDetails(id, btn = null) {
       // Find doctor in the table and extract data
-      const row = document.querySelector(`button[onclick*="editDoctor(${id}"]`)?.closest('tr');
+      let row = btn ? btn.closest('tr') : null;
+      if (!row) {
+        row = document.querySelector(`button[onclick*="editDoctor(${id}"]`)?.closest('tr');
+      }
       if (!row) {
         alert('Could not find doctor information');
         return;
@@ -3896,8 +3899,18 @@
     }
 
     // Show Staff Details Modal
-    function showStaffDetails(staffId) {
-      const row = document.querySelector(`button[onclick*="editStaff.*'${staffId}'"]`)?.closest('tr');
+    function showStaffDetails(staffId, btn = null) {
+      let row = btn ? btn.closest('tr') : null;
+      if (!row && staffId) {
+        row = document.getElementById(`row-staff-${staffId}`);
+      }
+      if (!row && staffId) {
+        row = document.querySelector(`tr[id*="${staffId}"]`) ||
+              document.querySelector(`button[onclick*="'${staffId}'"]`)?.closest('tr');
+      }
+      if (!row && typeof event !== 'undefined' && event && event.target) {
+        row = event.target.closest('tr');
+      }
       if (!row) {
         alert('Could not find staff information');
         return;
@@ -3912,27 +3925,27 @@
         
         <div class="detail-row">
           <label>Staff ID:</label>
-          <span>${cells[0]?.textContent || 'N/A'}</span>
+          <span>${cells[0]?.textContent?.trim() || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Name:</label>
-          <span>${cells[1]?.textContent || 'N/A'}</span>
+          <span>${cells[1]?.textContent?.trim() || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Email:</label>
-          <span>${cells[2]?.textContent || 'N/A'}</span>
+          <span>${cells[2]?.textContent?.trim() || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Phone:</label>
-          <span>${cells[3]?.textContent || 'N/A'}</span>
+          <span>${cells[3]?.textContent?.trim() || 'N/A'}</span>
         </div>
         
         <div class="detail-row">
           <label>Is Doctor:</label>
-          <span>${cells[4]?.textContent || 'N/A'}</span>
+          <span>${cells[4]?.textContent?.trim() || 'N/A'}</span>
         </div>
       `;
 
