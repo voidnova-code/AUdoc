@@ -805,7 +805,7 @@
   })();
 </script>
 <script>
-
+  (function () {
     // Snapshot all doctor options (skip the placeholder at index 0)
     const allOptions = Array.from(doctorSel.options).slice(1).map(o => o.cloneNode(true));
 
