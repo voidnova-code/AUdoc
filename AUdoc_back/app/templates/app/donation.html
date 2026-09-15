@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -230,9 +231,7 @@
 <nav class="navbar navbar-expand-lg sticky-top">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
-      <div style="width:38px;height:38px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-        <i class="bi bi-hospital-fill text-white" style="font-size:1.1rem;"></i>
-      </div>
+      <img src="{% static 'app/images/e3fc6cfc-17e4-4ee2-98d4-8f64cd160590.jpg' %}" alt="AUdoc Logo" style="width:38px;height:38px;border-radius:10px;object-fit:cover;">
       <div>
         <div class="brand-name">AUdoc</div>
         <span class="brand-sub">Campus Health Portal</span>
