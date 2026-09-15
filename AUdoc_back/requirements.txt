@@ -17,3 +17,4 @@ PyJWT
 resend
 django-redis
 django-csp
+whitenoise
