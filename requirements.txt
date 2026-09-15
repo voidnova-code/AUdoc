@@ -19,3 +19,4 @@ resend>=0.6.0
 django-redis>=5.4.0
 django-csp>=3.8
 supabase>=2.0.0
+whitenoise>=6.5.0
