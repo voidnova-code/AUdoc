@@ -10,7 +10,7 @@ from django.utils import timezone
 def expire_pending_confirmations():
     """
     Auto-expire any TodaysAppointment records whose response_deadline has passed
-    and the student hasn't responded. Marks them as EXPIRED and cancels the
+    and the student hasn't responded. Marks them as DECLINED and declines the
     underlying appointment so they are NOT added to the FCFS queue.
 
     Returns the number of expired confirmations.
@@ -23,11 +23,11 @@ def expire_pending_confirmations():
 
     count = 0
     for today_appt in expired_qs:
-        today_appt.status = "EXPIRED"
+        today_appt.status = "DECLINED"
         today_appt.save(update_fields=["status"])
 
         # Cancel the main appointment — student did not confirm in time
-        today_appt.appointment.status = "CANCELLED"
+        today_appt.appointment.status = "DECLINED"
         today_appt.appointment.save(update_fields=["status"])
         count += 1
 

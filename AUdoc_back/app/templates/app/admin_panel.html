@@ -1561,15 +1561,20 @@
                       <span class="badge status-confirmed">Confirmed</span>
                       {% elif today_appt.status == "PENDING" %}
                       <span class="badge status-pending">Pending</span>
+                      {% elif today_appt.status == "COMPLETED" %}
+                      <span class="badge status-completed">Visited</span>
                       {% else %}
-                      <span class="badge status-cancelled">{{ today_appt.status|title }}</span>
+                      <span class="badge status-cancelled">{{ today_appt.get_status_display }}</span>
                       {% endif %}
                     </td>
                     <td>{{ today_appt.response_deadline|date:"H:i" }}</td>
                     <td>
                       <button class="btn btn-sm btn-outline-primary"
-                        onclick="viewDetails('todays', '{{ today_appt.id }}')">
+                        onclick="viewDetails('todays', '{{ today_appt.id }}')" title="View Details">
                         <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger ms-1" onclick="showMedicalHistory({{ today_appt.appointment.id }}, '{{ today_appt.appointment.student_id|escapejs }}', '{{ today_appt.appointment.doctor.name|default:'Not Assigned'|escapejs }}', '{{ today_appt.appointment.appointment_date|date:'M d, Y' }}')">
+                        Add History
                       </button>
                     </td>
                   </tr>
@@ -1711,30 +1716,15 @@
                       {% elif appointment.status == "PENDING" %}
                       <span class="badge status-pending">Pending</span>
                       {% elif appointment.status == "COMPLETED" %}
-                      <span class="badge status-completed">Completed</span>
+                      <span class="badge status-completed">Visited</span>
                       {% else %}
-                      <span class="badge status-cancelled">{{ appointment.status|title }}</span>
+                      <span class="badge status-cancelled">{{ appointment.get_status_display }}</span>
                       {% endif %}
                     </td>
                     <td>{{ appointment.created_at|date:"M d" }}</td>
                     <td>
                       <div class="btn-group" role="group">
-                        <form method="POST" action="{% url 'admin_appointment_status' appointment.pk %}"
-                          style="display:inline;">
-                          {% csrf_token %}
-                          <input type="hidden" name="status" value="CONFIRMED">
-                          <button type="submit" class="btn btn-sm btn-success" title="Confirm Appointment">
-                            <i class="bi bi-check"></i>
-                          </button>
-                        </form>
-                        <form method="POST" action="{% url 'admin_appointment_status' appointment.pk %}"
-                          style="display:inline;">
-                          {% csrf_token %}
-                          <input type="hidden" name="status" value="CANCELLED">
-                          <button type="submit" class="btn btn-sm btn-danger" title="Cancel Appointment">
-                            <i class="bi bi-x"></i>
-                          </button>
-                        </form>
+
                         <button class="btn btn-sm btn-outline-primary"
                           onclick="viewDetails('appointment', {{ appointment.id }})">
                           <i class="bi bi-eye"></i>
@@ -3081,6 +3071,62 @@
     </div>
   </div>
 
+  <!-- Add History Modal -->
+  <div class="modal fade" id="addHistoryModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Medical History</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="history_meta_info" class="alert alert-info py-2 small mb-3" style="display: none;">
+            <strong>Student ID:</strong> <span id="meta_student_id"></span><br>
+            <strong>Doctor:</strong> <span id="meta_doctor"></span><br>
+            <strong>Date:</strong> <span id="meta_date"></span>
+          </div>
+          <form method="POST" action="{% url 'save_medical_history' %}" id="medicalHistoryForm">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold">{{ medical_history_form.illness.label }}</label>
+              {{ medical_history_form.illness }}
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold">{{ medical_history_form.symptoms.label }}</label>
+              {{ medical_history_form.symptoms }}
+            </div>
+            
+            <hr>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Recommend Medicines</label>
+              <div class="input-group mb-2">
+                <select id="medicineSelect" class="form-select">
+                  <option value="">-- Search / Select Medicine --</option>
+                  {% for med in all_medicines %}
+                  <option value="{{ med.id }}" data-name="{{ med.name }}">{{ med.name }} ({{ med.generic_name|default:"General" }})</option>
+                  {% endfor %}
+                </select>
+                <button type="button" class="btn btn-outline-primary" id="addMedicineBtn">Add to Cart</button>
+              </div>
+              <ul id="medicineCart" class="list-group mb-2">
+                <!-- Selected medicines will appear here -->
+              </ul>
+            </div>
+            
+            {{ medical_history_form.medicine_ids }}
+            {{ medical_history_form.appointment_id }}
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveHistoryBtn">Save History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- View Details Modal (Generic for all entity types) -->
   <div class="modal fade" id="viewDetailsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -4060,7 +4106,10 @@
       const content = document.getElementById('viewDetailsContent');
 
       content.innerHTML = `
-        <h5 style="color: var(--primary); margin-bottom: 20px;"><i class="bi bi-calendar-check-fill me-2"></i>Appointment Details</h5>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 style="color: var(--primary); margin-bottom: 0;"><i class="bi bi-calendar-check-fill me-2"></i>Appointment Details</h5>
+          <button class="btn btn-sm btn-outline-primary" onclick="alert('Add History clicked')"><i class="bi bi-plus-circle me-1"></i>Add History</button>
+        </div>
         
         <div class="detail-row">
           <label>Student ID:</label>
@@ -5033,6 +5082,88 @@
       document.getElementById('txMedName').innerText = medName + ' (Batch: ' + batchNo + ')';
       new bootstrap.Modal(document.getElementById('transactionModal')).show();
     }
+
+    // ── Medical History Form Logic ──
+    let selectedMedicines = {}; // Format: { "id": { name: "Name", qty: 1 } }
+    
+    function showMedicalHistory(appointmentId, studentId, doctorName, dateStr) {
+      document.getElementById('history_appointment_id').value = appointmentId;
+      document.getElementById('meta_student_id').textContent = studentId || 'N/A';
+      document.getElementById('meta_doctor').textContent = doctorName || 'N/A';
+      document.getElementById('meta_date').textContent = dateStr || 'N/A';
+      document.getElementById('history_meta_info').style.display = 'block';
+      
+      document.getElementById('medicalHistoryForm').reset();
+      selectedMedicines = {};
+      renderMedicineCart();
+      new bootstrap.Modal(document.getElementById('addHistoryModal')).show();
+    }
+    
+    document.getElementById('addMedicineBtn')?.addEventListener('click', function() {
+      const select = document.getElementById('medicineSelect');
+      const medId = select.value;
+      if (!medId) return;
+      
+      const medName = select.options[select.selectedIndex].getAttribute('data-name');
+      if (!selectedMedicines[medId]) {
+        selectedMedicines[medId] = { name: medName, qty: 1 };
+      } else {
+        selectedMedicines[medId].qty += 1;
+      }
+      renderMedicineCart();
+      select.value = ""; // Reset
+    });
+    
+    window.removeMedicine = function(medId) {
+      delete selectedMedicines[medId];
+      renderMedicineCart();
+    };
+
+    window.updateMedicineQty = function(medId, change) {
+      if (selectedMedicines[medId]) {
+        selectedMedicines[medId].qty += change;
+        if (selectedMedicines[medId].qty <= 0) {
+          delete selectedMedicines[medId];
+        }
+        renderMedicineCart();
+      }
+    };
+    
+    function renderMedicineCart() {
+      const cartList = document.getElementById('medicineCart');
+      const hiddenInput = document.getElementById('history_medicine_ids');
+      if (!cartList) return;
+      
+      cartList.innerHTML = '';
+      
+      // Build the string like "id:qty,id:qty"
+      const entries = Object.entries(selectedMedicines);
+      hiddenInput.value = entries.map(([id, data]) => `${id}:${data.qty}`).join(',');
+      
+      if (entries.length === 0) {
+        cartList.innerHTML = '<li class="list-group-item text-muted small border-0 bg-transparent px-0">No medicines added yet.</li>';
+        return;
+      }
+      
+      for (const [id, data] of entries) {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center py-1';
+        li.innerHTML = `
+          <span><i class="bi bi-capsule me-2 text-primary"></i>${data.name}</span>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary p-0 px-2 fw-bold" onclick="updateMedicineQty('${id}', -1)">-</button>
+            <span class="fw-bold" style="min-width:20px;text-align:center;">${data.qty}</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary p-0 px-2 fw-bold" onclick="updateMedicineQty('${id}', 1)">+</button>
+            <button type="button" class="btn btn-sm text-danger border-0 p-0 ms-2" onclick="removeMedicine('${id}')"><i class="bi bi-x-circle-fill"></i></button>
+          </div>
+        `;
+        cartList.appendChild(li);
+      }
+    }
+    
+    document.getElementById('saveHistoryBtn')?.addEventListener('click', function() {
+      document.getElementById('medicalHistoryForm').submit();
+    });
 
 </script>
 <!-- Medicine Modals -->

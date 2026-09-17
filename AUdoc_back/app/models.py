@@ -265,10 +265,11 @@ class Appointment(models.Model):
     STATUS_CHOICES = [
         ("PENDING",   "Pending"),
         ("CONFIRMED", "Confirmed"),
-        ("COMPLETED", "Completed"),
+        ("COMPLETED", "Visited"),
         ("NO_SHOW",   "No-Show"),
         ("REJECTED",  "Rejected"),
         ("CANCELLED", "Cancelled"),
+        ("DECLINED",  "Declined"),
     ]
 
     student_id          = models.CharField(max_length=50, verbose_name="Student ID")
@@ -613,6 +614,7 @@ class TodaysAppointment(models.Model):
         ("CONFIRMED", "Confirmed"),
         ("DECLINED",  "Declined"),
         ("EXPIRED",   "Expired"),
+        ("COMPLETED", "Visited"),
     ]
 
     appointment         = models.ForeignKey(
@@ -938,3 +940,26 @@ class AIChatLog(models.Model):
     def __str__(self):
         return f"AI Chat ({self.model_used}) — {self.total_tokens} tokens at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
 
+class PrescribedMedicine(models.Model):
+    medical_history = models.ForeignKey('MedicalHistory', on_delete=models.CASCADE)
+    medicine = models.ForeignKey('Medicine', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        db_table = 'app_medhistory_medicines'
+
+    def __str__(self):
+        return f"{self.quantity}x {self.medicine.name}"
+
+class MedicalHistory(models.Model):
+    student_id = models.CharField(max_length=50, verbose_name="Student ID", blank=True, null=True)
+    doctor_name = models.CharField(max_length=150, verbose_name="Doctor Name", blank=True, null=True)
+    appointment_date = models.DateField(verbose_name="Appointment Date", blank=True, null=True)
+    illness = models.CharField(max_length=200, verbose_name="Illness")
+    symptoms = models.TextField(verbose_name="Symptoms")
+    medicines = models.ManyToManyField('Medicine', through='PrescribedMedicine', blank=True, related_name='prescribed_in', verbose_name="Medicines Recommended")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"History for {self.appointment.student_name} on {self.appointment.appointment_date}"

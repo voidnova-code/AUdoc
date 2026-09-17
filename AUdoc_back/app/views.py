@@ -24,7 +24,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
-from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm
+from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm, MedicalHistoryForm
 from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, Medicine, MedicineStock, MedicineStockTransaction, AIChatLog, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
 from .storage import upload_doctor_photo, delete_doctor_photo
 from .security import (
@@ -1561,8 +1561,11 @@ def appointment_confirm(request, token, action):
 
     # Check if expired
     if today_appt.is_expired():
-        today_appt.status = "EXPIRED"
+        today_appt.status = "DECLINED"
         today_appt.save(update_fields=["status"])
+        
+        today_appt.appointment.status = "DECLINED"
+        today_appt.appointment.save(update_fields=["status"])
         return render(request, "app/appointment_confirm.html", {
             "expired": True,
             "appointment": today_appt.appointment,
@@ -1593,7 +1596,7 @@ def appointment_confirm(request, token, action):
         today_appt.responded_at = timezone.now()
 
         # Update the main appointment status
-        today_appt.appointment.status = "CANCELLED"
+        today_appt.appointment.status = "DECLINED"
         today_appt.appointment.save(update_fields=["status"])
     else:
         return render(request, "app/appointment_confirm.html", {"error": True})
@@ -1655,6 +1658,8 @@ def admin_dashboard(request):
     # Query data for the dashboard
     todays_appointments = TodaysAppointment.objects.select_related(
         'appointment', 'appointment__doctor'
+    ).exclude(
+        status="DECLINED"
     ).filter(
         appointment__appointment_date=date.today()
     ).order_by('appointment__created_at')  # FCFS order
@@ -1717,6 +1722,10 @@ def admin_dashboard(request):
         'day_labels': day_labels,
         'dept_labels': dept_labels,
         'dept_data': dept_data,
+        
+        # ── Medical History Form ──────────────────────────
+        'medical_history_form': MedicalHistoryForm(),
+        'all_medicines': Medicine.objects.filter(is_active=True),
 
         # ── Legacy table data (preserved for compatibility) ──
         'registrations':  StudentRegistration.objects.order_by('-registered_at'),
@@ -1870,12 +1879,12 @@ def admin_dashboard_stats(request):
     yesterday = today - timedelta(days=1)
 
     # Today's stats
-    todays_appointments = TodaysAppointment.objects.filter(appointment__appointment_date=today).count()
+    todays_appointments = TodaysAppointment.objects.filter(appointment__appointment_date=today).exclude(status="DECLINED").count()
     todays_confirmed = TodaysAppointment.objects.filter(appointment__appointment_date=today, status='CONFIRMED').count()
     todays_pending = TodaysAppointment.objects.filter(appointment__appointment_date=today, status='PENDING').count()
 
     # Yesterday's stats for comparison
-    yesterdays_appointments = TodaysAppointment.objects.filter(appointment__appointment_date=yesterday).count()
+    yesterdays_appointments = TodaysAppointment.objects.filter(appointment__appointment_date=yesterday).exclude(status="DECLINED").count()
 
     # Calculate percentage changes
     def calc_percentage_change(current, previous):
@@ -4166,3 +4175,87 @@ def admin_medicine_transaction_save(request):
         messages.error(request, "Failed to record transaction.")
         
     return redirect(f"{reverse('admin_dashboard')}?tab=medicine")
+
+@_admin_required
+@require_POST
+def save_medical_history(request):
+    try:
+        from .forms import MedicalHistoryForm
+        from .models import MedicalHistory, Appointment, Medicine, PrescribedMedicine
+        form = MedicalHistoryForm(request.POST)
+        if form.is_valid():
+            appointment_id = form.cleaned_data['appointment_id']
+            illness = form.cleaned_data['illness']
+            symptoms = form.cleaned_data['symptoms']
+            medicine_ids = form.cleaned_data.get('medicine_ids', '')
+            
+            appointment = Appointment.objects.get(id=appointment_id)
+            history = MedicalHistory.objects.create(
+                illness=illness, 
+                symptoms=symptoms,
+                student_id=appointment.student_id,
+                doctor_name=appointment.doctor.name if appointment.doctor else "Not Assigned",
+                appointment_date=appointment.appointment_date
+            )
+            
+            if medicine_ids:
+                pairs = medicine_ids.split(',')
+                for pair in pairs:
+                    parts = pair.split(':')
+                    if len(parts) == 2 and parts[0].strip().isdigit() and parts[1].strip().isdigit():
+                        med_id = int(parts[0].strip())
+                        qty = int(parts[1].strip())
+                        medicine = Medicine.objects.filter(id=med_id).first()
+                        if medicine:
+                            PrescribedMedicine.objects.create(
+                                medical_history=history,
+                                medicine=medicine,
+                                quantity=qty
+                            )
+                            
+                            # Deduct from stock and record transaction
+                            from django.utils import timezone
+                            from .models import MedicineStockTransaction
+                            remaining_qty = qty
+                            stocks = medicine.stocks.filter(
+                                expiry_date__gt=timezone.now().date(),
+                                quantity__gt=0
+                            ).order_by('expiry_date')
+                            
+                            for stock in stocks:
+                                if remaining_qty <= 0:
+                                    break
+                                
+                                deduct_amount = min(stock.quantity, remaining_qty)
+                                stock.quantity -= deduct_amount
+                                stock.save(update_fields=["quantity"])
+                                
+                                MedicineStockTransaction.objects.create(
+                                    stock=stock,
+                                    transaction_type='SUBTRACT',
+                                    quantity=deduct_amount,
+                                    performed_by=request.user,
+                                    reason=f"Prescribed to student: {appointment.student_name} ({appointment.student_id})"
+                                )
+                                
+                                remaining_qty -= deduct_amount
+            
+            # Mark the appointment as visited
+            appointment.status = "COMPLETED"
+            appointment.save(update_fields=["status"])
+            
+            # If it's today's appointment, mark it as visited too
+            from .models import TodaysAppointment
+            today_appt = TodaysAppointment.objects.filter(appointment=appointment).first()
+            if today_appt:
+                today_appt.status = "COMPLETED"
+                today_appt.save(update_fields=["status"])
+                
+            messages.success(request, "Medical history saved successfully. Student marked as Visited.")
+        else:
+            messages.error(request, "Invalid form submission.")
+    except Exception as e:
+        logger.error(f"Error saving medical history: {e}")
+        messages.error(request, "An error occurred while saving medical history.")
+        
+    return redirect(f"{reverse('admin_dashboard')}?tab=todays-appointments")

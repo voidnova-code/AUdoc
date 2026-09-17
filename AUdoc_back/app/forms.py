@@ -407,3 +407,21 @@ class BloodRequestForm(forms.Form):
         if date < timezone.localdate():
             raise forms.ValidationError("Required date cannot be in the past.")
         return date
+
+class MedicalHistoryForm(forms.Form):
+    illness = forms.CharField(
+        max_length=200,
+        label="Illness",
+        widget=forms.TextInput(attrs={"class": "form-control", "required": "required"}),
+    )
+    symptoms = forms.CharField(
+        label="Symptoms",
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 2, "required": "required"}),
+    )
+    medicine_ids = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={"id": "history_medicine_ids"})
+    )
+    appointment_id = forms.IntegerField(
+        widget=forms.HiddenInput(attrs={"id": "history_appointment_id"})
+    )

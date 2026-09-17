@@ -35,6 +35,7 @@ urlpatterns = [
     path("manage/blood-request/<int:pk>/delete/", views.admin_blood_request_delete, name="admin_blood_request_delete"),
     path("manage/blood-request/<int:pk>/responses/", views.admin_blood_request_responses, name="admin_blood_request_responses"),
     path("manage/donation/<int:pk>/toggle-paid/", views.admin_donation_toggle_paid, name="admin_donation_toggle_paid"),
+    path("manage/medical-history/save/", views.save_medical_history, name="save_medical_history"),
     path("manage/doctor/save/", views.admin_doctor_save, name="admin_doctor_save"),
     path("manage/doctor/<int:pk>/delete/", views.admin_doctor_delete, name="admin_doctor_delete"),
     path("manage/doctor/add/", views.add_doctor, name="add_doctor"),
