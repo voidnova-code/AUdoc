@@ -588,47 +588,19 @@
       color: #495057;
     }
 
-    /* ── Dashboard Enhancements ──────────────────────────────── */
-    .dashboard-header {
-      background: linear-gradient(135deg, #4a7c59 0%, #2e5c3a 100%);
-      padding: 30px 40px;
-      border-radius: 0 0 30px 30px;
-      color: white;
-      margin: -20px -24px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .dashboard-header-text {
-      text-align: left;
-    }
-
-    .dashboard-title {
-      font-size: 2.2rem;
-      font-weight: 700;
-      margin: 0;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .dashboard-subtitle {
-      opacity: 0.9;
-      font-size: 1rem;
-      margin-top: 4px;
-    }
-
-    .dashboard-header .nav-links {
+    /* ── Top Header Navigation ──────────────────────────────── */
+    .content-header .top-nav-links {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(13, 42, 26, 0.4);
-      padding: 8px 12px;
+      background: #0d2a1a;
+      padding: 6px 12px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    .dashboard-header .nav-links a {
-      color: #e8f5ec;
+    .content-header .top-nav-links a {
+      color: #9abea8;
       text-decoration: none;
       padding: 8px 16px;
       border-radius: 8px;
@@ -641,12 +613,12 @@
       gap: 6px;
     }
 
-    .dashboard-header .nav-links a:hover {
-      background: rgba(255, 255, 255, 0.15);
+    .content-header .top-nav-links a:hover {
+      background: rgba(74, 124, 89, 0.2);
       color: #fff;
     }
 
-    .dashboard-header .nav-links a.active {
+    .content-header .top-nav-links a.active {
       background: #4a7c59;
       color: #fff;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
@@ -1099,6 +1071,15 @@
     <div class="content-header">
       <div class="d-flex justify-content-between align-items-center">
         <h1>Admin Dashboard</h1>
+        
+        <!-- Top Navigation Links -->
+        <div class="top-nav-links d-none d-md-flex">
+          <a href="{% url 'home' %}"><i class="bi bi-house-door"></i> Home</a>
+          <a href="{% url 'admin_dashboard' %}" class="active"><i class="bi bi-speedometer2"></i> Admin Panel</a>
+          <a href="{% url 'doctor_portal' %}"><i class="bi bi-file-medical"></i> Medical History</a>
+          <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </div>
+
         <button class="btn btn-outline-secondary d-md-none" onclick="toggleSidebar()">
           <i class="bi bi-list"></i>
         </button>
@@ -1122,22 +1103,6 @@
       {% endif %}
       <!-- Enhanced Dashboard Tab -->
       <div id="dashboard" class="tab-content active">
-        <!-- Dashboard Header -->
-        <div class="dashboard-header" data-aos="fade-down">
-          <div class="dashboard-header-text">
-            <div class="dashboard-title">
-              <i class="bi bi-speedometer2 me-3"></i>
-              AUdoc Control Center
-            </div>
-            <div class="dashboard-subtitle">Real-time Campus Health Management Dashboard</div>
-          </div>
-          <div class="nav-links">
-            <a href="{% url 'home' %}"><i class="bi bi-house-door"></i> Home</a>
-            <a href="{% url 'admin_dashboard' %}" class="active"><i class="bi bi-speedometer2"></i> Admin Panel</a>
-            <a href="{% url 'doctor_portal' %}"><i class="bi bi-file-medical"></i> Medical History</a>
-            <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
-          </div>
-        </div>
 
         <!-- Enhanced Stats Cards -->
         <div class="row stats-row">
