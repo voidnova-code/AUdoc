@@ -4272,3 +4272,28 @@ def save_medical_history(request):
         messages.error(request, "An error occurred while saving medical history.")
         
     return redirect(f"{reverse('admin_dashboard')}?tab=todays-appointments")
+
+
+# ══════════════════════════════════════════════════════════════════
+#  DOCTOR PORTAL — Medical History
+# ══════════════════════════════════════════════════════════════════
+
+@_admin_required
+def doctor_portal(request):
+    """Standalone medical history page for admin/staff/doctor users."""
+    from .models import MedicalHistory, PrescribedMedicine
+
+    search_query = request.GET.get("q", "").strip()
+
+    records = MedicalHistory.objects.all().order_by("-created_at")
+
+    if search_query:
+        records = records.filter(student_id__icontains=search_query)
+
+    # Prefetch prescribed medicines for each record
+    records = records.prefetch_related("prescribedmedicine_set__medicine")
+
+    return render(request, "app/doctor_portal.html", {
+        "records": records,
+        "search_query": search_query,
+    })

@@ -1027,6 +1027,9 @@
       <a href="#" data-tab="staff-members" class="tab-link">
         <i class="bi bi-people"></i> Staff Members
       </a>
+      <a href="{% url 'doctor_portal' %}" class="tab-link" style="border-top:1px solid rgba(255,255,255,.06); margin-top:4px; padding-top:12px;">
+        <i class="bi bi-file-medical"></i> Medical History <i class="bi bi-box-arrow-up-right" style="font-size:.65rem; opacity:.5; margin-left:4px;"></i>
+      </a>
     </nav>
 
     {% if user.is_superuser %}
