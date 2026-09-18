@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,20 +14,24 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <style>
     :root {
-      --primary:      #4a7c59;
+      --primary: #4a7c59;
       --primary-dark: #2e5c3a;
-      --accent:       #e8f5ec;
-      --green:        #1d8348;
-      --green-light:  #d5f0e2;
+      --accent: #e8f5ec;
+      --green: #1d8348;
+      --green-light: #d5f0e2;
 
       /* Override Bootstrap primary */
-      --bs-primary:          #4a7c59;
-      --bs-primary-rgb:      74, 124, 89;
-      --bs-link-color:       #4a7c59;
+      --bs-primary: #4a7c59;
+      --bs-primary-rgb: 74, 124, 89;
+      --bs-link-color: #4a7c59;
       --bs-link-hover-color: #2e5c3a;
     }
 
-    body { font-family: 'Segoe UI', sans-serif; color: #333; background: #faf9f4; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
+      background: #faf9f4;
+    }
 
     /* ── Topbar ── */
     .topbar {
@@ -35,36 +40,82 @@
       font-size: .82rem;
       padding: 6px 0;
     }
-    .topbar a { color: #c8e6d0; text-decoration: none; }
-    .topbar a:hover { color: #fff; }
+
+    .topbar a {
+      color: #c8e6d0;
+      text-decoration: none;
+    }
+
+    .topbar a:hover {
+      color: #fff;
+    }
 
     /* ── Navbar ── */
-    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
-    .navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
-    .nav-link { color: #555 !important; font-weight: 500; }
+    .navbar {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    .navbar-brand .brand-name {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.25rem;
+      line-height: 1.1;
+    }
+
+    .navbar-brand .brand-sub {
+      color: #777;
+      font-size: .72rem;
+      font-weight: 400;
+      display: block;
+    }
+
+    .nav-link {
+      color: #555 !important;
+      font-weight: 500;
+    }
+
     .nav-link:hover,
-    .nav-link.active { color: var(--primary) !important; }
+    .nav-link.active {
+      color: var(--primary) !important;
+    }
 
     /* ── Hero ── */
     .hero {
       background: linear-gradient(135deg, #e8f5ec 0%, #d4edda 100%);
       padding: 80px 0 72px;
     }
-    .hero h1 { font-size: 2.6rem; font-weight: 700; line-height: 1.25; color: #0d2a1a; }
-    .hero p  { font-size: 1.1rem; color: #555; }
+
+    .hero h1 {
+      font-size: 2.6rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #0d2a1a;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: #555;
+    }
+
     .campus-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--green-light); color: var(--green);
-      font-size: .82rem; font-weight: 600;
-      padding: 6px 14px; border-radius: 50px; margin-bottom: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green-light);
+      color: var(--green);
+      font-size: .82rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 50px;
+      margin-bottom: 18px;
     }
 
     /* ── Quick Search Card ── */
     .search-card {
       background: #fff;
       border-radius: 20px;
-      box-shadow: 0 16px 48px rgba(74,124,89,.18);
+      box-shadow: 0 16px 48px rgba(74, 124, 89, .18);
       padding: 28px;
       max-width: 400px;
       margin: auto;
@@ -73,20 +124,45 @@
     /* ── Stats bar ── */
     .stats-bar {
       background: #fff;
-      box-shadow: 0 4px 20px rgba(0,0,0,.07);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .07);
       border-radius: 16px;
       margin-top: -40px;
       position: relative;
       z-index: 2;
     }
-    .stat-item { text-align: center; padding: 28px 16px; }
-    .stat-item .num { font-size: 1.9rem; font-weight: 700; color: var(--primary); }
-    .stat-item .lbl { font-size: .85rem; color: #777; margin-top: 4px; }
+
+    .stat-item {
+      text-align: center;
+      padding: 28px 16px;
+    }
+
+    .stat-item .num {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-item .lbl {
+      font-size: .85rem;
+      color: #777;
+      margin-top: 4px;
+    }
 
     /* ── Sections ── */
-    section { padding: 80px 0; }
-    .section-title { font-size: 1.9rem; font-weight: 700; color: #0d2a1a; }
-    .section-sub  { color: #777; font-size: 1rem; }
+    section {
+      padding: 80px 0;
+    }
+
+    .section-title {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #0d2a1a;
+    }
+
+    .section-sub {
+      color: #777;
+      font-size: 1rem;
+    }
 
     /* ── Notice banner ── */
     .notice-banner {
@@ -99,14 +175,36 @@
 
     /* ── Department cards ── */
     .dept-card {
-      border: none; border-radius: 16px; padding: 24px 16px;
-      text-align: center; transition: transform .2s, box-shadow .2s;
-      background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      border: none;
+      border-radius: 16px;
+      padding: 24px 16px;
+      text-align: center;
+      transition: transform .2s, box-shadow .2s;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
     }
-    .dept-card:hover { transform: translateY(-6px); box-shadow: 0 8px 24px rgba(74,124,89,.15); }
-    .dept-card .icon { font-size: 2.2rem; margin-bottom: 10px; }
-    .dept-card h6 { font-weight: 600; margin: 0; color: #222; font-size: .9rem; }
-    .dept-card small { color: #888; font-size: .78rem; }
+
+    .dept-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 8px 24px rgba(74, 124, 89, .15);
+    }
+
+    .dept-card .icon {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    .dept-card h6 {
+      font-weight: 600;
+      margin: 0;
+      color: #222;
+      font-size: .9rem;
+    }
+
+    .dept-card small {
+      color: #888;
+      font-size: .78rem;
+    }
 
     /* ── Service cards ── */
     .service-card {
@@ -114,76 +212,152 @@
       border-radius: 18px;
       padding: 28px 24px;
       height: 100%;
-      box-shadow: 0 2px 16px rgba(74,124,89,.08);
+      box-shadow: 0 2px 16px rgba(74, 124, 89, .08);
       transition: transform .2s, box-shadow .2s;
       display: flex;
       flex-direction: column;
     }
-    .service-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(74,124,89,.16); }
-    .service-icon {
-      width: 56px; height: 56px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; margin-bottom: 16px; flex-shrink: 0;
+
+    .service-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(74, 124, 89, .16);
     }
-    .service-card h5 { font-size: 1rem; font-weight: 700; color: #0d2a1a; margin-bottom: 8px; }
-    .service-card p  { font-size: .88rem; color: #666; flex-grow: 1; margin-bottom: 16px; line-height: 1.6; }
+
+    .service-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      flex-shrink: 0;
+    }
+
+    .service-card h5 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0d2a1a;
+      margin-bottom: 8px;
+    }
+
+    .service-card p {
+      font-size: .88rem;
+      color: #666;
+      flex-grow: 1;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
 
     /* ── How it works ── */
     .step-circle {
-      width: 60px; height: 60px; border-radius: 50%;
-      background: var(--accent); color: var(--primary);
-      font-size: 1.4rem; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--primary);
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin: 0 auto 14px;
     }
 
     /* ── Flip doctor cards ── */
-    .flip-card { perspective: 900px; cursor: pointer; height: 360px; }
+    .flip-card {
+      perspective: 900px;
+      cursor: pointer;
+      height: 360px;
+    }
+
     .flip-card-inner {
-      position: relative; width: 100%; height: 100%;
-      transition: transform 0.6s cubic-bezier(.4,0,.2,1);
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(.4, 0, .2, 1);
       transform-style: preserve-3d;
     }
-    .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
-    .flip-card-face {
-      position: absolute; width: 100%; height: 100%;
-      backface-visibility: hidden; -webkit-backface-visibility: hidden;
-      border-radius: 16px; overflow: hidden;
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
     }
+
+    .flip-card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
     .flip-card-front {
-      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .07);
       transition: box-shadow .2s;
     }
-    .flip-card:hover .flip-card-front { box-shadow: 0 6px 20px rgba(74,124,89,.28); }
+
+    .flip-card:hover .flip-card-front {
+      box-shadow: 0 6px 20px rgba(74, 124, 89, .28);
+    }
+
     .flip-card-back {
       transform: rotateY(180deg);
       background: linear-gradient(160deg, #0d2a1a 0%, #1d5c35 100%);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       padding: 24px 18px;
     }
+
     .doctor-photo-front {
-      width: 100%; height: 100%; object-fit: cover; display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
+
     .doctor-photo-placeholder {
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       background: linear-gradient(135deg, #b8d4c0, #8ab89e);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 5rem; color: rgba(255,255,255,.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+      color: rgba(255, 255, 255, .7);
     }
+
     .front-overlay {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      background: linear-gradient(transparent, rgba(0,0,0,.7));
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0, 0, 0, .7));
       padding: 38px 14px 12px;
     }
+
     .badge-dept {
-      background: var(--accent); color: var(--primary);
-      font-size: .73rem; font-weight: 600;
-      padding: 2px 9px; border-radius: 20px; display: inline-block;
+      background: var(--accent);
+      color: var(--primary);
+      font-size: .73rem;
+      font-weight: 600;
+      padding: 2px 9px;
+      border-radius: 20px;
+      display: inline-block;
     }
+
     .day-pill {
-      display: inline-block; background: rgba(255,255,255,.18); color: #d4edda;
-      font-size: .66rem; font-weight: 700; padding: 1px 7px; border-radius: 20px;
+      display: inline-block;
+      background: rgba(255, 255, 255, .18);
+      color: #d4edda;
+      font-size: .66rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 20px;
       margin: 1px 2px 1px 0;
     }
 
@@ -192,66 +366,153 @@
       background: #fff;
       border-radius: 14px;
       padding: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
       height: 100%;
     }
+
     .info-icon {
-      width: 48px; height: 48px; border-radius: 12px;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
       background: var(--accent);
       color: var(--primary);
       font-size: 1.4rem;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 14px;
     }
 
     /* ── CTA ── */
     .cta-section {
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #fff; border-radius: 20px;
+      color: #fff;
+      border-radius: 20px;
     }
 
     /* ── Footer ── */
-    footer { background: #0d2418; color: #9abea8; padding: 52px 0 24px; }
-    footer h6 { color: #fff; font-weight: 600; margin-bottom: 14px; }
-    footer a  { color: #9abea8; text-decoration: none; display: block; margin-bottom: 8px; font-size: .88rem; }
-    footer a:hover { color: #fff; }
-    footer .divider { border-color: #1e4a2e; margin: 24px 0 18px; }
-    .office-hours-row { display: flex; justify-content: space-between; font-size: .85rem; padding: 4px 0; border-bottom: 1px solid #1e4a2e; }
-    .office-hours-row:last-child { border-bottom: none; }
+    footer {
+      background: #0d2418;
+      color: #9abea8;
+      padding: 52px 0 24px;
+    }
+
+    footer h6 {
+      color: #fff;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    footer a {
+      color: #9abea8;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 8px;
+      font-size: .88rem;
+    }
+
+    footer a:hover {
+      color: #fff;
+    }
+
+    footer .divider {
+      border-color: #1e4a2e;
+      margin: 24px 0 18px;
+    }
+
+    .office-hours-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: .85rem;
+      padding: 4px 0;
+      border-bottom: 1px solid #1e4a2e;
+    }
+
+    .office-hours-row:last-child {
+      border-bottom: none;
+    }
+
     /* ── Navbar sliding pill indicator ── */
-    .navbar-nav { position: relative; }
+    .navbar-nav {
+      position: relative;
+    }
+
     .nav-pill-indicator {
       position: absolute;
       background: var(--accent);
       border-radius: 8px;
-      transition: left   0.32s cubic-bezier(.4,0,.2,1),
-                  top    0.32s cubic-bezier(.4,0,.2,1),
-                  width  0.32s cubic-bezier(.4,0,.2,1),
-                  height 0.32s cubic-bezier(.4,0,.2,1),
-                  opacity 0.2s ease;
+      transition: left 0.32s cubic-bezier(.4, 0, .2, 1),
+        top 0.32s cubic-bezier(.4, 0, .2, 1),
+        width 0.32s cubic-bezier(.4, 0, .2, 1),
+        height 0.32s cubic-bezier(.4, 0, .2, 1),
+        opacity 0.2s ease;
       pointer-events: none;
       z-index: 0;
     }
-    .navbar-nav .nav-link { position: relative; z-index: 1; }
+
+    .navbar-nav .nav-link {
+      position: relative;
+      z-index: 1;
+    }
 
     /* ── Scroll-reveal ── */
-    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
-    .reveal.visible { opacity: 1; transform: none; }
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
     /* ── Scroll-to-top ── */
     #scroll-top {
-      position: fixed; bottom: 30px; right: 102px;
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--primary); color: #fff; border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; box-shadow: 0 4px 16px rgba(74,124,89,.3);
-      opacity: 0; visibility: hidden; z-index: 998;
+      position: fixed;
+      bottom: 30px;
+      right: 102px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 16px rgba(74, 124, 89, .3);
+      opacity: 0;
+      visibility: hidden;
+      z-index: 998;
       transition: opacity .3s, visibility .3s, transform .3s;
     }
-    #scroll-top.show { opacity: 1; visibility: visible; }
-    #scroll-top:hover { transform: translateY(-3px); }
+
+    #scroll-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #scroll-top:hover {
+      transform: translateY(-3px);
+    }
+
     /* ── Page fade-in ── */
-    @keyframes pagein { from { opacity:0; } to { opacity:1; } }
-    body { animation: pagein .4s ease; }
+    @keyframes pagein {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    body {
+      animation: pagein .4s ease;
+    }
 
     /* ── Floating Action Button ── */
     .fab {
@@ -272,11 +533,13 @@
       transition: transform 0.3s, box-shadow 0.3s;
       z-index: 999;
     }
+
     .fab:hover {
       transform: scale(1.1);
       box-shadow: 0 8px 28px rgba(196, 30, 58, 0.5);
       color: #fff;
     }
+
     .fab-label {
       position: absolute;
       bottom: 75px;
@@ -288,12 +551,13 @@
       font-weight: 600;
       color: #c41e3a;
       white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.3s, visibility 0.3s;
       pointer-events: none;
     }
+
     .fab:hover .fab-label {
       opacity: 1;
       visibility: visible;
@@ -305,11 +569,15 @@
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       box-shadow: 0 6px 20px rgba(74, 124, 89, 0.45);
     }
+
     .fab-chat:hover {
       box-shadow: 0 8px 28px rgba(74, 124, 89, 0.6);
       color: #fff;
     }
-    .fab-chat .fab-label { color: var(--primary-dark); }
+
+    .fab-chat .fab-label {
+      color: var(--primary-dark);
+    }
 
     /* ── Chat Panel ── */
     .chat-panel {
@@ -320,14 +588,17 @@
       height: min(540px, 100vh);
       background: #fff;
       border-radius: 20px 0 0 0;
-      box-shadow: -4px -4px 30px rgba(0,0,0,.18);
+      box-shadow: -4px -4px 30px rgba(0, 0, 0, .18);
       display: flex;
       flex-direction: column;
       z-index: 1050;
       transform: translateY(110%);
       transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .chat-panel.open { transform: translateY(0); }
+
+    .chat-panel.open {
+      transform: translateY(0);
+    }
 
     .chat-panel-header {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -339,23 +610,41 @@
       justify-content: space-between;
       flex-shrink: 0;
     }
+
     .chat-avatar {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: rgba(255,255,255,.25);
-      display: flex; align-items: center; justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 1.15rem;
     }
-    .chat-status { font-size: .72rem; opacity: .85; }
+
+    .chat-status {
+      font-size: .72rem;
+      opacity: .85;
+    }
+
     .chat-close-btn {
-      background: rgba(255,255,255,.2);
-      border: none; color: #fff;
-      width: 30px; height: 30px;
+      background: rgba(255, 255, 255, .2);
+      border: none;
+      color: #fff;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
       transition: background .2s;
     }
-    .chat-close-btn:hover { background: rgba(255,255,255,.35); }
+
+    .chat-close-btn:hover {
+      background: rgba(255, 255, 255, .35);
+    }
 
     .chat-messages {
       flex: 1;
@@ -366,8 +655,15 @@
       gap: 10px;
       background: #f8fdf9;
     }
-    .chat-messages::-webkit-scrollbar { width: 4px; }
-    .chat-messages::-webkit-scrollbar-thumb { background: #d0e8d6; border-radius: 4px; }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #d0e8d6;
+      border-radius: 4px;
+    }
 
     .chat-bubble {
       max-width: 82%;
@@ -377,38 +673,58 @@
       line-height: 1.5;
       word-break: break-word;
     }
+
     .chat-bubble.user {
       align-self: flex-end;
       background: var(--primary);
       color: #fff;
       border-bottom-right-radius: 4px;
     }
+
     .chat-bubble.assistant {
       align-self: flex-start;
       background: #fff;
       color: #333;
       border-bottom-left-radius: 4px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.09);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .09);
     }
+
     .chat-bubble.typing {
       background: #fff;
       align-self: flex-start;
-      box-shadow: 0 1px 4px rgba(0,0,0,.09);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .09);
       padding: 12px 16px;
     }
+
     .typing-dots span {
       display: inline-block;
-      width: 7px; height: 7px;
+      width: 7px;
+      height: 7px;
       background: var(--primary);
       border-radius: 50%;
       margin: 0 2px;
       animation: bounce 1.2s infinite;
     }
-    .typing-dots span:nth-child(2) { animation-delay: .2s; }
-    .typing-dots span:nth-child(3) { animation-delay: .4s; }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: .2s;
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: .4s;
+    }
+
     @keyframes bounce {
-      0%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(-6px); }
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+      }
+
+      40% {
+        transform: translateY(-6px);
+      }
     }
 
     .chat-input-area {
@@ -420,6 +736,7 @@
       background: #fff;
       flex-shrink: 0;
     }
+
     .chat-input {
       flex: 1;
       border: 1px solid #d0e8d6;
@@ -432,21 +749,37 @@
       line-height: 1.4;
       font-family: inherit;
     }
-    .chat-input:focus { border-color: var(--primary); }
+
+    .chat-input:focus {
+      border-color: var(--primary);
+    }
+
     .chat-send-btn {
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: var(--primary);
       color: #fff;
       border: none;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 1rem;
       cursor: pointer;
       transition: background .2s, transform .15s;
       flex-shrink: 0;
     }
-    .chat-send-btn:hover { background: var(--primary-dark); transform: scale(1.08); }
-    .chat-send-btn:disabled { background: #aaa; cursor: not-allowed; transform: none; }
+
+    .chat-send-btn:hover {
+      background: var(--primary-dark);
+      transform: scale(1.08);
+    }
+
+    .chat-send-btn:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+      transform: none;
+    }
 
     .chat-welcome {
       text-align: center;
@@ -454,7 +787,13 @@
       color: #666;
       font-size: .85rem;
     }
-    .chat-welcome i { font-size: 2rem; color: var(--primary); display: block; margin-bottom: 8px; }
+
+    .chat-welcome i {
+      font-size: 2rem;
+      color: var(--primary);
+      display: block;
+      margin-bottom: 8px;
+    }
 
     /* ══════════════════════════════════════════
        MOBILE RESPONSIVE
@@ -462,132 +801,364 @@
 
     /* ── Tablet (≤991px) ── */
     @media (max-width: 991px) {
-      .hero { padding: 52px 0 44px; }
-      .hero h1 { font-size: 2rem; }
-      .search-card { max-width: 100%; }
-      .section-title { font-size: 1.5rem; }
-      .flip-card { height: 300px; }
-      #scroll-top { right: 20px; }
+      .hero {
+        padding: 52px 0 44px;
+      }
+
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .search-card {
+        max-width: 100%;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+      }
+
+      .flip-card {
+        height: 300px;
+      }
+
+      #scroll-top {
+        right: 20px;
+      }
+
+      /* Hero: reduce gap between text and search card */
+      .hero .row.g-5 {
+        --bs-gutter-y: 2rem;
+        --bs-gutter-x: 1.5rem;
+      }
     }
 
     /* ── Mobile (≤767px) ── */
     @media (max-width: 767px) {
-      .hero { padding: 36px 0 32px; }
-      .hero h1 { font-size: 1.6rem; }
-      .hero p { font-size: .95rem; }
-      .campus-badge { font-size: .75rem; padding: 5px 12px; }
+      .hero {
+        padding: 36px 0 32px;
+      }
 
-      .search-card { padding: 18px; max-width: 100%; }
+      .hero h1 {
+        font-size: 1.6rem;
+      }
 
-      .stats-bar { margin-top: -20px; border-radius: 12px; }
-      .stat-item { padding: 16px 8px; }
-      .stat-item .num { font-size: 1.4rem; }
-      .stat-item .lbl { font-size: .75rem; }
+      .hero p {
+        font-size: .95rem;
+      }
 
-      section { padding: 48px 0; }
-      .section-title { font-size: 1.3rem; }
-      .section-sub { font-size: .88rem; }
+      .campus-badge {
+        font-size: .75rem;
+        padding: 5px 12px;
+      }
 
-      .service-card { padding: 20px 18px; }
-      .dept-card { padding: 16px 10px; }
+      /* Hero CTA buttons: full width stacked */
+      .hero .d-flex.flex-wrap.gap-3 {
+        flex-direction: column;
+        gap: .6rem !important;
+      }
 
-      .flip-card { height: 280px; }
-      .front-overlay { padding: 28px 10px 10px; }
+      .hero .d-flex.flex-wrap.gap-3 .btn {
+        width: 100%;
+        justify-content: center;
+      }
 
-      .info-box { padding: 18px; }
+      /* Hero: smaller gap */
+      .hero .row.g-5 {
+        --bs-gutter-y: 1.5rem;
+        --bs-gutter-x: 1rem;
+      }
 
-      .cta-section { padding: 28px 20px !important; border-radius: 14px; }
-      .cta-section h2 { font-size: 1.3rem; }
-      .cta-section p { font-size: .95rem; }
-      .cta-section .btn-lg { font-size: .88rem; padding: 10px 20px; }
+      /* Search card */
+      .search-card {
+        padding: 18px;
+        max-width: 100%;
+      }
+
+      /* Stats bar */
+      .stats-bar {
+        margin-top: -20px;
+        border-radius: 12px;
+      }
+
+      .stat-item {
+        padding: 16px 8px;
+      }
+
+      .stat-item .num {
+        font-size: 1.4rem;
+      }
+
+      .stat-item .lbl {
+        font-size: .75rem;
+      }
+
+      /* Stats bar: 2-column layout — remove right border on even items */
+      .stats-bar .col-6:nth-child(2n) {
+        border-right: none !important;
+      }
+
+      /* Add bottom border between the 2 rows */
+      .stats-bar .col-6:nth-child(1),
+      .stats-bar .col-6:nth-child(2) {
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      section {
+        padding: 48px 0;
+      }
+
+      .section-title {
+        font-size: 1.3rem;
+      }
+
+      .section-sub {
+        font-size: .88rem;
+      }
+
+      .service-card {
+        padding: 20px 18px;
+      }
+
+      .dept-card {
+        padding: 16px 10px;
+      }
+
+      /* Doctor flip cards */
+      .flip-card {
+        height: 280px;
+      }
+
+      .front-overlay {
+        padding: 28px 10px 10px;
+      }
+
+      /* "How it works" steps: reduce spacing */
+      .step-circle {
+        width: 52px;
+        height: 52px;
+        font-size: 1.2rem;
+      }
+
+      .info-box {
+        padding: 18px;
+      }
+
+      /* CTA section */
+      .cta-section {
+        padding: 28px 20px !important;
+        border-radius: 14px;
+      }
+
+      .cta-section h2 {
+        font-size: 1.3rem;
+      }
+
+      .cta-section p {
+        font-size: .95rem;
+      }
+
+      .cta-section .btn-lg {
+        font-size: .88rem;
+        padding: 10px 20px;
+      }
 
       /* FABs */
-      .fab { width: 50px; height: 50px; font-size: 1.2rem; bottom: 20px; right: 20px; }
-      .fab-chat { bottom: 82px; }
-      .fab-label { display: none; }
-      #scroll-top { right: 20px; bottom: 82px; width: 38px; height: 38px; font-size: .95rem; }
+      .fab {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        bottom: 20px;
+        right: 20px;
+      }
+
+      .fab-chat {
+        bottom: 82px;
+      }
+
+      .fab-label {
+        display: none;
+      }
+
+      #scroll-top {
+        right: 20px;
+        bottom: 82px;
+        width: 38px;
+        height: 38px;
+        font-size: .95rem;
+      }
 
       /* Chat panel */
-      .chat-panel { width: 100vw; height: 100vh; border-radius: 0; }
-      .chat-panel-header { border-radius: 0; }
+      .chat-panel {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+      }
+
+      .chat-panel-header {
+        border-radius: 0;
+      }
 
       /* Footer */
-      footer { padding: 36px 0 18px; }
-      footer h6 { margin-top: 8px; }
-      .office-hours-row { font-size: .8rem; }
+      footer {
+        padding: 36px 0 18px;
+      }
+
+      footer h6 {
+        margin-top: 8px;
+      }
+
+      .office-hours-row {
+        font-size: .8rem;
+      }
+
+      /* Notice banner */
+      .notice-banner {
+        font-size: .82rem;
+        padding: 10px 14px;
+      }
     }
 
     /* ── Small phone (≤480px) ── */
     @media (max-width: 480px) {
-      .hero h1 { font-size: 1.35rem; }
-      .hero p { font-size: .88rem; }
-      .hero .btn-lg { font-size: .85rem; padding: 8px 16px; }
+      .hero h1 {
+        font-size: 1.35rem;
+      }
 
-      .search-card { padding: 14px; }
+      .hero p {
+        font-size: .88rem;
+      }
 
-      .stat-item .num { font-size: 1.2rem; }
-      .stat-item .lbl { font-size: .7rem; }
+      .hero .btn-lg {
+        font-size: .85rem;
+        padding: 8px 16px;
+      }
 
-      .flip-card { height: 260px; }
+      .search-card {
+        padding: 14px;
+      }
 
-      .section-title { font-size: 1.15rem; }
+      .stat-item .num {
+        font-size: 1.2rem;
+      }
 
-      .cta-section .btn { display: block; width: 100%; margin-bottom: 8px; }
-      .cta-section .btn:last-child { margin-bottom: 0; }
-      .cta-section .me-2 { margin-right: 0 !important; }
+      .stat-item .lbl {
+        font-size: .7rem;
+      }
+
+      /* Even taller flip cards become short on tiny screens */
+      .flip-card {
+        height: 260px;
+      }
+
+      .section-title {
+        font-size: 1.15rem;
+      }
+
+      /* CTA buttons: stack and fill width */
+      .cta-section .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .cta-section .btn:last-child {
+        margin-bottom: 0;
+      }
+
+      .cta-section .me-2 {
+        margin-right: 0 !important;
+      }
+
+      /* Footer office hours: allow wrapping */
+      .office-hours-row {
+        flex-wrap: wrap;
+        gap: 2px;
+      }
+
+      /* Search card: hide encouraging carousel on very small screens to save space */
+      #encouragingMessagesCarousel {
+        display: none;
+      }
+
+      /* Navbar collapse: add some breathing room */
+      .navbar-collapse .d-flex.gap-2 {
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 8px;
+      }
     }
 
+
+
+    .cta-section .btn {
+      display: block;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .cta-section .btn:last-child {
+      margin-bottom: 0;
+    }
+
+    .cta-section .me-2 {
+      margin-right: 0 !important;
+    }
+    }
   </style>
 
   <!-- SEO Enhancements -->
-  <meta name="description" content="Your campus health, all in one place. Book appointments, access the blood bank, and find emergency contacts for Assam University Silchar students.">
+  <meta name="description"
+    content="Your campus health, all in one place. Book appointments, access the blood bank, and find emergency contacts for Assam University Silchar students.">
   <meta property="og:title" content="AUdoc – Student Health Portal">
-<meta property="og:description" content="Your campus health, all in one place. Book appointments, access the blood bank, and find emergency contacts for Assam University Silchar students.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://voiddoc.me/">
+  <meta property="og:description"
+    content="Your campus health, all in one place. Book appointments, access the blood bank, and find emergency contacts for Assam University Silchar students.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://voiddoc.me/">
 
   <!-- Anti-DevTools Snippet -->
 
 </head>
+
 <body>
 
-<!-- ══════════ TOPBAR ══════════ -->
-<div class="topbar d-none d-md-block">
-  <div class="container d-flex justify-content-between align-items-center">
-    <div class="d-flex gap-4">
-      <span><i class="bi bi-geo-alt me-1"></i>AUS Health Center, Academic Block C, Room 101</span>
-      <span><i class="bi bi-clock me-1"></i>Open 24 × 7</span>
-    </div>
-    <div class="d-flex gap-3">
-      <span><i class="bi bi-telephone me-1"></i>+91 6900577470</span>
-      <span><i class="bi bi-envelope me-1"></i>sayankumarr02@gmail.com</span>
+  <!-- ══════════ TOPBAR ══════════ -->
+  <div class="topbar d-none d-md-block">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex gap-4">
+        <span><i class="bi bi-geo-alt me-1"></i>AUS Health Center, Academic Block C, Room 101</span>
+        <span><i class="bi bi-clock me-1"></i>Open 24 × 7</span>
+      </div>
+      <div class="d-flex gap-3">
+        <span><i class="bi bi-telephone me-1"></i>+91 6900577470</span>
+        <span><i class="bi bi-envelope me-1"></i>sayankumarr02@gmail.com</span>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ══════════ NAVBAR ══════════ -->
-<nav class="navbar navbar-expand-lg sticky-top">
-  <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
-      <img src="{% static 'app/images/e3fc6cfc-17e4-4ee2-98d4-8f64cd160590.jpg' %}" alt="AUdoc Logo" style="width:38px;height:38px;border-radius:10px;object-fit:cover;">
-      <div>
-        <div class="brand-name">AUdoc</div>
-        <span class="brand-sub">Campus Health Portal</span>
-      </div>
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navMenu">
-      <ul class="navbar-nav mx-auto gap-1">
-        <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'appointment' %}">Appointments</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'blood_bank' %}">Blood Bank</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'donation' %}">Donation</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
-      </ul>
-      <div class="d-flex gap-2 align-items-center">
-        {% if user.is_authenticated %}
+  <!-- ══════════ NAVBAR ══════════ -->
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+        <img src="{% static 'app/images/e3fc6cfc-17e4-4ee2-98d4-8f64cd160590.jpg' %}" alt="AUdoc Logo"
+          style="width:38px;height:38px;border-radius:10px;object-fit:cover;">
+        <div>
+          <div class="brand-name">AUdoc</div>
+          <span class="brand-sub">Campus Health Portal</span>
+        </div>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav mx-auto gap-1">
+          <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'appointment' %}">Appointments</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'blood_bank' %}">Blood Bank</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'donation' %}">Donation</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
+        </ul>
+        <div class="d-flex gap-2 align-items-center">
+          {% if user.is_authenticated %}
           <span class="text-muted small d-none d-md-inline">
             <i class="bi bi-person-circle me-1"></i>
             <strong>{{ user.get_full_name|default:user.username }}</strong>
@@ -598,737 +1169,786 @@
               <i class="bi bi-box-arrow-right me-1"></i>Logout
             </button>
           </form>
-        {% else %}
+          {% else %}
           <a href="/accounts/login/" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
             <i class="bi bi-box-arrow-in-right me-1"></i>Login
           </a>
           <a href="{% url 'register' %}" class="btn btn-primary btn-sm px-3 rounded-pill">Register</a>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</nav>
-
-<!-- ══════════ HERO ══════════ -->
-<section class="hero">
-  <div class="container">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <div class="campus-badge">
-          <i class="bi bi-shield-check"></i> Official AUS Campus Health Service
-        </div>
-        <h1>Your Campus Health,<br><span style="color:var(--primary)">All in One Place</span></h1>
-        <p class="mt-3 mb-4">
-          As an AUS student, you have access to on-campus doctors across multiple departments.
-          View available doctors, check their schedules, and book your appointment — all online.
-        </p>
-        <div class="d-flex flex-wrap gap-3">
-          <a href="{% url 'appointment' %}" class="btn btn-primary btn-lg rounded-pill px-4">
-            <i class="bi bi-calendar-check me-2"></i>Book Appointment
-          </a>
-          <a href="{% url 'blood_bank' %}" class="btn btn-outline-primary btn-lg rounded-pill px-4">
-            <i class="bi bi-droplet-fill me-2"></i>Blood Bank
-          </a>
-        </div>
-        <div class="mt-4 notice-banner">
-          <i class="bi bi-info-circle text-warning me-2"></i>
-          <strong>Walk-in hours:</strong> Open 24 × 7 &nbsp;|&nbsp; No appointment needed for walk-ins.
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="search-card">
-
-          <!-- Header -->
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="bi bi-lightning-charge-fill text-white" style="font-size:1rem;"></i>
-            </div>
-            <div>
-              <h5 class="fw-bold mb-0" style="color:#0d2a1a;">Quick Access</h5>
-              <p class="text-muted mb-0" style="font-size:.78rem;">Everything you need, right here</p>
-            </div>
-          </div>
-          <hr style="border-color:#e8f5ec;margin:0 0 16px;">
-
-          <!-- Blood Donors & Requests grid -->
-          <div class="row g-2 mb-3">
-            <div class="col-12">
-              <a href="{% url 'blood_bank' %}" class="text-decoration-none">
-                <div class="d-flex align-items-center justify-content-between p-3 rounded-3 h-100" style="background:#f0f8ff;border:1.5px solid #b6d4fe;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 14px rgba(13,110,253,.12)'" onmouseout="this.style.boxShadow='none'">
-                  <div class="d-flex align-items-center gap-3">
-                    <div style="width:42px;height:42px;background:linear-gradient(135deg,#0d6efd,#0a58ca);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                      <i class="bi bi-people-fill text-white" style="font-size:1.1rem;"></i>
-                    </div>
-                    <div>
-                      <div class="fw-bold" style="font-size:1rem;color:#0d2a1a;line-height:1.2;">{{ total_blood_donors }} Donors</div>
-                      <div style="font-size:.75rem;color:#555;line-height:1.2;">Registered & Ready to Help</div>
-                    </div>
-                  </div>
-                  <div class="text-primary" style="font-size: 1.2rem;">
-                    <i class="bi bi-arrow-right-circle-fill"></i>
-                  </div>
-                </div>
-              </a>
-            </div>
-
-            <div class="col-12">
-              <div class="p-3 rounded-3" style="background: #fff; border: 1.5px solid #fecdd3; overflow: hidden; box-shadow: 0 2px 8px rgba(196,30,58,0.08);">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <span class="fw-bold" style="color: #c41e3a; font-size: .85rem;">
-                    <i class="bi bi-activity me-1"></i> Live Blood Requests
-                  </span>
-                  <a href="{% url 'blood_bank' %}" class="text-danger text-decoration-none" style="font-size: .75rem;">View All</a>
-                </div>
-                
-                {% if active_blood_requests %}
-                <div id="bloodRequestsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">
-                  <div class="carousel-inner">
-                    {% for req in active_blood_requests %}
-                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                      <div class="p-2 rounded-2" style="background: #fff5f7; border-left: 3px solid #c41e3a; font-size: .75rem;">
-                        <div class="d-flex justify-content-between">
-                          <strong class="text-danger">{{ req.blood_group }} Needed</strong>
-                          <span class="text-muted">{{ req.required_date|date:"d M" }}</span>
-                        </div>
-                        <div class="text-dark mt-1 text-truncate">
-                          {{ req.hospital_name }} - {{ req.requester_name }}
-                        </div>
-                      </div>
-                    </div>
-                    {% endfor %}
-                  </div>
-                </div>
-                {% else %}
-                <div class="text-center text-muted" style="font-size: .8rem; padding: 10px 0;">
-                  No active requests at the moment.
-                </div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-12">
-              <div id="encouragingMessagesCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
-                <div class="carousel-inner rounded-3" style="background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1.5px dashed #fde68a;">
-                  
-                  <div class="carousel-item active p-3 text-center">
-                    <i class="bi bi-heart-pulse-fill text-danger mb-2" style="font-size: 1.5rem;"></i>
-                    <h6 class="fw-bold mb-1" style="color: #b45309;">Be a bloody legend! 🦇</h6>
-                    <p class="mb-0" style="font-size: .8rem; color: #92400e;">Your blood can give someone another chance at life.</p>
-                  </div>
-
-                  <div class="carousel-item p-3 text-center">
-                    <i class="bi bi-droplet-fill text-danger mb-2" style="font-size: 1.5rem;"></i>
-                    <h6 class="fw-bold mb-1" style="color: #b45309;">Heroes don't always wear capes!</h6>
-                    <p class="mb-0" style="font-size: .8rem; color: #92400e;">Sometimes they just roll up their sleeves. 💪</p>
-                  </div>
-
-                  <div class="carousel-item p-3 text-center">
-                    <i class="bi bi-heart-fill text-danger mb-2" style="font-size: 1.5rem;"></i>
-                    <h6 class="fw-bold mb-1" style="color: #b45309;">Give Blood, Give Life! ❤️</h6>
-                    <p class="mb-0" style="font-size: .8rem; color: #92400e;">Join the AUdoc Blood Donors community today.</p>
-                  </div>
-
-                  <div class="carousel-item p-3 text-center">
-                    <i class="bi bi-stars text-danger mb-2" style="font-size: 1.5rem;"></i>
-                    <h6 class="fw-bold mb-1" style="color: #b45309;">A single drop is a ray of hope! ✨</h6>
-                    <p class="mb-0" style="font-size: .8rem; color: #92400e;">Become a donor and save lives today.</p>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Emergency strip -->
-          <div class="d-flex align-items-center gap-2 p-3 rounded-3" style="background:#fef2f2;border:1.5px solid #fecaca;">
-            <i class="bi bi-telephone-fill" style="color:#c41e3a;font-size:1.1rem;flex-shrink:0;"></i>
-            <div>
-              <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#991b1b;">Emergency</div>
-              <div class="fw-bold" style="color:#0d2a1a;font-size:.88rem;">Ext. 100 &nbsp;|&nbsp; +91 6900577470</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════ STATS BAR ══════════ -->
-<div class="container">
-  <div class="stats-bar row g-0 px-2">
-    <div class="col-6 col-md-3 stat-item border-end">
-      <div class="num" data-count="5" data-suffix="+">5+</div>
-      <div class="lbl"><i class="bi bi-person-badge me-1"></i>Campus Doctors</div>
-    </div>
-    <div class="col-6 col-md-3 stat-item border-end">
-      <div class="num" data-count="8" data-suffix="">8</div>
-      <div class="lbl"><i class="bi bi-grid me-1"></i>Departments</div>
-    </div>
-    <div class="col-6 col-md-3 stat-item border-end">
-      <div class="num" data-count="10" data-suffix="K+">10K+</div>
-      <div class="lbl"><i class="bi bi-mortarboard me-1"></i>Students Served</div>
-    </div>
-    <div class="col-6 col-md-3 stat-item">
-      <div class="num" data-count="7" data-suffix=" Days">7 Days</div>
-      <div class="lbl"><i class="bi bi-clock-history me-1"></i>Open 24 × 7</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ CAMPUS HEALTH SERVICES ══════════ -->
-<section style="background:#eef7f1;">
-  <div class="container">
-    <div class="text-center mb-5">
-      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Our Services</span>
-      <h2 class="section-title">Campus Health Services</h2>
-      <p class="section-sub">Everything you need to stay healthy on campus, all in one place</p>
-    </div>
-    <div class="row g-4">
-
-      <!-- Book Appointment -->
-      <div class="col-sm-6 col-lg-4 reveal">
-        <div class="service-card">
-          <div class="service-icon" style="background:#e8f5ec;color:var(--primary);"><i class="bi bi-calendar-check-fill"></i></div>
-          <h5>Book an Appointment</h5>
-          <p>Schedule a visit with a campus doctor across 8 departments. Choose your preferred time slot and get confirmed instantly.</p>
-          <a href="{% url 'appointment' %}" class="btn btn-primary btn-sm rounded-pill px-3 align-self-start">
-            <i class="bi bi-arrow-right me-1"></i>Book Now
-          </a>
-        </div>
-      </div>
-
-      <!-- Blood Bank -->
-      <div class="col-sm-6 col-lg-4 reveal">
-        <div class="service-card">
-          <div class="service-icon" style="background:#ffe8eb;color:#c41e3a;"><i class="bi bi-droplet-fill"></i></div>
-          <h5>Blood Bank</h5>
-          <p>Register as a blood donor or submit an urgent blood request. Our campus blood bank connects donors with patients in need.</p>
-          <a href="{% url 'blood_bank' %}" class="btn btn-sm rounded-pill px-3 align-self-start" style="background:#c41e3a;color:#fff;">
-            <i class="bi bi-arrow-right me-1"></i>Visit Blood Bank
-          </a>
-        </div>
-      </div>
-
-      <!-- Find Blood Donors -->
-      <div class="col-sm-6 col-lg-4 reveal">
-        <div class="service-card">
-          <div class="service-icon" style="background:#d5f0e2;color:#1d8348;"><i class="bi bi-people-fill"></i></div>
-          <h5>Blood Donor Network</h5>
-          <p>Register as a campus blood donor and be part of our verified donor network. In an emergency, the health center staff will reach out to available donors directly.</p>
-          <a href="{% url 'blood_bank' %}" class="btn btn-sm rounded-pill px-3 align-self-start" style="background:#1d8348;color:#fff;">
-            <i class="bi bi-arrow-right me-1"></i>Register as Donor
-          </a>
-        </div>
-      </div>
-
-      <!-- Support the Health Center -->
-      <div class="col-sm-6 col-lg-4 reveal">
-        <div class="service-card">
-          <div class="service-icon" style="background:#fff3cd;color:#856404;"><i class="bi bi-gift-fill"></i></div>
-          <h5>Support the Health Center</h5>
-          <p>Help us improve campus health facilities with a voluntary contribution. Every donation goes directly towards better student healthcare.</p>
-          <a href="{% url 'donation' %}" class="btn btn-sm rounded-pill px-3 align-self-start" style="background:#856404;color:#fff;">
-            <i class="bi bi-arrow-right me-1"></i>Donate Now
-          </a>
-        </div>
-      </div>
-
-      <!-- Emergency Contact -->
-      <div class="col-sm-6 col-lg-4 reveal">
-        <div class="service-card">
-          <div class="service-icon" style="background:#ffe8eb;color:#c41e3a;"><i class="bi bi-telephone-fill"></i></div>
-          <h5>Emergency Contact</h5>
-          <p>For medical emergencies on campus, call our emergency line immediately. Do not delay in case of serious injury or illness.</p>
-          <div>
-            <span class="fw-bold d-block" style="color:#c41e3a;font-size:1.05rem;"><i class="bi bi-telephone-fill me-1"></i>Ext. 100 (internal)</span>
-            <span class="text-muted small">+91 6900577470 (external)</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Student Registration -->
-      <div class="col-sm-6 col-lg-4 reveal">
-        <div class="service-card">
-          <div class="service-icon" style="background:#e8f5ec;color:var(--primary);"><i class="bi bi-person-plus-fill"></i></div>
-          <h5>Student Registration</h5>
-          <p>New to AUdoc? Register your student profile to unlock appointments, donor services, and your personalized health dashboard.</p>
-          {% if user.is_authenticated %}
-            <span class="badge bg-success rounded-pill px-3 py-2 align-self-start"><i class="bi bi-check-circle-fill me-1"></i>Already Registered</span>
-          {% else %}
-            <a href="{% url 'register' %}" class="btn btn-primary btn-sm rounded-pill px-3 align-self-start">
-              <i class="bi bi-arrow-right me-1"></i>Register Now
-            </a>
           {% endif %}
         </div>
       </div>
+    </div>
+  </nav>
 
+  <!-- ══════════ HERO ══════════ -->
+  <section class="hero">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <div class="campus-badge">
+            <i class="bi bi-shield-check"></i> Official AUS Campus Health Service
+          </div>
+          <h1>Your Campus Health,<br><span style="color:var(--primary)">All in One Place</span></h1>
+          <p class="mt-3 mb-4">
+            As an AUS student, you have access to on-campus doctors across multiple departments.
+            View available doctors, check their schedules, and book your appointment — all online.
+          </p>
+          <div class="d-flex flex-wrap gap-3">
+            <a href="{% url 'appointment' %}" class="btn btn-primary btn-lg rounded-pill px-4">
+              <i class="bi bi-calendar-check me-2"></i>Book Appointment
+            </a>
+            <a href="{% url 'blood_bank' %}" class="btn btn-outline-primary btn-lg rounded-pill px-4">
+              <i class="bi bi-droplet-fill me-2"></i>Blood Bank
+            </a>
+          </div>
+          <div class="mt-4 notice-banner">
+            <i class="bi bi-info-circle text-warning me-2"></i>
+            <strong>Walk-in hours:</strong> Open 24 × 7 &nbsp;|&nbsp; No appointment needed for walk-ins.
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="search-card">
+
+            <!-- Header -->
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div
+                style="width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="bi bi-lightning-charge-fill text-white" style="font-size:1rem;"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-0" style="color:#0d2a1a;">Quick Access</h5>
+                <p class="text-muted mb-0" style="font-size:.78rem;">Everything you need, right here</p>
+              </div>
+            </div>
+            <hr style="border-color:#e8f5ec;margin:0 0 16px;">
+
+            <!-- Blood Donors & Requests grid -->
+            <div class="row g-2 mb-3">
+              <div class="col-12">
+                <a href="{% url 'blood_bank' %}" class="text-decoration-none">
+                  <div class="d-flex align-items-center justify-content-between p-3 rounded-3 h-100"
+                    style="background:#f0f8ff;border:1.5px solid #b6d4fe;transition:box-shadow .2s;"
+                    onmouseover="this.style.boxShadow='0 4px 14px rgba(13,110,253,.12)'"
+                    onmouseout="this.style.boxShadow='none'">
+                    <div class="d-flex align-items-center gap-3">
+                      <div
+                        style="width:42px;height:42px;background:linear-gradient(135deg,#0d6efd,#0a58ca);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-people-fill text-white" style="font-size:1.1rem;"></i>
+                      </div>
+                      <div>
+                        <div class="fw-bold" style="font-size:1rem;color:#0d2a1a;line-height:1.2;">{{ total_blood_donors
+                          }} Donors</div>
+                        <div style="font-size:.75rem;color:#555;line-height:1.2;">Registered & Ready to Help</div>
+                      </div>
+                    </div>
+                    <div class="text-primary" style="font-size: 1.2rem;">
+                      <i class="bi bi-arrow-right-circle-fill"></i>
+                    </div>
+                  </div>
+                </a>
+              </div>
+
+              <div class="col-12">
+                <div class="p-3 rounded-3"
+                  style="background: #fff; border: 1.5px solid #fecdd3; overflow: hidden; box-shadow: 0 2px 8px rgba(196,30,58,0.08);">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="fw-bold" style="color: #c41e3a; font-size: .85rem;">
+                      <i class="bi bi-activity me-1"></i> Live Blood Requests
+                    </span>
+                    <a href="{% url 'blood_bank' %}" class="text-danger text-decoration-none"
+                      style="font-size: .75rem;">View All</a>
+                  </div>
+
+                  {% if active_blood_requests %}
+                  <div id="bloodRequestsCarousel" class="carousel slide" data-bs-ride="carousel"
+                    data-bs-interval="3500">
+                    <div class="carousel-inner">
+                      {% for req in active_blood_requests %}
+                      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="p-2 rounded-2"
+                          style="background: #fff5f7; border-left: 3px solid #c41e3a; font-size: .75rem;">
+                          <div class="d-flex justify-content-between">
+                            <strong class="text-danger">{{ req.blood_group }} Needed</strong>
+                            <span class="text-muted">{{ req.required_date|date:"d M" }}</span>
+                          </div>
+                          <div class="text-dark mt-1 text-truncate">
+                            {{ req.hospital_name }} - {{ req.requester_name }}
+                          </div>
+                        </div>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% else %}
+                  <div class="text-center text-muted" style="font-size: .8rem; padding: 10px 0;">
+                    No active requests at the moment.
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div id="encouragingMessagesCarousel" class="carousel slide" data-bs-ride="carousel"
+                  data-bs-interval="3000">
+                  <div class="carousel-inner rounded-3"
+                    style="background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1.5px dashed #fde68a;">
+
+                    <div class="carousel-item active p-3 text-center">
+                      <i class="bi bi-heart-pulse-fill text-danger mb-2" style="font-size: 1.5rem;"></i>
+                      <h6 class="fw-bold mb-1" style="color: #b45309;">Be a bloody legend! 🦇</h6>
+                      <p class="mb-0" style="font-size: .8rem; color: #92400e;">Your blood can give someone another
+                        chance at life.</p>
+                    </div>
+
+                    <div class="carousel-item p-3 text-center">
+                      <i class="bi bi-droplet-fill text-danger mb-2" style="font-size: 1.5rem;"></i>
+                      <h6 class="fw-bold mb-1" style="color: #b45309;">Heroes don't always wear capes!</h6>
+                      <p class="mb-0" style="font-size: .8rem; color: #92400e;">Sometimes they just roll up their
+                        sleeves. 💪</p>
+                    </div>
+
+                    <div class="carousel-item p-3 text-center">
+                      <i class="bi bi-heart-fill text-danger mb-2" style="font-size: 1.5rem;"></i>
+                      <h6 class="fw-bold mb-1" style="color: #b45309;">Give Blood, Give Life! ❤️</h6>
+                      <p class="mb-0" style="font-size: .8rem; color: #92400e;">Join the AUdoc Blood Donors community
+                        today.</p>
+                    </div>
+
+                    <div class="carousel-item p-3 text-center">
+                      <i class="bi bi-stars text-danger mb-2" style="font-size: 1.5rem;"></i>
+                      <h6 class="fw-bold mb-1" style="color: #b45309;">A single drop is a ray of hope! ✨</h6>
+                      <p class="mb-0" style="font-size: .8rem; color: #92400e;">Become a donor and save lives today.</p>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Emergency strip -->
+            <div class="d-flex align-items-center gap-2 p-3 rounded-3"
+              style="background:#fef2f2;border:1.5px solid #fecaca;">
+              <i class="bi bi-telephone-fill" style="color:#c41e3a;font-size:1.1rem;flex-shrink:0;"></i>
+              <div>
+                <div
+                  style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#991b1b;">
+                  Emergency</div>
+                <div class="fw-bold" style="color:#0d2a1a;font-size:.88rem;">Ext. 100 &nbsp;|&nbsp; +91 6900577470</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ STATS BAR ══════════ -->
+  <div class="container">
+    <div class="stats-bar row g-0 px-2">
+      <div class="col-6 col-md-3 stat-item border-end">
+        <div class="num" data-count="5" data-suffix="+">5+</div>
+        <div class="lbl"><i class="bi bi-person-badge me-1"></i>Campus Doctors</div>
+      </div>
+      <div class="col-6 col-md-3 stat-item border-end">
+        <div class="num" data-count="8" data-suffix="">8</div>
+        <div class="lbl"><i class="bi bi-grid me-1"></i>Departments</div>
+      </div>
+      <div class="col-6 col-md-3 stat-item border-end">
+        <div class="num" data-count="10" data-suffix="K+">10K+</div>
+        <div class="lbl"><i class="bi bi-mortarboard me-1"></i>Students Served</div>
+      </div>
+      <div class="col-6 col-md-3 stat-item">
+        <div class="num" data-count="7" data-suffix=" Days">7 Days</div>
+        <div class="lbl"><i class="bi bi-clock-history me-1"></i>Open 24 × 7</div>
+      </div>
     </div>
   </div>
-</section>
 
-<!-- ══════════ AVAILABLE DOCTORS ══════════ -->
-<section>
-  <div class="container">
-    <div class="text-center mb-5">
-      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Our Team</span>
-      <h2 class="section-title">Meet Our Campus Doctors</h2>
-      <p class="section-sub">Qualified doctors dedicated to student health and well-being</p>
+  <!-- ══════════ CAMPUS HEALTH SERVICES ══════════ -->
+  <section style="background:#eef7f1;">
+    <div class="container">
+      <div class="text-center mb-5">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Our
+          Services</span>
+        <h2 class="section-title">Campus Health Services</h2>
+        <p class="section-sub">Everything you need to stay healthy on campus, all in one place</p>
+      </div>
+      <div class="row g-4">
+
+        <!-- Book Appointment -->
+        <div class="col-sm-6 col-lg-4 reveal">
+          <div class="service-card">
+            <div class="service-icon" style="background:#e8f5ec;color:var(--primary);"><i
+                class="bi bi-calendar-check-fill"></i></div>
+            <h5>Book an Appointment</h5>
+            <p>Schedule a visit with a campus doctor across 8 departments. Choose your preferred time slot and get
+              confirmed instantly.</p>
+            <a href="{% url 'appointment' %}" class="btn btn-primary btn-sm rounded-pill px-3 align-self-start">
+              <i class="bi bi-arrow-right me-1"></i>Book Now
+            </a>
+          </div>
+        </div>
+
+        <!-- Blood Bank -->
+        <div class="col-sm-6 col-lg-4 reveal">
+          <div class="service-card">
+            <div class="service-icon" style="background:#ffe8eb;color:#c41e3a;"><i class="bi bi-droplet-fill"></i></div>
+            <h5>Blood Bank</h5>
+            <p>Register as a blood donor or submit an urgent blood request. Our campus blood bank connects donors with
+              patients in need.</p>
+            <a href="{% url 'blood_bank' %}" class="btn btn-sm rounded-pill px-3 align-self-start"
+              style="background:#c41e3a;color:#fff;">
+              <i class="bi bi-arrow-right me-1"></i>Visit Blood Bank
+            </a>
+          </div>
+        </div>
+
+        <!-- Find Blood Donors -->
+        <div class="col-sm-6 col-lg-4 reveal">
+          <div class="service-card">
+            <div class="service-icon" style="background:#d5f0e2;color:#1d8348;"><i class="bi bi-people-fill"></i></div>
+            <h5>Blood Donor Network</h5>
+            <p>Register as a campus blood donor and be part of our verified donor network. In an emergency, the health
+              center staff will reach out to available donors directly.</p>
+            <a href="{% url 'blood_bank' %}" class="btn btn-sm rounded-pill px-3 align-self-start"
+              style="background:#1d8348;color:#fff;">
+              <i class="bi bi-arrow-right me-1"></i>Register as Donor
+            </a>
+          </div>
+        </div>
+
+        <!-- Support the Health Center -->
+        <div class="col-sm-6 col-lg-4 reveal">
+          <div class="service-card">
+            <div class="service-icon" style="background:#fff3cd;color:#856404;"><i class="bi bi-gift-fill"></i></div>
+            <h5>Support the Health Center</h5>
+            <p>Help us improve campus health facilities with a voluntary contribution. Every donation goes directly
+              towards better student healthcare.</p>
+            <a href="{% url 'donation' %}" class="btn btn-sm rounded-pill px-3 align-self-start"
+              style="background:#856404;color:#fff;">
+              <i class="bi bi-arrow-right me-1"></i>Donate Now
+            </a>
+          </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="col-sm-6 col-lg-4 reveal">
+          <div class="service-card">
+            <div class="service-icon" style="background:#ffe8eb;color:#c41e3a;"><i class="bi bi-telephone-fill"></i>
+            </div>
+            <h5>Emergency Contact</h5>
+            <p>For medical emergencies on campus, call our emergency line immediately. Do not delay in case of serious
+              injury or illness.</p>
+            <div>
+              <span class="fw-bold d-block" style="color:#c41e3a;font-size:1.05rem;"><i
+                  class="bi bi-telephone-fill me-1"></i>Ext. 100 (internal)</span>
+              <span class="text-muted small">+91 6900577470 (external)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Registration -->
+        <div class="col-sm-6 col-lg-4 reveal">
+          <div class="service-card">
+            <div class="service-icon" style="background:#e8f5ec;color:var(--primary);"><i
+                class="bi bi-person-plus-fill"></i></div>
+            <h5>Student Registration</h5>
+            <p>New to AUdoc? Register your student profile to unlock appointments, donor services, and your personalized
+              health dashboard.</p>
+            {% if user.is_authenticated %}
+            <span class="badge bg-success rounded-pill px-3 py-2 align-self-start"><i
+                class="bi bi-check-circle-fill me-1"></i>Already Registered</span>
+            {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary btn-sm rounded-pill px-3 align-self-start">
+              <i class="bi bi-arrow-right me-1"></i>Register Now
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
     </div>
-    <div class="row g-4 justify-content-center">
-      {% for doctor in doctors %}
-      <div class="col-sm-6 col-lg-3 reveal">
-        <div class="flip-card" onclick="this.classList.toggle('flipped')">
-          <div class="flip-card-inner">
+  </section>
 
-            <!-- ── FRONT (photo) ── -->
-            <div class="flip-card-face flip-card-front">
-              {% if doctor.photo %}
+  <!-- ══════════ AVAILABLE DOCTORS ══════════ -->
+  <section>
+    <div class="container">
+      <div class="text-center mb-5">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Our
+          Team</span>
+        <h2 class="section-title">Meet Our Campus Doctors</h2>
+        <p class="section-sub">Qualified doctors dedicated to student health and well-being</p>
+      </div>
+      <div class="row g-4 justify-content-center">
+        {% for doctor in doctors %}
+        <div class="col-sm-6 col-lg-3 reveal">
+          <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+
+              <!-- ── FRONT (photo) ── -->
+              <div class="flip-card-face flip-card-front">
+                {% if doctor.photo %}
                 <img class="doctor-photo-front" src="{{ doctor.photo }}" alt="{{ doctor.name }}">
-              {% else %}
+                {% else %}
                 <div class="doctor-photo-placeholder"><i class="bi bi-person-circle"></i></div>
-              {% endif %}
-              <div class="front-overlay">
-                <span class="badge-dept mb-1 d-inline-block">{{ doctor.get_specialized_in_display }}</span>
-                <div style="color:#fff;font-weight:700;font-size:.95rem;line-height:1.3;">{{ doctor.name }}</div>
+                {% endif %}
+                <div class="front-overlay">
+                  <span class="badge-dept mb-1 d-inline-block">{{ doctor.get_specialized_in_display }}</span>
+                  <div style="color:#fff;font-weight:700;font-size:.95rem;line-height:1.3;">{{ doctor.name }}</div>
+                </div>
+                <div
+                  style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.35);border-radius:20px;padding:2px 8px;">
+                  <span style="font-size:.62rem;color:#e8f5ec;"><i class="bi bi-arrow-repeat me-1"></i>Tap for
+                    info</span>
+                </div>
               </div>
-              <div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.35);border-radius:20px;padding:2px 8px;">
-                <span style="font-size:.62rem;color:#e8f5ec;"><i class="bi bi-arrow-repeat me-1"></i>Tap for info</span>
-              </div>
-            </div>
 
-            <!-- ── BACK (info) ── -->
-            <div class="flip-card-face flip-card-back">
-              <div style="color:#9abea8;font-size:.72rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;text-align:center;margin-bottom:6px;">{{ doctor.get_specialized_in_display }}</div>
-              <h5 style="color:#fff;font-weight:700;font-size:1rem;text-align:center;margin-bottom:14px;line-height:1.3;">{{ doctor.name }}</h5>
-              <div style="margin-bottom:10px;text-align:center;">
-                {% for day in doctor.available_days_list %}
+              <!-- ── BACK (info) ── -->
+              <div class="flip-card-face flip-card-back">
+                <div
+                  style="color:#9abea8;font-size:.72rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;text-align:center;margin-bottom:6px;">
+                  {{ doctor.get_specialized_in_display }}</div>
+                <h5
+                  style="color:#fff;font-weight:700;font-size:1rem;text-align:center;margin-bottom:14px;line-height:1.3;">
+                  {{ doctor.name }}</h5>
+                <div style="margin-bottom:10px;text-align:center;">
+                  {% for day in doctor.available_days_list %}
                   <span class="day-pill">{{ day|title }}</span>
-                {% empty %}
+                  {% empty %}
                   <span style="color:rgba(255,255,255,.45);font-size:.76rem;">Days TBA</span>
-                {% endfor %}
+                  {% endfor %}
+                </div>
+                <small
+                  style="color:rgba(255,255,255,.7);display:block;text-align:center;margin-bottom:18px;font-size:.76rem;">
+                  <i class="bi bi-clock me-1"></i>{{ doctor.available_time|default:"Hours TBA" }}
+                </small>
+                <a href="{% url 'appointment' %}" class="btn btn-sm w-100 rounded-pill"
+                  style="background:#d4edda;color:#1d5c35;font-size:.78rem;font-weight:600;"
+                  onclick="event.stopPropagation()">
+                  <i class="bi bi-calendar-plus me-1"></i>Book Appointment
+                </a>
+                <span style="font-size:.68rem;color:rgba(255,255,255,.3);margin-top:14px;">
+                  <i class="bi bi-arrow-repeat me-1"></i>Tap to flip back
+                </span>
               </div>
-              <small style="color:rgba(255,255,255,.7);display:block;text-align:center;margin-bottom:18px;font-size:.76rem;">
-                <i class="bi bi-clock me-1"></i>{{ doctor.available_time|default:"Hours TBA" }}
-              </small>
-              <a href="{% url 'appointment' %}" class="btn btn-sm w-100 rounded-pill"
-                 style="background:#d4edda;color:#1d5c35;font-size:.78rem;font-weight:600;"
-                 onclick="event.stopPropagation()">
-                <i class="bi bi-calendar-plus me-1"></i>Book Appointment
-              </a>
-              <span style="font-size:.68rem;color:rgba(255,255,255,.3);margin-top:14px;">
-                <i class="bi bi-arrow-repeat me-1"></i>Tap to flip back
-              </span>
+
             </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+          <i class="bi bi-person-x" style="font-size:3rem;color:#ccc;"></i>
+          <p class="text-muted mt-3">No doctors listed yet. Check back soon!</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
 
+  <!-- ══════════ HOW IT WORKS ══════════ -->
+  <section style="background:#eef7f1;">
+    <div class="container">
+      <div class="text-center mb-5">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Simple
+          Steps</span>
+        <h2 class="section-title">How to Book an Appointment</h2>
+        <p class="section-sub">Book your campus doctor visit in just a few clicks</p>
+      </div>
+      <div class="row g-4 text-center">
+        <div class="col-md-4 reveal">
+          <div class="step-circle">1</div>
+          <h5 class="fw-bold">Log In as a Student</h5>
+          <p class="text-muted">Sign in using your AU student credentials to access the AUdoc health portal.</p>
+        </div>
+        <div class="col-md-4 reveal">
+          <div class="step-circle">2</div>
+          <h5 class="fw-bold">Choose a Doctor &amp; Slot</h5>
+          <p class="text-muted">Browse available doctors by department and select an open time slot.</p>
+        </div>
+        <div class="col-md-4 reveal">
+          <div class="step-circle">3</div>
+          <h5 class="fw-bold">Confirm &amp; Visit</h5>
+          <p class="text-muted">Receive a booking confirmation and visit the medical center at your scheduled time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ INFO SECTION ══════════ -->
+  <section>
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3 reveal">
+          <div class="info-box">
+            <div class="info-icon"><i class="bi bi-clock"></i></div>
+            <h6 class="fw-bold">Clinic Hours</h6>
+            <p class="text-muted small mb-0">Open 24 × 7<br>Every day, including weekends<br><span
+                class="text-success">Always available for emergencies</span></p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 reveal">
+          <div class="info-box">
+            <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
+            <h6 class="fw-bold">Location</h6>
+            <p class="text-muted small mb-0">Academic Block C, Room 101<br>AU Main Campus<br>Ground Floor, near Student
+              Lounge</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 reveal">
+          <div class="info-box">
+            <div class="info-icon"><i class="bi bi-telephone"></i></div>
+            <h6 class="fw-bold">Emergency Contact</h6>
+            <p class="text-muted small mb-0">Campus Emergency<br>Ext. 100 (internal)<br>+91 6900577470 (external)</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 reveal">
+          <div class="info-box">
+            <div class="info-icon"><i class="bi bi-card-checklist"></i></div>
+            <h6 class="fw-bold">What to Bring</h6>
+            <p class="text-muted small mb-0">Valid AU student ID card<br>Booking confirmation (if any)<br>Previous
+              prescriptions (if any)</p>
           </div>
         </div>
       </div>
-      {% empty %}
-      <div class="col-12 text-center py-5">
-        <i class="bi bi-person-x" style="font-size:3rem;color:#ccc;"></i>
-        <p class="text-muted mt-3">No doctors listed yet. Check back soon!</p>
-      </div>
-      {% endfor %}
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ══════════ HOW IT WORKS ══════════ -->
-<section style="background:#eef7f1;">
-  <div class="container">
-    <div class="text-center mb-5">
-      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">Simple Steps</span>
-      <h2 class="section-title">How to Book an Appointment</h2>
-      <p class="section-sub">Book your campus doctor visit in just a few clicks</p>
-    </div>
-    <div class="row g-4 text-center">
-      <div class="col-md-4 reveal">
-        <div class="step-circle">1</div>
-        <h5 class="fw-bold">Log In as a Student</h5>
-        <p class="text-muted">Sign in using your AU student credentials to access the AUdoc health portal.</p>
-      </div>
-      <div class="col-md-4 reveal">
-        <div class="step-circle">2</div>
-        <h5 class="fw-bold">Choose a Doctor &amp; Slot</h5>
-        <p class="text-muted">Browse available doctors by department and select an open time slot.</p>
-      </div>
-      <div class="col-md-4 reveal">
-        <div class="step-circle">3</div>
-        <h5 class="fw-bold">Confirm &amp; Visit</h5>
-        <p class="text-muted">Receive a booking confirmation and visit the medical center at your scheduled time.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════ INFO SECTION ══════════ -->
-<section>
-  <div class="container">
-    <div class="row g-4">
-      <div class="col-md-6 col-lg-3 reveal">
-        <div class="info-box">
-          <div class="info-icon"><i class="bi bi-clock"></i></div>
-          <h6 class="fw-bold">Clinic Hours</h6>
-          <p class="text-muted small mb-0">Open 24 × 7<br>Every day, including weekends<br><span class="text-success">Always available for emergencies</span></p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3 reveal">
-        <div class="info-box">
-          <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
-          <h6 class="fw-bold">Location</h6>
-          <p class="text-muted small mb-0">Academic Block C, Room 101<br>AU Main Campus<br>Ground Floor, near Student Lounge</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3 reveal">
-        <div class="info-box">
-          <div class="info-icon"><i class="bi bi-telephone"></i></div>
-          <h6 class="fw-bold">Emergency Contact</h6>
-          <p class="text-muted small mb-0">Campus Emergency<br>Ext. 100 (internal)<br>+91 6900577470 (external)</p>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3 reveal">
-        <div class="info-box">
-          <div class="info-icon"><i class="bi bi-card-checklist"></i></div>
-          <h6 class="fw-bold">What to Bring</h6>
-          <p class="text-muted small mb-0">Valid AU student ID card<br>Booking confirmation (if any)<br>Previous prescriptions (if any)</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════ CTA ══════════ -->
-<section>
-  <div class="container">
-    <div class="cta-section text-center p-5 reveal">
-      <i class="bi bi-heart-pulse-fill fs-1 mb-3 d-block opacity-75"></i>
-      <h2 class="fw-bold mb-3">Need Blood? Register or Donate Today</h2>
-      <p class="mb-4 opacity-75 fs-5">
-        Register as a blood donor or submit an urgent blood request through the campus blood bank. Our health center staff will connect you with the right donor.
-      </p>
-      <a href="{% url 'blood_bank' %}" class="btn btn-light btn-lg rounded-pill fw-semibold px-5 me-2">
-        <i class="bi bi-droplet-fill me-2"></i>Visit Blood Bank
-      </a>
-      <a href="{% url 'appointment' %}" class="btn btn-outline-light btn-lg rounded-pill px-5">
-        <i class="bi bi-calendar-plus me-2"></i>Book Appointment
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════ FOOTER ══════════ -->
-<footer>
-  <div class="container">
-    <div class="row g-4">
-      <!-- Brand -->
-      <div class="col-lg-4">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <div style="width:34px;height:34px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;">
-            <i class="bi bi-hospital-fill text-white"></i>
-          </div>
-          <div>
-            <div class="text-white fw-bold" style="line-height:1.1;">AUdoc</div>
-            <div style="font-size:.72rem;color:#9abea8;">Campus Health Portal</div>
-          </div>
-        </div>
-        <p style="font-size:.88rem;line-height:1.7;">
-          The official health and medical service for Assam University silchar students.
-          We provide accessible, confidential, and quality healthcare on campus.
+  <!-- ══════════ CTA ══════════ -->
+  <section>
+    <div class="container">
+      <div class="cta-section text-center p-5 reveal">
+        <i class="bi bi-heart-pulse-fill fs-1 mb-3 d-block opacity-75"></i>
+        <h2 class="fw-bold mb-3">Need Blood? Register or Donate Today</h2>
+        <p class="mb-4 opacity-75 fs-5">
+          Register as a blood donor or submit an urgent blood request through the campus blood bank. Our health center
+          staff will connect you with the right donor.
         </p>
+        <a href="{% url 'blood_bank' %}" class="btn btn-light btn-lg rounded-pill fw-semibold px-5 me-2">
+          <i class="bi bi-droplet-fill me-2"></i>Visit Blood Bank
+        </a>
+        <a href="{% url 'appointment' %}" class="btn btn-outline-light btn-lg rounded-pill px-5">
+          <i class="bi bi-calendar-plus me-2"></i>Book Appointment
+        </a>
       </div>
+    </div>
+  </section>
 
-      <!-- Quick Links -->
-      <div class="col-6 col-lg-2">
-        <h6>Quick Links</h6>
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'appointment' %}">Book Appointment</a>
-        <a href="{% url 'blood_bank' %}">Blood Bank</a>
-        <a href="{% url 'donation' %}">Donation</a>
-        <a href="{% url 'about' %}">About</a>
-      </div>
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer>
+    <div class="container">
+      <div class="row g-4">
+        <!-- Brand -->
+        <div class="col-lg-4">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div
+              style="width:34px;height:34px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <i class="bi bi-hospital-fill text-white"></i>
+            </div>
+            <div>
+              <div class="text-white fw-bold" style="line-height:1.1;">AUdoc</div>
+              <div style="font-size:.72rem;color:#9abea8;">Campus Health Portal</div>
+            </div>
+          </div>
+          <p style="font-size:.88rem;line-height:1.7;">
+            The official health and medical service for Assam University silchar students.
+            We provide accessible, confidential, and quality healthcare on campus.
+          </p>
+        </div>
 
-      <!-- Services -->
-      <div class="col-6 col-lg-2">
-        <h6>Services</h6>
-        <a href="{% url 'appointment' %}">OPD Appointment</a>
-        <a href="{% url 'blood_bank' %}">Blood Donation</a>
-        <a href="{% url 'blood_bank' %}?tab=request">Blood Request</a>
-        <a href="{% url 'donation' %}">Support Us</a>
-      </div>
+        <!-- Quick Links -->
+        <div class="col-6 col-lg-2">
+          <h6>Quick Links</h6>
+          <a href="{% url 'home' %}">Home</a>
+          <a href="{% url 'appointment' %}">Book Appointment</a>
+          <a href="{% url 'blood_bank' %}">Blood Bank</a>
+          <a href="{% url 'donation' %}">Donation</a>
+          <a href="{% url 'about' %}">About</a>
+        </div>
 
-      <!-- Clinic Info -->
-      <div class="col-lg-4">
-        <h6>Clinic Hours</h6>
-        <div class="office-hours-row"><span>Every Day</span><span class="text-white">Open 24 × 7</span></div>
-        <div class="office-hours-row"><span>Including Weekends</span><span class="text-success">Always Open</span></div>
-        <div class="office-hours-row"><span>Public Holidays</span><span class="text-success">Open</span></div>
-        <div class="mt-3" style="font-size:.85rem;">
-          <i class="bi bi-geo-alt me-1"></i> Block C, Room 101, AU Main Campus<br>
-          <i class="bi bi-telephone me-1 mt-1"></i> +91 6900577470<br>
-          <i class="bi bi-envelope me-1 mt-1"></i> sayankumarr02@gmail.com
+        <!-- Services -->
+        <div class="col-6 col-lg-2">
+          <h6>Services</h6>
+          <a href="{% url 'appointment' %}">OPD Appointment</a>
+          <a href="{% url 'blood_bank' %}">Blood Donation</a>
+          <a href="{% url 'blood_bank' %}?tab=request">Blood Request</a>
+          <a href="{% url 'donation' %}">Support Us</a>
+        </div>
+
+        <!-- Clinic Info -->
+        <div class="col-lg-4">
+          <h6>Clinic Hours</h6>
+          <div class="office-hours-row"><span>Every Day</span><span class="text-white">Open 24 × 7</span></div>
+          <div class="office-hours-row"><span>Including Weekends</span><span class="text-success">Always Open</span>
+          </div>
+          <div class="office-hours-row"><span>Public Holidays</span><span class="text-success">Open</span></div>
+          <div class="mt-3" style="font-size:.85rem;">
+            <i class="bi bi-geo-alt me-1"></i> Block C, Room 101, AU Main Campus<br>
+            <i class="bi bi-telephone me-1 mt-1"></i> +91 6900577470<br>
+            <i class="bi bi-envelope me-1 mt-1"></i> sayankumarr02@gmail.com
+          </div>
         </div>
       </div>
-    </div>
-    <hr class="divider" />
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-      <small>&copy; 2026 AUdoc – Assam University Silchar Campus Health. All rights reserved.</small>
-      <small>For emergencies, call campus security: <strong class="text-white">Ext. 100</strong></small>
-    </div>
-  </div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // ── Sliding pill indicator on navbar ─────────────────────────
-  (function () {
-    const nav = document.querySelector('.navbar-nav');
-    if (!nav) return;
-
-    const pill = document.createElement('div');
-    pill.className = 'nav-pill-indicator';
-    pill.style.opacity = '0';
-    nav.appendChild(pill);
-
-    function moveTo(el) {
-      const nr = nav.getBoundingClientRect();
-      const er = el.getBoundingClientRect();
-      pill.style.left    = (er.left   - nr.left) + 'px';
-      pill.style.top     = (er.top    - nr.top)  + 'px';
-      pill.style.width   = er.width  + 'px';
-      pill.style.height  = er.height + 'px';
-      pill.style.opacity = '1';
-    }
-
-    const links = nav.querySelectorAll('.nav-link');
-    const active = nav.querySelector('.nav-link.active');
-    if (active) moveTo(active);
-
-    links.forEach(link => {
-      link.addEventListener('mouseenter', () => moveTo(link));
-    });
-
-    nav.addEventListener('mouseleave', () => {
-      const cur = nav.querySelector('.nav-link.active');
-      if (cur) moveTo(cur); else pill.style.opacity = '0';
-    });
-  })();
-</script>
-
-<!-- ══════════ SCROLL TO TOP ══════════ -->
-<button id="scroll-top" aria-label="Back to top"><i class="bi bi-chevron-up"></i></button>
-
-<script>
-  // ── Scroll-reveal ──────────────────────────────────────────
-  (function () {
-    const els = document.querySelectorAll('.reveal');
-    if (!els.length) return;
-    const seen = new Set();
-    els.forEach(el => {
-      const p = el.parentElement;
-      if (p && !seen.has(p)) {
-        seen.add(p);
-        Array.from(p.querySelectorAll(':scope > .reveal')).forEach((s, i) => {
-          s.style.transitionDelay = (i * 0.1) + 's';
-        });
-      }
-    });
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
-    }, { threshold: 0.1 });
-    els.forEach(el => io.observe(el));
-  })();
-
-  // ── Scroll-to-top ──────────────────────────────────────────
-  (function () {
-    const btn = document.getElementById('scroll-top');
-    if (!btn) return;
-    window.addEventListener('scroll', () => btn.classList.toggle('show', window.scrollY > 320));
-    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  })();
-
-  // ── Animated counters (stats bar) ──────────────────────────
-  (function () {
-    const nums = document.querySelectorAll('.num[data-count]');
-    if (!nums.length) return;
-    function animateCounter(el) {
-      const target = +el.dataset.count;
-      const suffix = el.dataset.suffix || '';
-      const duration = 1200;
-      let start = null;
-      function step(ts) {
-        if (!start) start = ts;
-        const progress = Math.min((ts - start) / duration, 1);
-        const ease = 1 - Math.pow(1 - progress, 3);
-        el.textContent = Math.floor(ease * target) + suffix;
-        if (progress < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-    let animated = false;
-    const statsBar = document.querySelector('.stats-bar');
-    if (!statsBar) return;
-    const io = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !animated) {
-        animated = true;
-        nums.forEach(el => animateCounter(el));
-      }
-    }, { threshold: 0.5 });
-    io.observe(statsBar);
-  })();
-</script>
-
-<!-- ══════════ FLOATING ACTION BUTTON ══════════ -->
-<a href="{% url 'blood_bank' %}" class="fab" title="Blood Bank">
-  <span class="fab-label">Blood Bank</span>
-  <i class="bi bi-droplet-fill"></i>
-</a>
-
-<!-- ══════════ CHAT FAB ══════════ -->
-<button class="fab fab-chat" id="chat-fab-btn" title="Chat with AI Assistant" aria-label="Open health assistant">
-  <span class="fab-label">Health Assistant</span>
-  <i class="bi bi-chat-dots-fill"></i>
-</button>
-
-<!-- ══════════ CHAT PANEL ══════════ -->
-<div class="chat-panel" id="chat-panel" role="dialog" aria-label="Health Assistant Chat">
-  <div class="chat-panel-header">
-    <div class="d-flex align-items-center gap-2">
-      <div class="chat-avatar"><i class="bi bi-robot"></i></div>
-      <div>
-        <div class="fw-semibold" style="font-size:.95rem;">AUdoc Health Assistant</div>
-        <div class="chat-status"><i class="bi bi-circle-fill" style="font-size:.5rem;vertical-align:middle;"></i> Online</div>
+      <hr class="divider" />
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <small>&copy; 2026 AUdoc – Assam University Silchar Campus Health. All rights reserved.</small>
+        <small>For emergencies, call campus security: <strong class="text-white">Ext. 100</strong></small>
       </div>
     </div>
-    <button class="chat-close-btn" id="chat-close-btn" aria-label="Close chat">
-      <i class="bi bi-x-lg"></i>
-    </button>
-  </div>
+  </footer>
 
-  <div class="chat-messages" id="chat-messages">
-    <div class="chat-welcome">
-      <i class="bi bi-heart-pulse"></i>
-      <strong>Hi there!</strong> I'm your AUdoc campus health assistant.<br>
-      Ask me about appointments, blood donation, clinic hours, or anything health-related.
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ── Sliding pill indicator on navbar ─────────────────────────
+    (function () {
+      const nav = document.querySelector('.navbar-nav');
+      if (!nav) return;
+
+      const pill = document.createElement('div');
+      pill.className = 'nav-pill-indicator';
+      pill.style.opacity = '0';
+      nav.appendChild(pill);
+
+      function moveTo(el) {
+        const nr = nav.getBoundingClientRect();
+        const er = el.getBoundingClientRect();
+        pill.style.left = (er.left - nr.left) + 'px';
+        pill.style.top = (er.top - nr.top) + 'px';
+        pill.style.width = er.width + 'px';
+        pill.style.height = er.height + 'px';
+        pill.style.opacity = '1';
+      }
+
+      const links = nav.querySelectorAll('.nav-link');
+      const active = nav.querySelector('.nav-link.active');
+      if (active) moveTo(active);
+
+      links.forEach(link => {
+        link.addEventListener('mouseenter', () => moveTo(link));
+      });
+
+      nav.addEventListener('mouseleave', () => {
+        const cur = nav.querySelector('.nav-link.active');
+        if (cur) moveTo(cur); else pill.style.opacity = '0';
+      });
+    })();
+  </script>
+
+  <!-- ══════════ SCROLL TO TOP ══════════ -->
+  <button id="scroll-top" aria-label="Back to top"><i class="bi bi-chevron-up"></i></button>
+
+  <script>
+    // ── Scroll-reveal ──────────────────────────────────────────
+    (function () {
+      const els = document.querySelectorAll('.reveal');
+      if (!els.length) return;
+      const seen = new Set();
+      els.forEach(el => {
+        const p = el.parentElement;
+        if (p && !seen.has(p)) {
+          seen.add(p);
+          Array.from(p.querySelectorAll(':scope > .reveal')).forEach((s, i) => {
+            s.style.transitionDelay = (i * 0.1) + 's';
+          });
+        }
+      });
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+      }, { threshold: 0.1 });
+      els.forEach(el => io.observe(el));
+    })();
+
+    // ── Scroll-to-top ──────────────────────────────────────────
+    (function () {
+      const btn = document.getElementById('scroll-top');
+      if (!btn) return;
+      window.addEventListener('scroll', () => btn.classList.toggle('show', window.scrollY > 320));
+      btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    })();
+
+    // ── Animated counters (stats bar) ──────────────────────────
+    (function () {
+      const nums = document.querySelectorAll('.num[data-count]');
+      if (!nums.length) return;
+      function animateCounter(el) {
+        const target = +el.dataset.count;
+        const suffix = el.dataset.suffix || '';
+        const duration = 1200;
+        let start = null;
+        function step(ts) {
+          if (!start) start = ts;
+          const progress = Math.min((ts - start) / duration, 1);
+          const ease = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.floor(ease * target) + suffix;
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+      let animated = false;
+      const statsBar = document.querySelector('.stats-bar');
+      if (!statsBar) return;
+      const io = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting && !animated) {
+          animated = true;
+          nums.forEach(el => animateCounter(el));
+        }
+      }, { threshold: 0.5 });
+      io.observe(statsBar);
+    })();
+  </script>
+
+  <!-- ══════════ FLOATING ACTION BUTTON ══════════ -->
+  <a href="{% url 'blood_bank' %}" class="fab" title="Blood Bank">
+    <span class="fab-label">Blood Bank</span>
+    <i class="bi bi-droplet-fill"></i>
+  </a>
+
+  <!-- ══════════ CHAT FAB ══════════ -->
+  <button class="fab fab-chat" id="chat-fab-btn" title="Chat with AI Assistant" aria-label="Open health assistant">
+    <span class="fab-label">Health Assistant</span>
+    <i class="bi bi-chat-dots-fill"></i>
+  </button>
+
+  <!-- ══════════ CHAT PANEL ══════════ -->
+  <div class="chat-panel" id="chat-panel" role="dialog" aria-label="Health Assistant Chat">
+    <div class="chat-panel-header">
+      <div class="d-flex align-items-center gap-2">
+        <div class="chat-avatar"><i class="bi bi-robot"></i></div>
+        <div>
+          <div class="fw-semibold" style="font-size:.95rem;">AUdoc Health Assistant</div>
+          <div class="chat-status"><i class="bi bi-circle-fill" style="font-size:.5rem;vertical-align:middle;"></i>
+            Online</div>
+        </div>
+      </div>
+      <button class="chat-close-btn" id="chat-close-btn" aria-label="Close chat">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-welcome">
+        <i class="bi bi-heart-pulse"></i>
+        <strong>Hi there!</strong> I'm your AUdoc campus health assistant.<br>
+        Ask me about appointments, blood donation, clinic hours, or anything health-related.
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chat-input" placeholder="Type your message…" rows="1" maxlength="500"></textarea>
+      <button class="chat-send-btn" id="chat-send-btn" aria-label="Send message">
+        <i class="bi bi-send-fill"></i>
+      </button>
     </div>
   </div>
 
-  <div class="chat-input-area">
-    <textarea class="chat-input" id="chat-input" placeholder="Type your message…" rows="1" maxlength="500"></textarea>
-    <button class="chat-send-btn" id="chat-send-btn" aria-label="Send message">
-      <i class="bi bi-send-fill"></i>
-    </button>
-  </div>
-</div>
+  <script>
+    (function () {
+      const panel = document.getElementById('chat-panel');
+      const fabBtn = document.getElementById('chat-fab-btn');
+      const closeBtn = document.getElementById('chat-close-btn');
+      const input = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('chat-send-btn');
+      const msgBox = document.getElementById('chat-messages');
+      const CHAT_URL = "{% url 'chat_api' %}";
+      const CSRF_TOKEN = "{{ csrf_token }}";
 
-<script>
-(function () {
-  const panel      = document.getElementById('chat-panel');
-  const fabBtn     = document.getElementById('chat-fab-btn');
-  const closeBtn   = document.getElementById('chat-close-btn');
-  const input      = document.getElementById('chat-input');
-  const sendBtn    = document.getElementById('chat-send-btn');
-  const msgBox     = document.getElementById('chat-messages');
-  const CHAT_URL   = "{% url 'chat_api' %}";
-  const CSRF_TOKEN = "{{ csrf_token }}";
+      let history = [];   // [{role, content}, ...]
+      let busy = false;
 
-  let history = [];   // [{role, content}, ...]
-  let busy    = false;
+      // ── open / close ──────────────────────────────────────
+      function openPanel() {
+        panel.classList.add('open');
+        fabBtn.style.display = 'none';
+        input.focus();
+      }
+      function closePanel() {
+        panel.classList.remove('open');
+        fabBtn.style.display = '';
+      }
 
-  // ── open / close ──────────────────────────────────────
-  function openPanel() {
-    panel.classList.add('open');
-    fabBtn.style.display = 'none';
-    input.focus();
-  }
-  function closePanel() {
-    panel.classList.remove('open');
-    fabBtn.style.display = '';
-  }
+      fabBtn.addEventListener('click', openPanel);
+      closeBtn.addEventListener('click', closePanel);
 
-  fabBtn.addEventListener('click', openPanel);
-  closeBtn.addEventListener('click', closePanel);
+      // ── render a bubble ───────────────────────────────────
+      function addBubble(role, text) {
+        const div = document.createElement('div');
+        div.className = 'chat-bubble ' + role;
+        div.textContent = text;
+        msgBox.appendChild(div);
+        msgBox.scrollTop = msgBox.scrollHeight;
+        return div;
+      }
 
-  // ── render a bubble ───────────────────────────────────
-  function addBubble(role, text) {
-    const div = document.createElement('div');
-    div.className = 'chat-bubble ' + role;
-    div.textContent = text;
-    msgBox.appendChild(div);
-    msgBox.scrollTop = msgBox.scrollHeight;
-    return div;
-  }
+      function addTyping() {
+        const div = document.createElement('div');
+        div.className = 'chat-bubble typing';
+        div.id = 'typing-indicator';
+        div.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+        msgBox.appendChild(div);
+        msgBox.scrollTop = msgBox.scrollHeight;
+      }
 
-  function addTyping() {
-    const div = document.createElement('div');
-    div.className = 'chat-bubble typing';
-    div.id = 'typing-indicator';
-    div.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
-    msgBox.appendChild(div);
-    msgBox.scrollTop = msgBox.scrollHeight;
-  }
+      function removeTyping() {
+        const t = document.getElementById('typing-indicator');
+        if (t) t.remove();
+      }
 
-  function removeTyping() {
-    const t = document.getElementById('typing-indicator');
-    if (t) t.remove();
-  }
+      // ── send message ──────────────────────────────────────
+      async function sendMessage() {
+        if (busy) return;
+        const text = input.value.trim();
+        if (!text) return;
 
-  // ── send message ──────────────────────────────────────
-  async function sendMessage() {
-    if (busy) return;
-    const text = input.value.trim();
-    if (!text) return;
+        input.value = '';
+        input.style.height = '';
+        addBubble('user', text);
+        history.push({ role: 'user', content: text });
 
-    input.value = '';
-    input.style.height = '';
-    addBubble('user', text);
-    history.push({ role: 'user', content: text });
+        busy = true;
+        sendBtn.disabled = true;
+        addTyping();
 
-    busy = true;
-    sendBtn.disabled = true;
-    addTyping();
+        try {
+          const resp = await fetch(CHAT_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': CSRF_TOKEN,
+            },
+            body: JSON.stringify({ message: text, history: history.slice(0, -1) }),
+          });
+          const data = await resp.json();
+          removeTyping();
 
-    try {
-      const resp = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': CSRF_TOKEN,
-        },
-        body: JSON.stringify({ message: text, history: history.slice(0, -1) }),
+          const reply = data.response || data.error || 'Sorry, something went wrong.';
+          addBubble('assistant', reply);
+          if (data.response) history.push({ role: 'assistant', content: reply });
+
+        } catch (_) {
+          removeTyping();
+          addBubble('assistant', 'Network error. Please check your connection and try again.');
+        }
+
+        busy = false;
+        sendBtn.disabled = false;
+        input.focus();
+      }
+
+      // ── textarea auto-resize + send on Enter ─────────────
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
       });
-      const data = await resp.json();
-      removeTyping();
+      input.addEventListener('input', function () {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+      });
 
-      const reply = data.response || data.error || 'Sorry, something went wrong.';
-      addBubble('assistant', reply);
-      if (data.response) history.push({ role: 'assistant', content: reply });
-
-    } catch (_) {
-      removeTyping();
-      addBubble('assistant', 'Network error. Please check your connection and try again.');
-    }
-
-    busy = false;
-    sendBtn.disabled = false;
-    input.focus();
-  }
-
-  // ── textarea auto-resize + send on Enter ─────────────
-  input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-  input.addEventListener('input', function () {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-  });
-
-  sendBtn.addEventListener('click', sendMessage);
-})();
-</script>
+      sendBtn.addEventListener('click', sendMessage);
+    })();
+  </script>
 
   <!-- Schema.org Data -->
   <script type="application/ld+json">
@@ -1356,7 +1976,7 @@
   ]
 }
 </script>
-<script type="application/ld+json">
+  <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "ItemList",
@@ -1376,7 +1996,7 @@
   ]
 }
 </script>
-<script type="application/ld+json">
+  <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -1401,4 +2021,5 @@
 }
 </script>
 </body>
+
 </html>

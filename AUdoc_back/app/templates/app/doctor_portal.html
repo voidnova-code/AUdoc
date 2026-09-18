@@ -615,7 +615,8 @@
     <!-- ═══ Pane 1 — Search + Records ═══ -->
     <section class="pane-records">
       <div class="pane-records-top">
-        <h1><i class="bi bi-file-medical-fill"></i> Medical History <span class="record-count">({{ records|length }})</span></h1>
+        <h1><i class="bi bi-file-medical-fill"></i> Medical History <span class="record-count">({{ records|length
+            }})</span></h1>
         <form method="get" action="{% url 'doctor_portal' %}" class="search-box">
           <input type="text" name="q" value="{{ search_query }}" placeholder="Search by Student ID…"
             aria-label="Search by Student ID" />
@@ -644,8 +645,10 @@
             {% with meds=record.prescribedmedicine_set.all %}
             {% if meds %}
             <div class="meds-line">
-              {% for pm in meds %}{% if forloop.counter <= 2 %}<span class="medicine-tag">{{ pm.medicine.name }}</span>{% endif %}{% endfor %}
-              {% if meds|length > 2 %}<span class="medicine-tag more">+{{ meds|length|add:"-2" }} more</span>{% endif %}
+              {% for pm in meds %}{% if forloop.counter <= 2 %}<span class="medicine-tag">{{ pm.medicine.name
+                }}</span>{% endif %}{% endfor %}
+                {% if meds|length > 2 %}<span class="medicine-tag more">+{{ meds|length|add:"-2" }} more</span>{% endif
+                %}
             </div>
             {% endif %}
             {% endwith %}

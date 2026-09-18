@@ -961,6 +961,124 @@
     .table tbody tr.search-hidden {
       display: none;
     }
+
+    /* ── Sidebar Overlay (mobile) ────────────────────────── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 99;
+      backdrop-filter: blur(2px);
+    }
+    .sidebar-overlay.show { display: block; }
+
+    /* ── Mobile Table: card-per-row layout ───────────────── */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform .3s ease;
+        z-index: 200;
+      }
+      .sidebar.show { transform: translateX(0); }
+
+      .content-wrapper { margin-left: 0; }
+
+      .content-header { padding: 14px 16px 10px; }
+      .content-header h1 { font-size: 1.2rem; }
+      .content-body { padding: 12px 16px; }
+
+      /* Stat cards: 2 columns */
+      .stats-row .col-md-3 { flex: 0 0 50%; max-width: 50%; }
+      .stat-number { font-size: 1.8rem; }
+
+      /* Nav cards: 2 columns */
+      .col-md-3.col-sm-6 { flex: 0 0 50%; max-width: 50%; }
+
+      /* Charts: full width */
+      .col-md-8, .col-md-4 { flex: 0 0 100%; max-width: 100%; }
+
+      /* ── Responsive Tables ── */
+      /* Hide normal table header on mobile */
+      .table-responsive table thead { display: none; }
+
+      /* Each row becomes a card */
+      .table-responsive table,
+      .table-responsive tbody,
+      .table-responsive tr,
+      .table-responsive td {
+        display: block;
+        width: 100%;
+      }
+
+      .table-responsive tr {
+        background: #fff;
+        border: 1px solid #e8ede9;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        padding: 10px 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      }
+
+      .table-responsive td {
+        border: none;
+        padding: 5px 0;
+        font-size: .88rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        word-break: break-word;
+      }
+
+      /* Show a label before each cell using data-label attribute */
+      .table-responsive td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--primary);
+        min-width: 110px;
+        flex-shrink: 0;
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        padding-top: 2px;
+      }
+
+      /* Empty rows */
+      .table-responsive tr td[colspan] {
+        justify-content: center;
+        border-radius: 10px;
+      }
+      .table-responsive tr td[colspan]::before { content: none; }
+
+      /* Action buttons on mobile */
+      .btn-group { flex-wrap: wrap; gap: 4px; }
+
+      /* Top nav links bar */
+      .top-nav-links { display: none !important; }
+
+      /* Admin search bar */
+      .admin-search-bar { padding: 12px 14px; gap: 8px; }
+
+      /* Cards */
+      .card-header { padding: 12px 16px; }
+      .card-body { padding: 12px 16px; }
+
+      /* Chart heights */
+      .chart-container { height: 200px; }
+      .mini-chart { height: 180px; }
+
+      /* Detail rows in modals */
+      .detail-row { flex-direction: column; gap: 4px; }
+      .detail-row label { min-width: unset; }
+      .detail-row span { text-align: left; margin-left: 0; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-row .col-md-3 { flex: 0 0 100%; max-width: 100%; }
+      .col-md-3.col-sm-6  { flex: 0 0 100%; max-width: 100%; }
+      .stat-number { font-size: 1.5rem; }
+      .content-body { padding: 10px 12px; }
+    }
   </style>
 
   <!-- Anti-DevTools Snippet -->
@@ -979,6 +1097,9 @@
 </head>
 
 <body>
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-brand">
@@ -3303,6 +3424,27 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
+    // ── Mobile Sidebar Toggle ────────────────────────────────────
+    function toggleSidebar() {
+      const sidebar  = document.getElementById('sidebar');
+      const overlay  = document.getElementById('sidebarOverlay');
+      const isOpen   = sidebar.classList.toggle('show');
+      overlay.classList.toggle('show', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+
+    // ── Auto-label table cells for mobile (data-label) ──────────
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.table-responsive table').forEach(function (table) {
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText.trim());
+        table.querySelectorAll('tbody tr').forEach(function (row) {
+          Array.from(row.querySelectorAll('td')).forEach(function (td, i) {
+            if (headers[i]) td.setAttribute('data-label', headers[i]);
+          });
+        });
+      });
+    });
+
     // Time Format Helpers
     function formatToAMPM(time24) {
       if (!time24) return '';
