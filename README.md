@@ -704,7 +704,7 @@ Made with ☕ caffeine, 💻 late nights, 😅 existential crisis, and the genui
 
 💪 **Shoutout to voidnova** — May your compile times be fast and your bugs be obvious.
 
-**Made with ❤️ at Assam University Silchar**
+***Made with ❤️ at Assam University Silchar***
 
 *(If you found this project useful, tell voidnova. He probably needs validation.)*
 
