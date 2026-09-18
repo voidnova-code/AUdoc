@@ -35,7 +35,6 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      /* desktop: no page scroll — each pane scrolls itself */
     }
 
     /* ── Navbar ───────────────────────────────────────────── */
@@ -49,6 +48,7 @@
       flex: 0 0 56px;
       box-shadow: 0 2px 12px rgba(0, 0, 0, .2);
       z-index: 100;
+      position: relative;
     }
 
     .doc-navbar .brand {
@@ -128,9 +128,7 @@
       display: flex;
       flex-direction: row;
       min-height: 0;
-      /* required for children to scroll within flex */
       height: calc(100vh - 56px);
-      /* explicit height — some engines mis-resolve the flex chain without it */
     }
 
     /* Pane 1 — small left sidebar: search + record cards + summarize action */
@@ -142,6 +140,7 @@
       background: #fff;
       border-right: 1px solid #e5eae6;
       min-height: 0;
+      min-width: 0;
     }
 
     .pane-records-top {
@@ -185,7 +184,6 @@
       font-size: .85rem;
       flex: 1 1 auto;
       min-width: 0;
-      width: auto;
       outline: none;
       transition: border-color .2s;
     }
@@ -318,6 +316,7 @@
       margin: 0 0 8px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
@@ -409,6 +408,66 @@
       cursor: not-allowed;
     }
 
+    /* ── Draggable splitter (VS Code style) ───────────────── */
+    .splitter {
+      flex: 0 0 6px;
+      width: 6px;
+      cursor: col-resize;
+      position: relative;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      transition: background .12s ease;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .splitter::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -3px;
+      right: -3px;
+    }
+
+    .splitter-grip {
+      width: 2px;
+      height: 42px;
+      border-radius: 2px;
+      background: #d5e3d9;
+      transition: background .12s ease, height .12s ease;
+    }
+
+    .splitter:hover .splitter-grip,
+    .splitter:focus-visible .splitter-grip {
+      background: var(--primary);
+      height: 64px;
+    }
+
+    .splitter:focus-visible {
+      outline: none;
+    }
+
+    .splitter.dragging {
+      background: rgba(74, 124, 89, .08);
+    }
+
+    .splitter.dragging .splitter-grip {
+      background: var(--primary-dark);
+      height: 80px;
+    }
+
+    body.resizing,
+    body.resizing * {
+      cursor: col-resize !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+
     /* Pane 2 — big AI summary section */
     .pane-summary {
       flex: 1 1 auto;
@@ -416,6 +475,7 @@
       flex-direction: column;
       background: var(--bg);
       min-height: 0;
+      min-width: 0;
     }
 
     .pane-summary-top {
@@ -538,9 +598,13 @@
         height: auto;
       }
 
+      .splitter {
+        display: none;
+      }
+
       .pane-records {
         flex: none;
-        width: auto;
+        width: auto !important;
         max-height: none;
         border-right: none;
         border-bottom: 3px solid var(--primary-light);
@@ -590,7 +654,8 @@
 
 <body>
 
-  <!-- ═══ Navbar ═══ -->
+  <form id="csrfForm" style="display:none">{% csrf_token %}</form>
+
   <nav class="doc-navbar">
     <a href="{% url 'home' %}" class="brand">
       <div class="logo-box"><i class="bi bi-hospital"></i></div>
@@ -612,11 +677,12 @@
 
   <div class="split">
 
-    <!-- ═══ Pane 1 — Search + Records ═══ -->
     <section class="pane-records">
       <div class="pane-records-top">
-        <h1><i class="bi bi-file-medical-fill"></i> Medical History <span class="record-count">({{ records|length
-            }})</span></h1>
+        <h1>
+          <i class="bi bi-file-medical-fill"></i> Medical History
+          <span class="record-count">({{ records|length }})</span>
+        </h1>
         <form method="get" action="{% url 'doctor_portal' %}" class="search-box">
           <input type="text" name="q" value="{{ search_query }}" placeholder="Search by Student ID…"
             aria-label="Search by Student ID" />
@@ -635,20 +701,15 @@
             <span class="select-badge"><i class="bi bi-check-lg"></i></span>
             <div class="top-row">
               <span class="student-id">{{ record.student_id|default:"N/A" }}</span>
-              <span class="date-badge">
-                {% if record.appointment_date %}{{ record.appointment_date|date:"d M Y" }}{% else %}{{
-                record.created_at|date:"d M Y" }}{% endif %}
-              </span>
+              <span class="date-badge">{% if record.appointment_date %}{{ record.appointment_date|date:"d M Y" }}{% else %}{{ record.created_at|date:"d M Y" }}{% endif %}</span>
             </div>
             <div class="illness-line"><i class="bi bi-thermometer-half"></i> {{ record.illness }}</div>
             <p class="symptoms-line">{{ record.symptoms }}</p>
             {% with meds=record.prescribedmedicine_set.all %}
             {% if meds %}
             <div class="meds-line">
-              {% for pm in meds %}{% if forloop.counter <= 2 %}<span class="medicine-tag">{{ pm.medicine.name
-                }}</span>{% endif %}{% endfor %}
-                {% if meds|length > 2 %}<span class="medicine-tag more">+{{ meds|length|add:"-2" }} more</span>{% endif
-                %}
+              {% for pm in meds %}{% if forloop.counter <= 2 %}<span class="medicine-tag">{{ pm.medicine.name }}</span>{% endif %}{% endfor %}
+                {% if meds|length > 2 %}<span class="medicine-tag more">+{{ meds|length|add:"-2" }} more</span>{% endif %}
             </div>
             {% endif %}
             {% endwith %}
@@ -677,7 +738,11 @@
       </div>
     </section>
 
-    <!-- ═══ Pane 2 — AI Summary (big section) ═══ -->
+    <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" aria-label="Resize record list"
+      tabindex="0">
+      <span class="splitter-grip"></span>
+    </div>
+
     <section class="pane-summary">
       <div class="pane-summary-top">
         <h2><i class="bi bi-file-earmark-text"></i> AI Summary <span class="ai-badge">NVIDIA NIM</span></h2>
@@ -727,12 +792,15 @@
       });
 
       function getCSRFToken() {
-        return document.cookie.split('; ').find(function (row) { return row.startsWith('csrftoken='); })?.split('=')[1];
+        const row = document.cookie.split('; ').find(function (r) {
+          return r.startsWith('csrftoken=');
+        });
+        return row ? decodeURIComponent(row.slice('csrftoken='.length)) : '';
       }
 
       function escapeHtml(str) {
         const div = document.createElement('div');
-        div.textContent = str;
+        div.textContent = str == null ? '' : String(str);
         return div.innerHTML;
       }
 
@@ -758,13 +826,16 @@
 
           fetch("{% url 'doctor_summarize_history' %}", {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
               'Content-Type': 'application/json',
               'X-CSRFToken': getCSRFToken(),
             },
-            body: JSON.stringify({ record_ids: Array.from(selected) }),
+            body: JSON.stringify({ record_ids: Array.from(selected).map(Number) }),
           })
-            .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+            .then(function (res) {
+              return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+            })
             .then(function (result) {
               summarizeBtn.disabled = selected.size === 0;
               if (!result.ok || result.data.error) {
@@ -772,6 +843,11 @@
                   '<div class="state-block error"><i class="bi bi-exclamation-triangle"></i><p>' +
                   escapeHtml(result.data.error || 'Could not generate a summary. Please try again.') +
                   '</p></div>';
+                return;
+              }
+              if (!result.data.summary) {
+                summaryBody.innerHTML =
+                  '<div class="state-block error"><i class="bi bi-exclamation-triangle"></i><p>The AI returned an empty response. Please try again.</p></div>';
                 return;
               }
               renderSummary(result.data.summary);
@@ -785,6 +861,91 @@
             });
         });
       }
+    })();
+
+    (function () {
+      const splitter = document.getElementById('splitter');
+      const recordsPane = document.querySelector('.pane-records');
+      const split = document.querySelector('.split');
+      if (!splitter || !recordsPane || !split) return;
+
+      const MIN_WIDTH = 240;
+      const MIN_SUMMARY = 360;
+      const DEFAULT = 340;
+      const STORAGE_KEY = 'audoc.doctorPortal.recordsPaneWidth';
+
+      function clamp(px) {
+        const total = split.getBoundingClientRect().width;
+        const max = Math.max(MIN_WIDTH, total - MIN_SUMMARY);
+        return Math.min(Math.max(px, MIN_WIDTH), max);
+      }
+
+      function applyWidth(px) {
+        const w = clamp(px);
+        recordsPane.style.flex = '0 0 ' + w + 'px';
+        recordsPane.style.width = w + 'px';
+        return w;
+      }
+
+      const saved = parseInt(localStorage.getItem(STORAGE_KEY), 10);
+      if (!isNaN(saved)) applyWidth(saved);
+
+      let rafId = null;
+      window.addEventListener('resize', function () {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(function () {
+          applyWidth(recordsPane.getBoundingClientRect().width);
+        });
+      });
+
+      let dragging = false;
+
+      function startDrag(e) {
+        if (window.matchMedia('(max-width: 768px)').matches) return;
+        dragging = true;
+        splitter.classList.add('dragging');
+        document.body.classList.add('resizing');
+        if (splitter.setPointerCapture) {
+          try { splitter.setPointerCapture(e.pointerId); } catch (_) { }
+        }
+        e.preventDefault();
+      }
+
+      function moveDrag(e) {
+        if (!dragging) return;
+        const left = split.getBoundingClientRect().left;
+        applyWidth(e.clientX - left);
+      }
+
+      function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        splitter.classList.remove('dragging');
+        document.body.classList.remove('resizing');
+        const w = parseInt(recordsPane.style.width, 10);
+        if (!isNaN(w)) localStorage.setItem(STORAGE_KEY, String(w));
+      }
+
+      splitter.addEventListener('pointerdown', startDrag);
+      window.addEventListener('pointermove', moveDrag);
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+
+      splitter.addEventListener('dblclick', function () {
+        localStorage.removeItem(STORAGE_KEY);
+        recordsPane.style.flex = '';
+        recordsPane.style.width = '';
+        applyWidth(DEFAULT);
+      });
+
+      const STEP = 24;
+      splitter.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        const cur = recordsPane.getBoundingClientRect().width;
+        const w = applyWidth(cur + (e.key === 'ArrowRight' ? STEP : -STEP));
+        localStorage.setItem(STORAGE_KEY, String(w));
+      });
     })();
   </script>
 </body>

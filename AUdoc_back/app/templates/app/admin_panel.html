@@ -36,6 +36,7 @@
       display: flex;
       flex-direction: column;
       overflow-y: auto;
+      overflow-x: hidden;
       z-index: 100;
     }
 
@@ -1079,6 +1080,69 @@
       .stat-number { font-size: 1.5rem; }
       .content-body { padding: 10px 12px; }
     }
+
+    /* ── Draggable Sidebar Splitter (VS Code style) ───────── */
+    .admin-splitter {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: var(--sidebar-w);
+      width: 6px;
+      cursor: col-resize;
+      z-index: 101;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      transition: background .12s ease;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* invisible hit-area pad — widens the grab target */
+    .admin-splitter::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -3px;
+      right: -3px;
+    }
+
+    .admin-splitter-grip {
+      width: 2px;
+      height: 50px;
+      border-radius: 2px;
+      background: rgba(74, 124, 89, .35);
+      transition: background .12s ease, height .12s ease;
+    }
+
+    .admin-splitter:hover .admin-splitter-grip,
+    .admin-splitter:focus-visible .admin-splitter-grip {
+      background: var(--primary);
+      height: 80px;
+    }
+
+    .admin-splitter:focus-visible { outline: none; }
+
+    .admin-splitter.dragging { background: rgba(74, 124, 89, .12); }
+    .admin-splitter.dragging .admin-splitter-grip {
+      background: var(--primary-dark);
+      height: 100px;
+    }
+
+    body.sidebar-resizing,
+    body.sidebar-resizing * {
+      cursor: col-resize !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+
+    /* Hide the splitter on mobile — sidebar slides in/out there */
+    @media (max-width: 768px) {
+      .admin-splitter { display: none; }
+    }
   </style>
 
   <!-- Anti-DevTools Snippet -->
@@ -1185,6 +1249,16 @@
       </a>
     </nav>
     {% endif %}
+  </div>
+
+  <!-- ═══ Draggable Sidebar Splitter (VS Code style) ═══ -->
+  <div class="admin-splitter"
+       id="adminSplitter"
+       role="separator"
+       aria-orientation="vertical"
+       aria-label="Resize sidebar"
+       tabindex="0">
+    <span class="admin-splitter-grip"></span>
   </div>
 
   <!-- Main Content -->
@@ -4873,6 +4947,81 @@
         testDangerZone();
       }
     });
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  RESIZABLE SIDEBAR (VS Code style)
+    // ═══════════════════════════════════════════════════════════════════
+    (function () {
+      const splitter = document.getElementById('adminSplitter');
+      if (!splitter) return;
+
+      const MIN_W = 180;    // narrowest usable width
+      const MAX_W = 420;    // don't let it eat the whole screen
+      const DEFAULT_W = 240;
+      const STORAGE_KEY = 'audoc.admin.sidebarWidth';
+
+      function applyWidth(px) {
+        const w = Math.min(Math.max(px, MIN_W), MAX_W);
+        document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+        return w;
+      }
+
+      // Restore saved width on load
+      const saved = parseInt(localStorage.getItem(STORAGE_KEY), 10);
+      if (!isNaN(saved)) applyWidth(saved);
+
+      let dragging = false;
+
+      function startDrag(e) {
+        if (window.matchMedia('(max-width: 768px)').matches) return;
+        dragging = true;
+        splitter.classList.add('dragging');
+        document.body.classList.add('sidebar-resizing');
+        try { splitter.setPointerCapture(e.pointerId); } catch (_) {}
+        e.preventDefault();
+      }
+
+      function moveDrag(e) {
+        if (!dragging) return;
+        applyWidth(e.clientX);
+      }
+
+      function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        splitter.classList.remove('dragging');
+        document.body.classList.remove('sidebar-resizing');
+        const w = parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w'),
+          10
+        );
+        if (!isNaN(w)) localStorage.setItem(STORAGE_KEY, String(w));
+      }
+
+      splitter.addEventListener('pointerdown', startDrag);
+      window.addEventListener('pointermove', moveDrag);
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+
+      // Double-click resets to default
+      splitter.addEventListener('dblclick', function () {
+        localStorage.removeItem(STORAGE_KEY);
+        applyWidth(DEFAULT_W);
+      });
+
+      // Keyboard: ← / → nudge 20 px per press
+      const STEP = 20;
+      splitter.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        const cur = parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w'),
+          10
+        ) || DEFAULT_W;
+        const w = applyWidth(cur + (e.key === 'ArrowRight' ? STEP : -STEP));
+        localStorage.setItem(STORAGE_KEY, String(w));
+      });
+    })();
   </script>
 
   <!-- Add Doctor Modal -->
