@@ -652,6 +652,8 @@ class TodaysAppointment(models.Model):
     def is_expired(self):
         """Check if the confirmation window has expired"""
         from django.utils import timezone
+        if not self.response_deadline:
+            return False
         return timezone.now() > self.response_deadline and self.status == "PENDING"
 
 

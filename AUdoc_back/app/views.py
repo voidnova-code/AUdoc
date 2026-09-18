@@ -1572,36 +1572,49 @@ def appointment_confirm(request, token, action):
         })
 
     # Process the action
-    if action == "accept":
-        today_appt.status = "CONFIRMED"
-        today_appt.responded_at = timezone.now()
+    try:
+        if action == "accept":
+            today_appt.status = "CONFIRMED"
+            today_appt.responded_at = timezone.now()
 
-        # Assign FCFS queue position based on confirmation response time (responded_at)
-        # Count how many confirmed appointments for the same date were confirmed earlier
-        earlier_confirmed = TodaysAppointment.objects.filter(
-            status="CONFIRMED",
-            appointment__appointment_date=today_appt.appointment.appointment_date,
-            responded_at__lt=today_appt.responded_at
-        ).count()
+            # Assign FCFS queue position based on confirmation response time (responded_at)
+            # Count how many confirmed appointments for the same date were confirmed earlier
+            earlier_confirmed = TodaysAppointment.objects.filter(
+                status="CONFIRMED",
+                appointment__appointment_date=today_appt.appointment.appointment_date,
+                responded_at__lt=today_appt.responded_at
+            ).count()
 
-        # Queue position = number of earlier bookings + 1
-        today_appt.queue_position = earlier_confirmed + 1
+            # Queue position = number of earlier bookings + 1
+            today_appt.queue_position = earlier_confirmed + 1
 
-        # Update the main appointment status
-        today_appt.appointment.status = "CONFIRMED"
-        today_appt.appointment.save(update_fields=["status"])
+            # Update the main appointment status
+            today_appt.appointment.status = "CONFIRMED"
+            today_appt.appointment.save(update_fields=["status"])
+            
+            # Save specifically updated fields to avoid constraint violations
+            today_appt.save(update_fields=["status", "responded_at", "queue_position"])
 
-    elif action == "decline":
-        today_appt.status = "DECLINED"
-        today_appt.responded_at = timezone.now()
+        elif action == "decline":
+            today_appt.status = "DECLINED"
+            today_appt.responded_at = timezone.now()
 
-        # Update the main appointment status
-        today_appt.appointment.status = "DECLINED"
-        today_appt.appointment.save(update_fields=["status"])
-    else:
+            # Update the main appointment status
+            today_appt.appointment.status = "DECLINED"
+            today_appt.appointment.save(update_fields=["status"])
+            
+            # Save specifically updated fields
+            today_appt.save(update_fields=["status", "responded_at"])
+            
+        else:
+            return render(request, "app/appointment_confirm.html", {"error": True})
+            
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error saving appointment confirmation: {e}", exc_info=True)
+        # Show error page rather than throwing 500
         return render(request, "app/appointment_confirm.html", {"error": True})
-
-    today_appt.save()
 
     return render(request, "app/appointment_confirm.html", {
         "action": action,
