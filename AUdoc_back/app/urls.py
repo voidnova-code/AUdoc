@@ -20,6 +20,7 @@ urlpatterns = [
     path("about/", views.about, name="about"),
     path("terms-and-conditions/", views.terms_and_conditions, name="terms_and_conditions"),
     path("doctor/", views.doctor_portal, name="doctor_portal"),
+    path("doctor/summarize/", views.doctor_summarize_history, name="doctor_summarize_history"),
 
     # ── post-login redirect ──────────────────────────────────────
     path("post-login/", views.post_login_redirect, name="post_login"),

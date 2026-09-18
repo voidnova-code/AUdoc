@@ -4297,3 +4297,72 @@ def doctor_portal(request):
         "records": records,
         "search_query": search_query,
     })
+
+
+@_admin_required
+@require_POST
+def doctor_summarize_history(request):
+    """Basic summarization of selected medical history records (no AI)."""
+    from .models import MedicalHistory
+
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"error": "Invalid request."}, status=400)
+
+    record_ids = data.get("record_ids", [])
+    if not record_ids or not isinstance(record_ids, list):
+        return JsonResponse({"error": "No records selected."}, status=400)
+
+    record_ids = record_ids[:20]
+
+    records = MedicalHistory.objects.filter(
+        id__in=record_ids
+    ).prefetch_related("prescribedmedicine_set__medicine").order_by("-created_at")
+
+    if not records.exists():
+        return JsonResponse({"error": "No matching records found."}, status=404)
+
+    # Build a basic statistical summary
+    illnesses = {}
+    medicines_count = {}
+    doctors = set()
+    students = set()
+
+    for r in records:
+        illnesses[r.illness] = illnesses.get(r.illness, 0) + 1
+        if r.doctor_name:
+            doctors.add(r.doctor_name)
+        if r.student_id:
+            students.add(r.student_id)
+        for pm in r.prescribedmedicine_set.all():
+            name = pm.medicine.name
+            medicines_count[name] = medicines_count.get(name, 0) + pm.quantity
+
+    top_illnesses = sorted(illnesses.items(), key=lambda x: -x[1])
+    top_medicines = sorted(medicines_count.items(), key=lambda x: -x[1])[:10]
+
+    parts = [f"Summary of {records.count()} medical record(s):\n"]
+    parts.append(f"• Students involved: {len(students)}")
+    parts.append(f"• Doctors involved: {', '.join(doctors) if doctors else 'N/A'}")
+
+    if top_illnesses:
+        parts.append("\n• Conditions diagnosed:")
+        for name, count in top_illnesses:
+            parts.append(f"  - {name} ({count}x)")
+
+    if top_medicines:
+        parts.append("\n• Medicines prescribed:")
+        for name, qty in top_medicines:
+            parts.append(f"  - {name} (total qty: {qty})")
+
+    oldest = records.last()
+    newest = records.first()
+    parts.append(f"\n• Date range: {oldest.created_at.strftime('%d %b %Y')} – {newest.created_at.strftime('%d %b %Y')}")
+
+    reply = "\n".join(parts)
+
+    return JsonResponse({
+        "summary": reply,
+        "record_count": records.count(),
+    })

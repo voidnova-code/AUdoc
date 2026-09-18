@@ -645,10 +645,8 @@
             {% with meds=record.prescribedmedicine_set.all %}
             {% if meds %}
             <div class="meds-line">
-              {% for pm in meds %}{% if forloop.counter <= 2 %}<span class="medicine-tag">{{ pm.medicine.name
-                }}</span>{% endif %}{% endfor %}
-                {% if meds|length > 2 %}<span class="medicine-tag more">+{{ meds|length|add:"-2" }} more</span>{% endif
-                %}
+              {% for pm in meds %}{% if forloop.counter <= 2 %}<span class="medicine-tag">{{ pm.medicine.name }}</span>{% endif %}{% endfor %}
+              {% if meds|length > 2 %}<span class="medicine-tag more">+{{ meds|length|add:"-2" }} more</span>{% endif %}
             </div>
             {% endif %}
             {% endwith %}
