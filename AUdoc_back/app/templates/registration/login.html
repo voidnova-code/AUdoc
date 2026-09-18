@@ -1,24 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AUdoc – Sign In</title>
-  <link rel="icon" href="{% static 'app/favicons/favicon.ico' %}" type="image/x-icon">
-  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'app/favicons/favicon-32x32.png' %}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'app/favicons/favicon-16x16.png' %}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'app/favicons/apple-touch-icon.png' %}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <style>
     :root {
-      --primary:      #4a7c59;
+      --primary: #4a7c59;
       --primary-dark: #2e5c3a;
-      --accent:       #e8f5ec;
-      --cream:        #faf9f4;
+      --accent: #e8f5ec;
+      --cream: #faf9f4;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -47,79 +50,158 @@
     .left-panel::before {
       content: '';
       position: absolute;
-      width: 380px; height: 380px;
+      width: 380px;
+      height: 380px;
       border-radius: 50%;
-      background: rgba(74,124,89,.15);
-      top: -100px; right: -100px;
+      background: rgba(74, 124, 89, .15);
+      top: -100px;
+      right: -100px;
       pointer-events: none;
     }
+
     .left-panel::after {
       content: '';
       position: absolute;
-      width: 260px; height: 260px;
+      width: 260px;
+      height: 260px;
       border-radius: 50%;
-      background: rgba(74,124,89,.1);
-      bottom: -60px; left: -60px;
+      background: rgba(74, 124, 89, .1);
+      bottom: -60px;
+      left: -60px;
       pointer-events: none;
     }
+
     .dot-grid {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-image: radial-gradient(circle, rgba(255,255,255,.08) 1px, transparent 1px);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: radial-gradient(circle, rgba(255, 255, 255, .08) 1px, transparent 1px);
       background-size: 28px 28px;
       pointer-events: none;
     }
 
     .panel-logo {
-      display: flex; align-items: center; gap: 14px;
-      margin-bottom: 52px; position: relative; z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 52px;
+      position: relative;
+      z-index: 1;
     }
+
     .panel-logo .icon {
-      width: 50px; height: 50px;
-      background: rgba(255,255,255,.12);
-      border: 1.5px solid rgba(255,255,255,.2);
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, .12);
+      border: 1.5px solid rgba(255, 255, 255, .2);
       border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: #fff;
       backdrop-filter: blur(8px);
     }
-    .panel-logo .name { color: #fff; font-weight: 700; font-size: 1.3rem; line-height: 1.1; }
-    .panel-logo .sub  { color: rgba(255,255,255,.55); font-size: .72rem; }
+
+    .panel-logo .name {
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.3rem;
+      line-height: 1.1;
+    }
+
+    .panel-logo .sub {
+      color: rgba(255, 255, 255, .55);
+      font-size: .72rem;
+    }
 
     .panel-headline {
-      position: relative; z-index: 1; margin-bottom: 36px;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 36px;
     }
-    .panel-headline h1 {
-      font-size: 2.2rem; font-weight: 800; color: #fff;
-      line-height: 1.2; margin-bottom: 12px;
-    }
-    .panel-headline h1 span { color: #6dcea0; }
-    .panel-headline p { color: rgba(255,255,255,.6); font-size: .95rem; line-height: 1.6; max-width: 340px; }
 
-    .panel-features { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; }
+    .panel-headline h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .panel-headline h1 span {
+      color: #6dcea0;
+    }
+
+    .panel-headline p {
+      color: rgba(255, 255, 255, .6);
+      font-size: .95rem;
+      line-height: 1.6;
+      max-width: 340px;
+    }
+
+    .panel-features {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
     .feat-item {
-      display: flex; align-items: center; gap: 14px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .08);
       border-radius: 14px;
       padding: 14px 18px;
       backdrop-filter: blur(6px);
       transition: background .2s;
     }
-    .feat-item:hover { background: rgba(255,255,255,.1); }
-    .feat-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: rgba(109,206,160,.15);
-      display: flex; align-items: center; justify-content: center;
-      color: #6dcea0; font-size: 1.1rem; flex-shrink: 0;
+
+    .feat-item:hover {
+      background: rgba(255, 255, 255, .1);
     }
-    .feat-item .ft { color: #fff; font-size: .88rem; font-weight: 600; }
-    .feat-item .fs { color: rgba(255,255,255,.5); font-size: .76rem; margin-top: 1px; }
+
+    .feat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(109, 206, 160, .15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6dcea0;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .feat-item .ft {
+      color: #fff;
+      font-size: .88rem;
+      font-weight: 600;
+    }
+
+    .feat-item .fs {
+      color: rgba(255, 255, 255, .5);
+      font-size: .76rem;
+      margin-top: 1px;
+    }
 
     .panel-footer {
-      position: absolute; bottom: 28px; left: 52px; right: 52px;
-      display: flex; align-items: center; gap: 8px;
-      color: rgba(255,255,255,.35); font-size: .75rem; z-index: 1;
+      position: absolute;
+      bottom: 28px;
+      left: 52px;
+      right: 52px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, .35);
+      font-size: .75rem;
+      z-index: 1;
     }
 
     /* ══════════════════════════════════════════
@@ -144,22 +226,45 @@
       text-align: center;
       margin-bottom: 32px;
     }
+
     .form-header .logo-bubble {
-      width: 62px; height: 62px;
+      width: 62px;
+      height: 62px;
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       border-radius: 18px;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 1.6rem; color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      color: #fff;
       margin-bottom: 14px;
-      box-shadow: 0 8px 24px rgba(74,124,89,.35);
-      animation: logoPop .5s cubic-bezier(.34,1.56,.64,1) both;
+      box-shadow: 0 8px 24px rgba(74, 124, 89, .35);
+      animation: logoPop .5s cubic-bezier(.34, 1.56, .64, 1) both;
     }
+
     @keyframes logoPop {
-      0%   { transform: scale(.4); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
+      0% {
+        transform: scale(.4);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
-    .form-header h2 { font-size: 1.55rem; font-weight: 800; color: #1a3a25; margin-bottom: 4px; }
-    .form-header p  { font-size: .85rem; color: #888; }
+
+    .form-header h2 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #1a3a25;
+      margin-bottom: 4px;
+    }
+
+    .form-header p {
+      font-size: .85rem;
+      color: #888;
+    }
 
     /* ── Tabs ── */
     .auth-tabs {
@@ -169,29 +274,49 @@
       padding: 4px;
       margin-bottom: 26px;
     }
+
     .auth-tab {
-      flex: 1; text-align: center;
+      flex: 1;
+      text-align: center;
       padding: 10px 0;
       border-radius: 11px;
-      font-size: .875rem; font-weight: 600;
-      cursor: pointer; color: #777;
+      font-size: .875rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #777;
       transition: all .25s;
-      border: none; background: transparent;
+      border: none;
+      background: transparent;
     }
+
     .auth-tab.active {
       background: #fff;
       color: var(--primary);
-      box-shadow: 0 2px 12px rgba(74,124,89,.14);
+      box-shadow: 0 2px 12px rgba(74, 124, 89, .14);
     }
-    .auth-tab i { margin-right: 5px; }
+
+    .auth-tab i {
+      margin-right: 5px;
+    }
 
     /* ── Form controls ── */
-    .field-group { margin-bottom: 18px; }
-    .field-label {
-      font-weight: 600; font-size: .82rem; color: #4a5568;
-      margin-bottom: 6px; display: block;
+    .field-group {
+      margin-bottom: 18px;
     }
-    .field-label i { color: var(--primary); margin-right: 4px; }
+
+    .field-label {
+      font-weight: 600;
+      font-size: .82rem;
+      color: #4a5568;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .field-label i {
+      color: var(--primary);
+      margin-right: 4px;
+    }
+
     .field-input {
       width: 100%;
       padding: .68rem 1rem;
@@ -203,11 +328,15 @@
       transition: border-color .2s, box-shadow .2s;
       outline: none;
     }
+
     .field-input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(74,124,89,.1);
+      box-shadow: 0 0 0 4px rgba(74, 124, 89, .1);
     }
-    .field-input.is-invalid { border-color: #e53e3e; }
+
+    .field-input.is-invalid {
+      border-color: #e53e3e;
+    }
 
     .input-with-btn {
       display: flex;
@@ -216,26 +345,40 @@
       overflow: hidden;
       transition: border-color .2s, box-shadow .2s;
     }
+
     .input-with-btn:focus-within {
       border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(74,124,89,.1);
+      box-shadow: 0 0 0 4px rgba(74, 124, 89, .1);
     }
+
     .input-with-btn .field-input {
-      border: none; border-radius: 0; box-shadow: none;
-      flex: 1; padding-right: .5rem;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      flex: 1;
+      padding-right: .5rem;
     }
+
     .input-with-btn .iab-btn {
       padding: 0 16px;
       background: var(--primary);
       color: #fff;
       border: none;
-      font-size: .82rem; font-weight: 600;
+      font-size: .82rem;
+      font-weight: 600;
       white-space: nowrap;
       cursor: pointer;
       transition: background .2s;
     }
-    .input-with-btn .iab-btn:hover    { background: var(--primary-dark); }
-    .input-with-btn .iab-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+    .input-with-btn .iab-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .input-with-btn .iab-btn:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
 
     /* Password field with eye toggle */
     .pw-wrap {
@@ -245,18 +388,32 @@
       overflow: hidden;
       transition: border-color .2s, box-shadow .2s;
     }
+
     .pw-wrap:focus-within {
       border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(74,124,89,.1);
+      box-shadow: 0 0 0 4px rgba(74, 124, 89, .1);
     }
-    .pw-wrap .field-input { border: none; border-radius: 0; box-shadow: none; flex: 1; }
+
+    .pw-wrap .field-input {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      flex: 1;
+    }
+
     .pw-wrap .eye-btn {
       padding: 0 14px;
-      background: #fff; border: none;
-      color: #aaa; cursor: pointer; font-size: 1rem;
+      background: #fff;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 1rem;
       transition: color .15s;
     }
-    .pw-wrap .eye-btn:hover { color: var(--primary); }
+
+    .pw-wrap .eye-btn:hover {
+      color: var(--primary);
+    }
 
     /* ── OTP section ── */
     .otp-banner {
@@ -264,46 +421,86 @@
       border: 1px solid #b7dfc0;
       border-radius: 10px;
       padding: 10px 14px;
-      font-size: .82rem; color: var(--primary-dark);
+      font-size: .82rem;
+      color: var(--primary-dark);
       margin-bottom: 12px;
-      display: flex; align-items: center; gap: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .otp-banner i { font-size: 1rem; flex-shrink: 0; }
+
+    .otp-banner i {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
 
     .otp-digit-row {
-      display: flex; gap: 8px; margin-bottom: 10px; justify-content: center;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      justify-content: center;
     }
+
     .otp-box {
-      flex: 0 0 42px; width: 42px; height: 46px;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 46px;
       border: 1.5px solid #d5e8d9;
       border-radius: 10px;
       text-align: center;
-      font-size: 1.2rem; font-weight: 700;
+      font-size: 1.2rem;
+      font-weight: 700;
       color: #1a3a25;
       background: #fff;
       outline: none;
       transition: border-color .2s, box-shadow .2s, transform .1s;
       caret-color: var(--primary);
     }
+
     .otp-box:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(74,124,89,.15);
+      box-shadow: 0 0 0 3px rgba(74, 124, 89, .15);
       transform: scale(1.06);
     }
-    .otp-box.filled { border-color: var(--primary); background: #eef7f1; }
+
+    .otp-box.filled {
+      border-color: var(--primary);
+      background: #eef7f1;
+    }
 
     .otp-meta {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: .8rem;
     }
-    .otp-timer { color: #888; }
-    .otp-timer.urgent { color: #e53e3e; font-weight: 600; }
-    .btn-resend {
-      background: none; border: none; color: var(--primary);
-      font-size: .8rem; font-weight: 600; padding: 0; cursor: pointer;
-      text-decoration: underline; text-underline-offset: 2px;
+
+    .otp-timer {
+      color: #888;
     }
-    .btn-resend:disabled { color: #aaa; text-decoration: none; cursor: not-allowed; }
+
+    .otp-timer.urgent {
+      color: #e53e3e;
+      font-weight: 600;
+    }
+
+    .btn-resend {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: .8rem;
+      font-weight: 600;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .btn-resend:disabled {
+      color: #aaa;
+      text-decoration: none;
+      cursor: not-allowed;
+    }
 
     /* ── Submit button ── */
     .btn-submit {
@@ -313,28 +510,54 @@
       color: #fff;
       border: none;
       border-radius: 11px;
-      font-size: 1rem; font-weight: 700;
+      font-size: 1rem;
+      font-weight: 700;
       cursor: pointer;
       transition: opacity .2s, transform .15s, box-shadow .2s;
-      box-shadow: 0 4px 16px rgba(74,124,89,.35);
-      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 16px rgba(74, 124, 89, .35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
+
     .btn-submit:hover {
       opacity: .92;
       transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(74,124,89,.4);
+      box-shadow: 0 6px 20px rgba(74, 124, 89, .4);
     }
-    .btn-submit:active { transform: translateY(0); }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
 
     /* ── Alert boxes ── */
     .msg-box {
-      border-radius: 10px; padding: 11px 15px;
-      font-size: .84rem; margin-bottom: 16px;
-      display: flex; align-items: flex-start; gap: 8px;
+      border-radius: 10px;
+      padding: 11px 15px;
+      font-size: .84rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
     }
-    .msg-box.error   { background: #fff0f0; border: 1px solid #f5c2c7; color: #842029; }
-    .msg-box.success { background: #eef7f1; border: 1px solid #b7dfc0; color: var(--primary-dark); }
-    .msg-box i { margin-top: 1px; flex-shrink: 0; }
+
+    .msg-box.error {
+      background: #fff0f0;
+      border: 1px solid #f5c2c7;
+      color: #842029;
+    }
+
+    .msg-box.success {
+      background: #eef7f1;
+      border: 1px solid #b7dfc0;
+      color: var(--primary-dark);
+    }
+
+    .msg-box i {
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
 
     /* ── Info note ── */
     .info-note {
@@ -342,426 +565,476 @@
       border: 1px solid #d5e8d9;
       border-radius: 10px;
       padding: 11px 15px;
-      font-size: .8rem; color: #666;
-      text-align: center; margin-top: 20px;
+      font-size: .8rem;
+      color: #666;
+      text-align: center;
+      margin-top: 20px;
     }
-    .info-note strong { color: var(--primary-dark); }
+
+    .info-note strong {
+      color: var(--primary-dark);
+    }
 
     /* ── Link text ── */
-    .auth-link { color: var(--primary); font-weight: 600; text-decoration: none; }
-    .auth-link:hover { color: var(--primary-dark); text-decoration: underline; }
+    .auth-link {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .auth-link:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
 
     /* ── Panel separator ── */
-    .tab-panel { animation: fadeUp .2s ease both; }
+    .tab-panel {
+      animation: fadeUp .2s ease both;
+    }
+
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* ── Divider ── */
     .section-hint {
-      text-align: center; font-size: .82rem; color: #999;
+      text-align: center;
+      font-size: .82rem;
+      color: #999;
       margin-bottom: 20px;
     }
 
     /* ── Back to home ── */
     .back-link {
-      position: absolute; top: 20px; right: 24px;
-      display: flex; align-items: center; gap: 6px;
-      color: #888; font-size: .82rem; text-decoration: none;
-      padding: 6px 14px; border-radius: 20px;
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #888;
+      font-size: .82rem;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 20px;
       border: 1.5px solid #e0ece4;
       background: #fff;
       transition: all .2s;
     }
-    .back-link:hover { color: var(--primary); border-color: var(--primary); }
+
+    .back-link:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
 
     @media (max-width: 767px) {
-      .left-panel { display: none; }
-      .right-panel { padding: 36px 20px; }
+      .left-panel {
+        display: none;
+      }
+
+      .right-panel {
+        padding: 36px 20px;
+      }
     }
   </style>
 
   <!-- SEO Enhancements -->
   <meta name="description" content="Sign in to your AUdoc Campus Health account. Secure access for students and staff.">
   <meta property="og:title" content="Sign In – AUdoc Campus Health">
-<meta property="og:description" content="Sign in to your AUdoc Campus Health account. Secure access for students and staff.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://voiddoc.me{% url 'login' %}">
+  <meta property="og:description"
+    content="Sign in to your AUdoc Campus Health account. Secure access for students and staff.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://voiddoc.me{% url 'login' %}">
 
   <!-- Anti-DevTools Snippet -->
   <script>
-    document.addEventListener('contextmenu', function(e) {
+    document.addEventListener('contextmenu', function (e) {
       e.preventDefault();
     });
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'F12' || 
-          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
-          (e.ctrlKey && e.key === 'U')) {
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'U')) {
         e.preventDefault();
       }
     });
   </script>
 </head>
+
 <body>
 
-<!-- ════════════ LEFT PANEL ════════════ -->
-<div class="left-panel">
-  <div class="dot-grid"></div>
+  <!-- ════════════ LEFT PANEL ════════════ -->
+  <div class="left-panel">
+    <div class="dot-grid"></div>
 
-  <div class="panel-logo">
-    <div class="icon"><i class="bi bi-hospital-fill"></i></div>
-    <div>
-      <div class="name">AUdoc</div>
-      <div class="sub">Campus Health Portal</div>
-    </div>
-  </div>
-
-  <div class="panel-headline">
-    <h1>Your campus health,<br><span>one click away.</span></h1>
-    <p>AUdoc connects Assam University students with campus doctors — fast, paperless, and always available.</p>
-  </div>
-
-  <div class="panel-features">
-    <div class="feat-item">
-      <div class="feat-icon"><i class="bi bi-calendar-check-fill"></i></div>
+    <div class="panel-logo">
+      <div class="icon"><i class="bi bi-hospital-fill"></i></div>
       <div>
-        <div class="ft">Book appointments online</div>
-        <div class="fs">No queues. Pick a doctor and a time slot.</div>
+        <div class="name">AUdoc</div>
+        <div class="sub">Campus Health Portal</div>
       </div>
     </div>
-    <div class="feat-item">
-      <div class="feat-icon"><i class="bi bi-droplet-fill"></i></div>
-      <div>
-        <div class="ft">Blood bank access</div>
-        <div class="fs">Register as donor or request blood instantly.</div>
+
+    <div class="panel-headline">
+      <h1>Your campus health,<br><span>one click away.</span></h1>
+      <p>AUdoc connects Assam University students with campus doctors — fast, paperless, and always available.</p>
+    </div>
+
+    <div class="panel-features">
+      <div class="feat-item">
+        <div class="feat-icon"><i class="bi bi-calendar-check-fill"></i></div>
+        <div>
+          <div class="ft">Book appointments online</div>
+          <div class="fs">No queues. Pick a doctor and a time slot.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon"><i class="bi bi-droplet-fill"></i></div>
+        <div>
+          <div class="ft">Blood bank access</div>
+          <div class="fs">Register as donor or request blood instantly.</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon"><i class="bi bi-shield-check-fill"></i></div>
+        <div>
+          <div class="ft">OTP-secured sign in</div>
+          <div class="fs">No password needed — your email keeps you safe.</div>
+        </div>
       </div>
     </div>
-    <div class="feat-item">
-      <div class="feat-icon"><i class="bi bi-shield-check-fill"></i></div>
-      <div>
-        <div class="ft">OTP-secured sign in</div>
-        <div class="fs">No password needed — your email keeps you safe.</div>
-      </div>
+
+    <div class="panel-footer">
+      <i class="bi bi-geo-alt"></i>
+      Academic Block C, Room 101 &nbsp;·&nbsp; Mon–Fri 8 AM–5 PM
     </div>
   </div>
 
-  <div class="panel-footer">
-    <i class="bi bi-geo-alt"></i>
-    Academic Block C, Room 101 &nbsp;·&nbsp; Mon–Fri 8 AM–5 PM
-  </div>
-</div>
+  <!-- ════════════ RIGHT PANEL ════════════ -->
+  <div class="right-panel" style="position:relative;">
 
-<!-- ════════════ RIGHT PANEL ════════════ -->
-<div class="right-panel" style="position:relative;">
+    <a href="/" class="back-link">
+      <i class="bi bi-arrow-left"></i> Home
+    </a>
 
-  <a href="/" class="back-link">
-    <i class="bi bi-arrow-left"></i> Home
-  </a>
+    <div class="form-box">
 
-  <div class="form-box">
+      <div class="form-header">
+        <div class="logo-bubble"><i class="bi bi-hospital-fill"></i></div>
+        <h2>Welcome back</h2>
+        <p>Sign in to your AUdoc account</p>
+      </div>
 
-    <div class="form-header">
-      <div class="logo-bubble"><i class="bi bi-hospital-fill"></i></div>
-      <h2>Welcome back</h2>
-      <p>Sign in to your AUdoc account</p>
-    </div>
-
-    <!-- Flash messages -->
-    {% if messages %}
+      <!-- Flash messages -->
+      {% if messages %}
       {% for message in messages %}
-        <div class="msg-box {% if message.tags == 'success' %}success{% else %}error{% endif %}">
-          <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% else %}exclamation-circle-fill{% endif %}"></i>
-          <span>{{ message }}</span>
-        </div>
+      <div class="msg-box {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+        <i
+          class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% else %}exclamation-circle-fill{% endif %}"></i>
+        <span>{{ message }}</span>
+      </div>
       {% endfor %}
-    {% endif %}
+      {% endif %}
 
-    <!-- Tab switcher -->
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tabStudent" onclick="switchTab('student')">
-        <i class="bi bi-mortarboard-fill"></i>Student
-      </button>
-      <button class="auth-tab" id="tabStaff" onclick="switchTab('staff')">
-        <i class="bi bi-person-badge-fill"></i>Staff / Admin
-      </button>
-    </div>
-
-    <!-- ══ STUDENT PANEL ══ -->
-    <div id="panelStudent" class="tab-panel">
-      <p class="section-hint">Enter your Student ID — we'll send a one-time code to your registered email.</p>
-
-      <form method="post" action="{% url 'student_login' %}" id="studentLoginForm">
-        {% csrf_token %}
-        {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
-        <input type="hidden" name="otp" id="hiddenLoginOtp" />
-
-        <!-- Student ID -->
-        <div class="field-group">
-          <label class="field-label"><i class="bi bi-badge-id"></i>Student ID</label>
-          <div class="input-with-btn">
-            <input type="text" name="student_id" id="id_student_id"
-                   class="field-input" placeholder="e.g. AU2021050123"
-                   autocomplete="username" autofocus
-                   oninput="resetLoginOtpState()" />
-            <button type="button" class="iab-btn" id="btnSendLoginOtp" onclick="sendLoginOtp()">
-              <i class="bi bi-send me-1"></i>Send OTP
-            </button>
-          </div>
-        </div>
-
-        <!-- OTP section -->
-        <div id="loginOtpSection" style="display:none;" class="mb-4">
-          <div class="otp-banner">
-            <i class="bi bi-envelope-check-fill"></i>
-            <span>Code sent to <strong id="loginMaskedEmail"></strong></span>
-          </div>
-          <label class="field-label"><i class="bi bi-shield-lock"></i>6-digit OTP</label>
-          <div class="otp-digit-row" id="otpBoxRow">
-            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="0" />
-            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="1" />
-            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="2" />
-            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="3" />
-            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="4" />
-            <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="5" />
-          </div>
-          <div class="otp-meta">
-            <span class="otp-timer" id="loginCountdown">
-              Expires in <strong id="loginTimerDisplay">10:00</strong>
-            </span>
-            <button type="button" class="btn-resend" id="btnResendLoginOtp" onclick="sendLoginOtp()" disabled>
-              Resend OTP
-            </button>
-          </div>
-        </div>
-
-        <button type="submit" class="btn-submit" onclick="return validateLoginOtp()">
-          <i class="bi bi-box-arrow-in-right"></i>Sign In
+      <!-- Tab switcher -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabStudent" onclick="switchTab('student')">
+          <i class="bi bi-mortarboard-fill"></i>Student
         </button>
-      </form>
+        <button class="auth-tab" id="tabStaff" onclick="switchTab('staff')">
+          <i class="bi bi-person-badge-fill"></i>Staff / Admin
+        </button>
+      </div>
 
-      <!-- Google OAuth -->
-      <div style="margin-top: 20px;">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-          <hr style="flex: 1; border: none; border-top: 1px solid #ddd;" />
-          <span style="color: #999; font-size: 0.85rem;">Or</span>
-          <hr style="flex: 1; border: none; border-top: 1px solid #ddd;" />
+      <!-- ══ STUDENT PANEL ══ -->
+      <div id="panelStudent" class="tab-panel">
+        <p class="section-hint">Enter your Student ID — we'll send a one-time code to your registered email.</p>
+
+        <form method="post" action="{% url 'student_login' %}" id="studentLoginForm">
+          {% csrf_token %}
+          {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
+          <input type="hidden" name="otp" id="hiddenLoginOtp" />
+
+          <!-- Student ID -->
+          <div class="field-group">
+            <label class="field-label"><i class="bi bi-badge-id"></i>Student ID</label>
+            <div class="input-with-btn">
+              <input type="text" name="student_id" id="id_student_id" class="field-input"
+                placeholder="e.g. AU2021050123" autocomplete="username" autofocus oninput="resetLoginOtpState()" />
+              <button type="button" class="iab-btn" id="btnSendLoginOtp" onclick="sendLoginOtp()">
+                <i class="bi bi-send me-1"></i>Send OTP
+              </button>
+            </div>
+          </div>
+
+          <!-- OTP section -->
+          <div id="loginOtpSection" style="display:none;" class="mb-4">
+            <div class="otp-banner">
+              <i class="bi bi-envelope-check-fill"></i>
+              <span>Code sent to <strong id="loginMaskedEmail"></strong></span>
+            </div>
+            <label class="field-label"><i class="bi bi-shield-lock"></i>6-digit OTP</label>
+            <div class="otp-digit-row" id="otpBoxRow">
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="0" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="1" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="2" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="3" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="4" />
+              <input class="otp-box" maxlength="1" inputmode="numeric" data-idx="5" />
+            </div>
+            <div class="otp-meta">
+              <span class="otp-timer" id="loginCountdown">
+                Expires in <strong id="loginTimerDisplay">10:00</strong>
+              </span>
+              <button type="button" class="btn-resend" id="btnResendLoginOtp" onclick="sendLoginOtp()" disabled>
+                Resend OTP
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" onclick="return validateLoginOtp()">
+            <i class="bi bi-box-arrow-in-right"></i>Sign In
+          </button>
+        </form>
+
+        <!-- Google OAuth -->
+        <div style="margin-top: 20px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+            <hr style="flex: 1; border: none; border-top: 1px solid #ddd;" />
+            <span style="color: #999; font-size: 0.85rem;">Or</span>
+            <hr style="flex: 1; border: none; border-top: 1px solid #ddd;" />
+          </div>
+          <a href="/accounts/google/login/" class="btn btn-outline-secondary w-100"
+            style="border: 1px solid #ddd; color: #333; padding: 10px; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                fill="#4285F4" />
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                fill="#34A853" />
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                fill="#FBBC05" />
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335" />
+            </svg>
+            <span>Sign in with Google</span>
+          </a>
+          <p style="text-align: center; font-size: 0.75rem; color: #999; margin-top: 10px;">
+            Your email must match your registered student account
+          </p>
         </div>
-        <a href="/accounts/google/login/" class="btn btn-outline-secondary w-100" style="border: 1px solid #ddd; color: #333; padding: 10px; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          <span>Sign in with Google</span>
-        </a>
-        <p style="text-align: center; font-size: 0.75rem; color: #999; margin-top: 10px;">
-          Your email must match your registered student account
+
+        <p class="text-center mt-4" style="font-size:.875rem; color:#888;">
+          New here? <a href="{% url 'register' %}" class="auth-link">Create an account</a>
         </p>
       </div>
 
-      <p class="text-center mt-4" style="font-size:.875rem; color:#888;">
-        New here? <a href="{% url 'register' %}" class="auth-link">Create an account</a>
-      </p>
-    </div>
+      <!-- ══ STAFF PANEL ══ -->
+      <div id="panelStaff" class="tab-panel" style="display:none;">
+        <p class="section-hint">Staff and administrators sign in with username and password.</p>
 
-    <!-- ══ STAFF PANEL ══ -->
-    <div id="panelStaff" class="tab-panel" style="display:none;">
-      <p class="section-hint">Staff and administrators sign in with username and password.</p>
-
-      {% if form.errors %}
+        {% if form.errors %}
         <div class="msg-box error">
           <i class="bi bi-exclamation-circle-fill"></i>
           <span>Invalid username or password. Please try again.</span>
         </div>
-      {% endif %}
+        {% endif %}
 
-      <form method="post" action="{% url 'login' %}">
-        {% csrf_token %}
-        {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
+        <form method="post" action="{% url 'login' %}">
+          {% csrf_token %}
+          {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
 
-        <div class="field-group">
-          <label class="field-label"><i class="bi bi-person"></i>Username</label>
-          <input type="text" name="username" id="id_username" class="field-input"
-                 placeholder="Enter your username"
-                 value="{{ form.username.value|default:'' }}"
-                 autocomplete="username" />
-        </div>
-
-        <div class="field-group">
-          <label class="field-label"><i class="bi bi-lock"></i>Password</label>
-          <div class="pw-wrap">
-            <input type="password" name="password" id="id_password" class="field-input"
-                   placeholder="Enter your password" autocomplete="current-password" />
-            <button type="button" class="eye-btn" id="togglePassword" tabindex="-1">
-              <i class="bi bi-eye" id="toggleIcon"></i>
-            </button>
+          <div class="field-group">
+            <label class="field-label"><i class="bi bi-person"></i>Username</label>
+            <input type="text" name="username" id="id_username" class="field-input" placeholder="Enter your username"
+              value="{{ form.username.value|default:'' }}" autocomplete="username" />
           </div>
-        </div>
 
-        <button type="submit" class="btn-submit">
-          <i class="bi bi-box-arrow-in-right"></i>Sign In as Staff
-        </button>
-      </form>
+          <div class="field-group">
+            <label class="field-label"><i class="bi bi-lock"></i>Password</label>
+            <div class="pw-wrap">
+              <input type="password" name="password" id="id_password" class="field-input"
+                placeholder="Enter your password" autocomplete="current-password" />
+              <button type="button" class="eye-btn" id="togglePassword" tabindex="-1">
+                <i class="bi bi-eye" id="toggleIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <i class="bi bi-box-arrow-in-right"></i>Sign In as Staff
+          </button>
+        </form>
+      </div>
+
+      <div class="info-note">
+        <i class="bi bi-info-circle" style="color:var(--primary);"></i>
+        Students use their <strong>Student ID</strong> + OTP.
+        Issues? Email <strong>health@au.edu</strong>
+      </div>
+
     </div>
-
-    <div class="info-note">
-      <i class="bi bi-info-circle" style="color:var(--primary);"></i>
-      Students use their <strong>Student ID</strong> + OTP.
-      Issues? Email <strong>health@au.edu</strong>
-    </div>
-
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  {% if form.errors %}switchTab('staff');{% endif %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    {% if form.errors %} switchTab('staff'); {% endif %}
 
-  // ══ OTP box logic ════════════════════════════════════════
-  const otpBoxes = document.querySelectorAll('#otpBoxRow .otp-box');
-  otpBoxes.forEach((box, i) => {
-    box.addEventListener('input', function () {
-      const v = this.value.replace(/\D/, '');
-      this.value = v;
-      this.classList.toggle('filled', v !== '');
-      if (v && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
-      syncHiddenOtp();
-    });
-    box.addEventListener('keydown', function (e) {
-      if (e.key === 'Backspace' && !this.value && i > 0) {
-        otpBoxes[i - 1].focus();
-        otpBoxes[i - 1].value = '';
-        otpBoxes[i - 1].classList.remove('filled');
+    // ══ OTP box logic ════════════════════════════════════════
+    const otpBoxes = document.querySelectorAll('#otpBoxRow .otp-box');
+    otpBoxes.forEach((box, i) => {
+      box.addEventListener('input', function () {
+        const v = this.value.replace(/\D/, '');
+        this.value = v;
+        this.classList.toggle('filled', v !== '');
+        if (v && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
         syncHiddenOtp();
-      }
-    });
-    box.addEventListener('paste', function (e) {
-      e.preventDefault();
-      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
-      paste.split('').forEach((ch, j) => {
-        if (otpBoxes[j]) { otpBoxes[j].value = ch; otpBoxes[j].classList.add('filled'); }
       });
-      syncHiddenOtp();
-      if (otpBoxes[paste.length - 1]) otpBoxes[Math.min(paste.length, 5)].focus();
+      box.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !this.value && i > 0) {
+          otpBoxes[i - 1].focus();
+          otpBoxes[i - 1].value = '';
+          otpBoxes[i - 1].classList.remove('filled');
+          syncHiddenOtp();
+        }
+      });
+      box.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+        paste.split('').forEach((ch, j) => {
+          if (otpBoxes[j]) { otpBoxes[j].value = ch; otpBoxes[j].classList.add('filled'); }
+        });
+        syncHiddenOtp();
+        if (otpBoxes[paste.length - 1]) otpBoxes[Math.min(paste.length, 5)].focus();
+      });
     });
-  });
 
-  function syncHiddenOtp() {
-    let val = '';
-    otpBoxes.forEach(b => val += b.value);
-    document.getElementById('hiddenLoginOtp').value = val;
-  }
+    function syncHiddenOtp() {
+      let val = '';
+      otpBoxes.forEach(b => val += b.value);
+      document.getElementById('hiddenLoginOtp').value = val;
+    }
 
-  // ══ OTP send / state ═════════════════════════════════════
-  let loginCountdownInterval = null;
-  let loginOtpVerified = false;
+    // ══ OTP send / state ═════════════════════════════════════
+    let loginCountdownInterval = null;
+    let loginOtpVerified = false;
 
-  function resetLoginOtpState() {
-    loginOtpVerified = false;
-    clearInterval(loginCountdownInterval);
-    document.getElementById('loginOtpSection').style.display = 'none';
-    otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
-    document.getElementById('hiddenLoginOtp').value = '';
-    const btn = document.getElementById('btnSendLoginOtp');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
-  }
-
-  function sendLoginOtp() {
-    const sid = document.getElementById('id_student_id').value.trim();
-    if (!sid) { alert('Please enter your Student ID first.'); return; }
-
-    const btn = document.getElementById('btnSendLoginOtp');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" style="width:12px;height:12px;"></span>Sending…';
-
-    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    fetch("{% url 'send_login_otp' %}", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrf },
-      body: 'student_id=' + encodeURIComponent(sid),
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend';
-        document.getElementById('loginMaskedEmail').textContent = data.email;
-        document.getElementById('loginOtpSection').style.display = 'block';
-        otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
-        document.getElementById('hiddenLoginOtp').value = '';
-        loginOtpVerified = false;
-        startLoginCountdown();
-        otpBoxes[0].focus();
-      } else {
-        alert(data.error || 'Failed to send OTP.');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
-      }
-    })
-    .catch(() => {
-      alert('Network error. Please try again.');
+    function resetLoginOtpState() {
+      loginOtpVerified = false;
+      clearInterval(loginCountdownInterval);
+      document.getElementById('loginOtpSection').style.display = 'none';
+      otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
+      document.getElementById('hiddenLoginOtp').value = '';
+      const btn = document.getElementById('btnSendLoginOtp');
       btn.disabled = false;
       btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
-    });
-  }
-
-  function startLoginCountdown() {
-    clearInterval(loginCountdownInterval);
-    let seconds = 600;
-    const display   = document.getElementById('loginTimerDisplay');
-    const counter   = document.getElementById('loginCountdown');
-    const resendBtn = document.getElementById('btnResendLoginOtp');
-    resendBtn.disabled = true;
-
-    loginCountdownInterval = setInterval(() => {
-      seconds--;
-      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-      const s = String(seconds % 60).padStart(2, '0');
-      display.textContent = m + ':' + s;
-      counter.className = 'otp-timer' + (seconds <= 60 ? ' urgent' : '');
-      if (seconds <= 0) {
-        clearInterval(loginCountdownInterval);
-        display.textContent = '00:00';
-        resendBtn.disabled = false;
-        document.getElementById('btnSendLoginOtp').disabled = false;
-      }
-    }, 1000);
-  }
-
-  function validateLoginOtp() {
-    const otp = document.getElementById('hiddenLoginOtp').value.trim();
-    if (!otp || otp.length < 6) {
-      alert('Please enter the 6-digit OTP sent to your email.');
-      return false;
     }
-    return true;
-  }
 
-  // ══ Tab switch ═══════════════════════════════════════════
-  function switchTab(tab) {
-    const isStudent = tab === 'student';
-    document.getElementById('panelStudent').style.display = isStudent ? '' : 'none';
-    document.getElementById('panelStaff').style.display   = isStudent ? 'none' : '';
-    document.getElementById('tabStudent').classList.toggle('active', isStudent);
-    document.getElementById('tabStaff').classList.toggle('active', !isStudent);
-    if (isStudent) document.getElementById('panelStudent').classList.remove('tab-panel');
-    void document.getElementById(isStudent ? 'panelStudent' : 'panelStaff').offsetWidth;
-    document.getElementById(isStudent ? 'panelStudent' : 'panelStaff').classList.add('tab-panel');
-  }
+    function sendLoginOtp() {
+      const sid = document.getElementById('id_student_id').value.trim();
+      if (!sid) { alert('Please enter your Student ID first.'); return; }
 
-  // ══ Password toggle ═══════════════════════════════════════
-  document.getElementById('togglePassword').addEventListener('click', () => {
-    const inp = document.getElementById('id_password');
-    const ico = document.getElementById('toggleIcon');
-    const hidden = inp.type === 'password';
-    inp.type = hidden ? 'text' : 'password';
-    ico.className = hidden ? 'bi bi-eye-slash' : 'bi bi-eye';
-  });
-</script>
+      const btn = document.getElementById('btnSendLoginOtp');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" style="width:12px;height:12px;"></span>Sending…';
+
+      const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      fetch("{% url 'send_login_otp' %}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrf },
+        body: 'student_id=' + encodeURIComponent(sid),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend';
+            document.getElementById('loginMaskedEmail').textContent = data.email;
+            document.getElementById('loginOtpSection').style.display = 'block';
+            otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
+            document.getElementById('hiddenLoginOtp').value = '';
+            loginOtpVerified = false;
+            startLoginCountdown();
+            otpBoxes[0].focus();
+          } else {
+            alert(data.error || 'Failed to send OTP.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
+          }
+        })
+        .catch(() => {
+          alert('Network error. Please try again.');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-send me-1"></i>Send OTP';
+        });
+    }
+
+    function startLoginCountdown() {
+      clearInterval(loginCountdownInterval);
+      let seconds = 600;
+      const display = document.getElementById('loginTimerDisplay');
+      const counter = document.getElementById('loginCountdown');
+      const resendBtn = document.getElementById('btnResendLoginOtp');
+      resendBtn.disabled = true;
+
+      loginCountdownInterval = setInterval(() => {
+        seconds--;
+        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        display.textContent = m + ':' + s;
+        counter.className = 'otp-timer' + (seconds <= 60 ? ' urgent' : '');
+        if (seconds <= 0) {
+          clearInterval(loginCountdownInterval);
+          display.textContent = '00:00';
+          resendBtn.disabled = false;
+          document.getElementById('btnSendLoginOtp').disabled = false;
+        }
+      }, 1000);
+    }
+
+    function validateLoginOtp() {
+      const otp = document.getElementById('hiddenLoginOtp').value.trim();
+      if (!otp || otp.length < 6) {
+        alert('Please enter the 6-digit OTP sent to your email.');
+        return false;
+      }
+      return true;
+    }
+
+    // ══ Tab switch ═══════════════════════════════════════════
+    function switchTab(tab) {
+      const isStudent = tab === 'student';
+      document.getElementById('panelStudent').style.display = isStudent ? '' : 'none';
+      document.getElementById('panelStaff').style.display = isStudent ? 'none' : '';
+      document.getElementById('tabStudent').classList.toggle('active', isStudent);
+      document.getElementById('tabStaff').classList.toggle('active', !isStudent);
+      if (isStudent) document.getElementById('panelStudent').classList.remove('tab-panel');
+      void document.getElementById(isStudent ? 'panelStudent' : 'panelStaff').offsetWidth;
+      document.getElementById(isStudent ? 'panelStudent' : 'panelStaff').classList.add('tab-panel');
+    }
+
+    // ══ Password toggle ═══════════════════════════════════════
+    document.getElementById('togglePassword').addEventListener('click', () => {
+      const inp = document.getElementById('id_password');
+      const ico = document.getElementById('toggleIcon');
+      const hidden = inp.type === 'password';
+      inp.type = hidden ? 'text' : 'password';
+      ico.className = hidden ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+  </script>
 
   <!-- Schema.org Data -->
-  
+
 </body>
+
 </html>
