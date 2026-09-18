@@ -615,8 +615,7 @@
     <!-- ═══ Pane 1 — Search + Records ═══ -->
     <section class="pane-records">
       <div class="pane-records-top">
-        <h1><i class="bi bi-file-medical-fill"></i> Medical History <span class="record-count">({{ records|length
-            }})</span></h1>
+        <h1><i class="bi bi-file-medical-fill"></i> Medical History <span class="record-count">({{ records|length }})</span></h1>
         <form method="get" action="{% url 'doctor_portal' %}" class="search-box">
           <input type="text" name="q" value="{{ search_query }}" placeholder="Search by Student ID…"
             aria-label="Search by Student ID" />
