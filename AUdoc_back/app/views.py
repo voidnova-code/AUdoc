@@ -2684,45 +2684,26 @@ def chat_api(request):
     # De-duplicate while preserving order
     models_to_try = list(dict.fromkeys(candidate_models))
 
+    import re as _re
+
+    # Extract student ID from the message text (e.g. "hello, 23CMPU04 I have a fever")
+    student_id_match = _re.search(r'\b\d{2}[A-Z]{2,5}\d{2,5}\b', message)
+    student_id_context = f" The student has identified themselves as ID: {student_id_match.group()}." if student_id_match else ""
+
     system_prompt = (
-        "You are a friendly health assistant for AUdoc — the Assam University Silchar Campus Health Center portal. "
-        "Help students with health questions, appointment booking guidance, blood donation registration, "
-        "and navigating the portal services. Be concise, warm, and supportive. "
-        "Campus emergency contact: 0389-2330931. Clinic hours: 24/7. "
-        "Available services: Appointment booking, Blood Bank, Donor Network, Monetary Donations, Help Desk. "
-        "For serious medical emergencies, always advise calling the emergency number immediately. "
-        "Keep responses under 150 words.\n\n"
-        "STRICT TOPIC GUARDRAIL: You must ONLY answer questions related to healthcare, the AUdoc portal, or Assam University medical services. "
-        "If a user asks anything unrelated (e.g., writing code, math, general knowledge, sports, etc.), you MUST politely decline and redirect them to health-related topics.\n\n"
-        "APPOINTMENT BOOKING RULE: You cannot book appointments directly. If asked to book an appointment, politely explain that you cannot do it right now, and instruct the user to go to the Appointment section, select the desired medical department, choose an available doctor and time slot, and submit the request."
+        "You are AUdoc Health Assistant for Assam University Silchar Campus Health Center. "
+        "Help students with health questions, appointment guidance, blood donation, and portal navigation. "
+        "Be concise, warm, and keep replies under 100 words. "
+        "Emergency contact: 0389-2330931. Clinic hours: Mon–Sat, 9 AM – 4 PM. "
+        "Services: Appointments, Blood Bank, Donor Network, Donations. "
+        "RULES: (1) Only answer health/AUdoc-related questions — politely decline everything else. "
+        "(2) You cannot book appointments directly — guide users to the Appointments section. "
+        "(3) You do NOT have access to any student records, medical history, or personal data."
+        + student_id_context
     )
 
-    # Dynamic Context: Fetch Doctors
-    doctors = Doctor.objects.filter(is_available=True)
-    if doctors.exists():
-        doc_info = "\n\nAvailable Doctors:\n"
-        for d in doctors:
-            doc_info += f"- Dr. {d.name} ({d.get_specialized_in_display()}): Available on {d.available_days}, Timings: {d.available_time}\n"
-        system_prompt += doc_info
-
-    # Dynamic Context: User Info
-    if request.user.is_authenticated:
-        try:
-            student = StudentProfile.objects.get(user=request.user)
-            name = "AUS Student"
-            user_info = f"\n\nYou are talking to {name}, a student in the {student.get_department_display()} department. Their blood group is {student.blood_group}."
-            
-            upcoming = Appointment.objects.filter(student_id=student.student_id, status__in=["PENDING", "CONFIRMED"])
-            if upcoming.exists():
-                user_info += "\nThey have upcoming appointments:\n"
-                for appt in upcoming:
-                    user_info += f"- {appt.get_medical_department_display()} on {appt.appointment_date} at {appt.appointment_time} ({appt.status})\n"
-            system_prompt += user_info
-        except StudentProfile.DoesNotExist:
-            pass
-
     messages_payload = [{"role": "system", "content": system_prompt}]
-    for turn in history[-10:]:
+    for turn in history[-6:]:
         if turn.get("role") in ("user", "assistant") and turn.get("content"):
             messages_payload.append({"role": turn["role"], "content": turn["content"]})
     messages_payload.append({"role": "user", "content": message})
