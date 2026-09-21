@@ -191,6 +191,84 @@
     /* ── Scroll-reveal ── */
     .reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
     .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── Developer Flip Card ── */
+    .dev-flip-wrap {
+      perspective: 1400px;
+      cursor: pointer;
+    }
+    .dev-flip-inner {
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      min-height: 680px;
+    }
+    .dev-flip-inner.flipped {
+      transform: rotateY(180deg);
+    }
+    .dev-flip-front,
+    .dev-flip-back {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .dev-flip-front {
+      position: relative;
+    }
+    .dev-flip-back {
+      position: absolute;
+      inset: 0;
+      transform: rotateY(180deg);
+      background: linear-gradient(145deg, #0d2a1a 0%, #1a4a2e 50%, #0d2a1a 100%);
+      border-radius: 22px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 36px;
+      color: #fff;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .hero-item {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      transition: background .2s, transform .2s;
+    }
+    .hero-item:hover {
+      background: rgba(74,124,89,.3);
+      transform: translateY(-3px);
+    }
+    .hero-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, #4a7c59, #2e5c3a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .hero-name { font-size: .82rem; font-weight: 700; color: #e8f5ec; }
+    .hero-role { font-size: .72rem; color: #9abea8; }
+    .flip-hint {
+      font-size: .75rem; color: rgba(255,255,255,.5);
+      text-align: center; margin-top: 12px; flex-shrink: 0;
+    }
+    .flip-back-title {
+      font-size: 1.25rem; font-weight: 800;
+      color: #fff; margin-bottom: 2px;
+    }
+    .flip-back-sub {
+      font-size: .82rem; color: #9abea8;
+    }
     /* ── Scroll-to-top ── */
     #scroll-top {
       position: fixed; bottom: 30px; right: 102px;
@@ -595,95 +673,173 @@
 
     <div class="row justify-content-center">
       <div class="col-lg-7 reveal">
-        <div class="dev-card">
-          <div class="dev-card-header">
-            <div class="text-white">
-              <h4 class="fw-bold mb-1 opacity-75" style="font-size:1rem;letter-spacing:2px;text-transform:uppercase;">Developer</h4>
-            </div>
-            <div class="dev-avatar">
-              <i class="bi bi-person-circle"></i>
-            </div>
-          </div>
 
-          <div class="dev-card-body">
-            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-              <h3 class="fw-bold mb-0" style="color:#0d2a1a;">Sayan Kumar Roy</h3>
-              <span class="dev-badge" style="background:#e8f5ec;color:var(--primary);">
-                <i class="bi bi-code-square"></i> voidnova
-              </span>
-            </div>
+        <!-- Flip card wrapper -->
+        <div class="dev-flip-wrap" onclick="this.querySelector('.dev-flip-inner').classList.toggle('flipped')">
+          <div class="dev-flip-inner">
 
-            <div class="d-flex flex-wrap gap-2 mb-4">
-              <span class="dev-badge" style="background:#d5f0e2;color:var(--green);">
-                <i class="bi bi-mortarboard-fill"></i> Computer Science
-              </span>
-              <span class="dev-badge" style="background:#fff3cd;color:#856404;">
-                <i class="bi bi-building"></i> Assam University Silchar
-              </span>
-              <span class="dev-badge" style="background:#ffe8eb;color:#c41e3a;">
-                <i class="bi bi-heart-fill"></i> Full-Stack Enthusiast
-              </span>
-            </div>
+            <!-- FRONT: Developer Card -->
+            <div class="dev-flip-front">
+              <div class="dev-card">
+                <div class="dev-card-header">
+                  <div class="text-white">
+                    <h4 class="fw-bold mb-1 opacity-75" style="font-size:1rem;letter-spacing:2px;text-transform:uppercase;">Developer</h4>
+                  </div>
+                  <div class="dev-avatar">
+                    <i class="bi bi-person-circle"></i>
+                  </div>
+                </div>
 
-            <p class="text-muted mb-4" style="font-size:.95rem;line-height:1.8;">
-              I'm a Computer Science student who thought <em>"I should build this"</em> and then,
-              against all odds, actually did. I handle everything — the backend, the frontend,
-              the database, the emails, the CSS that refuses to center properly, and
-              the silent panic whenever something breaks in production.
-              If you're reading this and AUdoc is down, I probably already know. 😅
-            </p>
+                <div class="dev-card-body">
+                  <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <h3 class="fw-bold mb-0" style="color:#0d2a1a;">Sayan Kumar Roy</h3>
+                    <span class="dev-badge" style="background:#e8f5ec;color:var(--primary);">
+                      <i class="bi bi-code-square"></i> voidnova
+                    </span>
+                  </div>
 
-            <!-- Contact Info -->
-            <h6 class="fw-bold mb-3" style="color:#0d2a1a;">Get in Touch</h6>
+                  <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="dev-badge" style="background:#d5f0e2;color:var(--green);">
+                      <i class="bi bi-mortarboard-fill"></i> Computer Science
+                    </span>
+                    <span class="dev-badge" style="background:#fff3cd;color:#856404;">
+                      <i class="bi bi-building"></i> Assam University Silchar
+                    </span>
+                    <span class="dev-badge" style="background:#ffe8eb;color:#c41e3a;">
+                      <i class="bi bi-heart-fill"></i> Full-Stack Enthusiast
+                    </span>
+                  </div>
 
-            <div class="contact-item d-flex align-items-center">
-              <div class="contact-icon"><i class="bi bi-envelope-fill"></i></div>
-              <div>
-                <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Email</div>
-                <a href="mailto:sayankumarr02@gmail.com" style="color:var(--primary);font-weight:500;text-decoration:none;">
-                  sayankumarr02@gmail.com
-                </a>
+                  <p class="text-muted mb-4" style="font-size:.95rem;line-height:1.8;">
+                    I'm a Computer Science student who thought <em>"I should build this"</em> and then,
+                    against all odds, actually did. I handle everything — the backend, the frontend,
+                    the database, the emails, the CSS that refuses to center properly, and
+                    the silent panic whenever something breaks in production.
+                    If you're reading this and AUdoc is down, I probably already know. 😅
+                  </p>
+
+                  <!-- Contact Info -->
+                  <h6 class="fw-bold mb-3" style="color:#0d2a1a;">Get in Touch</h6>
+
+                  <div class="contact-item d-flex align-items-center">
+                    <div class="contact-icon"><i class="bi bi-envelope-fill"></i></div>
+                    <div>
+                      <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Email</div>
+                      <a href="mailto:sayankumarr02@gmail.com" style="color:var(--primary);font-weight:500;text-decoration:none;">
+                        sayankumarr02@gmail.com
+                      </a>
+                    </div>
+                  </div>
+
+                  <div class="contact-item d-flex align-items-center">
+                    <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
+                    <div>
+                      <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Phone</div>
+                      <a href="tel:+916900577470" style="color:var(--primary);font-weight:500;text-decoration:none;">
+                        +91 6900577470
+                      </a>
+                    </div>
+                  </div>
+
+                  <div class="contact-item d-flex align-items-center">
+                    <div class="contact-icon"><i class="bi bi-buildings-fill"></i></div>
+                    <div>
+                      <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Department</div>
+                      <span style="font-weight:500;color:#333;">Computer Science, Assam University Silchar</span>
+                    </div>
+                  </div>
+
+                  <div class="contact-item d-flex align-items-center">
+                    <div class="contact-icon"><i class="bi bi-github"></i></div>
+                    <div>
+                      <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">GitHub</div>
+                      <a href="https://github.com/voidnova-code" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:500;text-decoration:none;">
+                        github.com/voidnova-code
+                      </a>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 p-3 rounded-3" style="background:#eef7f1;border:1px solid #c8e6d0;">
+                    <i class="bi bi-chat-quote-fill me-2" style="color:var(--primary);"></i>
+                    <em style="font-size:.9rem;color:#555;">
+                      "I built this so no student has to stand in a queue just to see a doctor.
+                      If it saves even one soggy walk in the rain, every sleepless night,
+                      cold cup of chai, and mysteriously vanishing weekend was absolutely worth it."
+                    </em>
+                  </div>
+
+                  <div class="text-center mt-3">
+                    <small class="text-muted" style="font-size:.78rem;">
+                      <i class="bi bi-arrow-repeat me-1"></i>Click the card to see the Wall of Heroes
+                    </small>
+                  </div>
+                </div>
               </div>
-            </div>
+            </div><!-- /FRONT -->
 
-            <div class="contact-item d-flex align-items-center">
-              <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
-              <div>
-                <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Phone</div>
-                <a href="tel:+916900577470" style="color:var(--primary);font-weight:500;text-decoration:none;">
-                  +91 6900577470
-                </a>
-              </div>
-            </div>
+            <!-- BACK: Wall of Heroes -->
+            <div class="dev-flip-back">
+              <div class="flip-back-title">🏆 Wall of Heroes</div>
+              <div class="flip-back-sub">People who made AUdoc possible — with their time, patience, and blood (sometimes literally).</div>
 
-            <div class="contact-item d-flex align-items-center">
-              <div class="contact-icon"><i class="bi bi-buildings-fill"></i></div>
-              <div>
-                <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Department</div>
-                <span style="font-weight:500;color:#333;">Computer Science, Assam University Silchar</span>
-              </div>
-            </div>
+              <div class="hero-grid">
 
-            <div class="contact-item d-flex align-items-center">
-              <div class="contact-icon"><i class="bi bi-github"></i></div>
-              <div>
-                <div style="font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">GitHub</div>
-                <a href="https://github.com/voidnova-code" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:500;text-decoration:none;">
-                  github.com/voidnova-code
-                </a>
-              </div>
-            </div>
+                <div class="hero-item">
+                  <div class="hero-avatar">🩺</div>
+                  <div class="hero-name">Campus Health Staff</div>
+                  <div class="hero-role">For trusting a student with their workflow</div>
+                </div>
 
-            <div class="mt-4 p-3 rounded-3" style="background:#eef7f1;border:1px solid #c8e6d0;">
-              <i class="bi bi-chat-quote-fill me-2" style="color:var(--primary);"></i>
-              <em style="font-size:.9rem;color:#555;">
-                "I built this so no student has to stand in a queue just to see a doctor.
-                If it saves even one soggy walk in the rain, every sleepless night,
-                cold cup of chai, and mysteriously vanishing weekend was absolutely worth it."
-              </em>
-            </div>
-          </div>
-        </div>
+                <div class="hero-item">
+                  <div class="hero-avatar">🧑‍💻</div>
+                  <div class="hero-name">Early Beta Testers</div>
+                  <div class="hero-role">For finding bugs I didn't know existed</div>
+                </div>
+
+                <div class="hero-item">
+                  <div class="hero-avatar">💉</div>
+                  <div class="hero-name">Blood Donors</div>
+                  <div class="hero-role">The real heroes. Literally.</div>
+                </div>
+
+                <div class="hero-item">
+                  <div class="hero-avatar">☕</div>
+                  <div class="hero-name">Chai Wallah</div>
+                  <div class="hero-role">Kept the developer alive at 3 AM</div>
+                </div>
+
+                <div class="hero-item">
+                  <div class="hero-avatar">📚</div>
+                  <div class="hero-name">Django Docs</div>
+                  <div class="hero-role">Read more times than any textbook</div>
+                </div>
+
+                <div class="hero-item">
+                  <div class="hero-avatar">🤝</div>
+                  <div class="hero-name">AUS Faculty</div>
+                  <div class="hero-role">For support and encouragement</div>
+                </div>
+
+                <div class="hero-item">
+                  <div class="hero-avatar">🐛</div>
+                  <div class="hero-name">Stack Overflow</div>
+                  <div class="hero-role">Visited 1,200+ times. No shame.</div>
+                </div>
+
+                <div class="hero-item">
+                  <div class="hero-avatar">🎓</div>
+                  <div class="hero-name">AUS Students</div>
+                  <div class="hero-role">The whole reason this exists</div>
+                </div>
+
+              </div><!-- /hero-grid -->
+
+              <div class="flip-hint"><i class="bi bi-arrow-repeat me-1"></i>Click to flip back</div>
+            </div><!-- /BACK -->
+
+          </div><!-- /dev-flip-inner -->
+        </div><!-- /dev-flip-wrap -->
+
       </div>
     </div>
   </div>
