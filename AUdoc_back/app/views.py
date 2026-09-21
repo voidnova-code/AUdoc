@@ -2684,11 +2684,18 @@ def chat_api(request):
     # De-duplicate while preserving order
     models_to_try = list(dict.fromkeys(candidate_models))
 
-    import re as _re
+    # Get the logged-in student's ID (only the ID — no other data)
+    student_id = None
+    if request.user.is_authenticated:
+        try:
+            student_id = StudentProfile.objects.values_list("student_id", flat=True).get(user=request.user)
+        except StudentProfile.DoesNotExist:
+            pass
 
-    # Extract student ID from the message text (e.g. "hello, 23CMPU04 I have a fever")
-    student_id_match = _re.search(r'\b\d{2}[A-Z]{2,5}\d{2,5}\b', message)
-    student_id_context = f" The student has identified themselves as ID: {student_id_match.group()}." if student_id_match else ""
+    greeting_rule = (
+        f" IMPORTANT: Always start every reply with 'Hello, {student_id}' followed by your response."
+        if student_id else ""
+    )
 
     system_prompt = (
         "You are AUdoc Health Assistant for Assam University Silchar Campus Health Center. "
@@ -2699,7 +2706,7 @@ def chat_api(request):
         "RULES: (1) Only answer health/AUdoc-related questions — politely decline everything else. "
         "(2) You cannot book appointments directly — guide users to the Appointments section. "
         "(3) You do NOT have access to any student records, medical history, or personal data."
-        + student_id_context
+        + greeting_rule
     )
 
     messages_payload = [{"role": "system", "content": system_prompt}]
@@ -2757,32 +2764,33 @@ def chat_api(request):
     if not reply:
         # Smart local fallback assistant if all external LLM models are unavailable
         used_model = "local-fallback"
+        greeting = f"Hello, {student_id}! " if student_id else ""
         msg_lower = message.lower()
         if any(w in msg_lower for w in ["appointment", "book", "doctor", "slot", "schedule"]):
             reply = (
-                "To book a doctor appointment, navigate to the Appointment section in AUdoc. "
-                "Select your desired medical department, choose an available doctor and time slot, "
-                "and submit your request. You will receive a daily confirmation link on the morning of your visit!"
+                f"{greeting}To book an appointment, go to the Appointments section in AUdoc, "
+                "select your department, choose a doctor and time slot, and submit. "
+                "You'll receive a confirmation link on the morning of your visit!"
             )
         elif any(w in msg_lower for w in ["blood", "donor", "donate", "transfusion"]):
             reply = (
-                "AUdoc features an active Blood Bank & Donor Network! You can register as a donor if you weigh at least 50kg, "
-                "or submit an urgent blood request for hospital needs directly from the Blood Bank tab."
+                f"{greeting}AUdoc has an active Blood Bank & Donor Network! "
+                "Register as a donor (min 50kg) or submit an urgent blood request from the Blood Bank tab."
             )
         elif any(w in msg_lower for w in ["timing", "hour", "open", "close", "time", "contact", "emergency"]):
             reply = (
-                "Assam University Health Center Clinic Hours: Monday–Saturday, 9:00 AM – 4:00 PM.\n"
-                "Emergency Campus Hotline: 0389-2330931. For severe medical emergencies, please reach out to emergency services immediately."
+                f"{greeting}Clinic Hours: Mon–Sat, 9 AM – 4 PM. "
+                "Emergency Hotline: 0389-2330931."
             )
-        elif any(w in msg_lower for w in ["donation", "money", "donate", "fund", "support"]):
+        elif any(w in msg_lower for w in ["donation", "money", "fund", "support"]):
             reply = (
-                "You can financially support the campus health center via the AUdoc Donation page! "
-                "We support instant online contributions processed securely through Razorpay."
+                f"{greeting}You can support the campus health center via the AUdoc Donation page — "
+                "secure payments via Razorpay."
             )
         else:
             reply = (
-                "Welcome to AUdoc Health Assistant! I am here to help you navigate campus health services, "
-                "doctor appointments, blood bank requests, and clinic information. How can I assist you today?"
+                f"{greeting}I'm the AUdoc Health Assistant. I can help you with appointments, "
+                "blood bank requests, clinic timings, and health guidance. How can I assist?"
             )
 
     # Estimate token counts if not provided by API or if fallback used
