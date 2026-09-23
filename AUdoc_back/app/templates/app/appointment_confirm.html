@@ -109,9 +109,26 @@
     </div>
     <div class="card-body-custom text-center">
       <p class="mb-4" style="color:#666;font-size:0.95rem;">
-        The 4-hour confirmation window for this appointment has expired. Your appointment has been automatically cancelled.
+        The confirmation window (before 9:30 AM) for this appointment has expired. Your appointment has been automatically cancelled.
       </p>
       <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4">Go to Home</a>
+    </div>
+
+  {% elif window_closed %}
+    <div class="header-warning">
+      <div class="icon-large"><i class="bi bi-clock-history"></i></div>
+      <h4>Confirmation Window Closed</h4>
+    </div>
+    <div class="card-body-custom text-center">
+      <p class="mb-2" style="color:#666;font-size:0.95rem;">
+        Sorry, the confirmation window closed at <strong>9:30 AM</strong> today.
+      </p>
+      <p class="mb-4" style="color:#666;font-size:0.88rem;">
+        Unconfirmed appointments are automatically cancelled at 10:00 AM.
+        If you still need to see a doctor, please book a new appointment for tomorrow.
+      </p>
+      <a href="{% url 'appointment' %}" class="btn btn-primary rounded-pill px-4 me-2">Book New Appointment</a>
+      <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill px-4">Go to Home</a>
     </div>
 
   {% elif action == 'accept' %}

@@ -1,10 +1,30 @@
 from django.core.management.base import BaseCommand
 from app.models import Appointment, TodaysAppointment
-from datetime import date, timedelta
+from datetime import date, datetime, time
 from django.core.mail import EmailMultiAlternatives
 from django.urls import reverse
 from django.conf import settings
 from django.utils import timezone
+import pytz
+
+# IST timezone
+IST = pytz.timezone("Asia/Kolkata")
+
+# Fixed daily time window constants (IST)
+SEND_WINDOW_START = time(1, 0)   # 1:00 AM IST — emails go out
+SEND_WINDOW_END   = time(9, 30)  # 9:30 AM IST — confirmation window closes
+
+
+def get_todays_deadline():
+    """Return 9:30 AM IST today as an aware UTC datetime."""
+    today = date.today()
+    deadline_ist = IST.localize(datetime.combine(today, SEND_WINDOW_END))
+    return deadline_ist.astimezone(pytz.utc)
+
+
+def current_ist_time():
+    """Return the current time in IST (time object only)."""
+    return timezone.now().astimezone(IST).time()
 
 
 def expire_pending_confirmations():
@@ -37,10 +57,12 @@ def expire_pending_confirmations():
 class Command(BaseCommand):
     help = (
         "Send email confirmations for PENDING appointments scheduled for today "
-        "and auto-expire unresponsive ones."
+        "(only runs between 1:00 AM and 9:30 AM IST) and auto-expire unresponsive ones."
     )
 
     def handle(self, *args, **options):
+        now_ist = current_ist_time()
+
         # ── Step 1: Auto-expire past-deadline confirmations ──────────────
         expired_count = expire_pending_confirmations()
         if expired_count:
@@ -48,8 +70,18 @@ class Command(BaseCommand):
                 f"Auto-expired {expired_count} unconfirmed appointment(s)."
             ))
 
-        # ── Step 2: Send confirmations for today's pending appointments ──
+        # ── Step 2: Guard — only send emails within the allowed window ───
+        if not (SEND_WINDOW_START <= now_ist <= SEND_WINDOW_END):
+            self.stdout.write(self.style.WARNING(
+                f"Current IST time ({now_ist.strftime('%H:%M')}) is outside the "
+                f"sending window (01:00–09:30). Skipping email dispatch."
+            ))
+            return
+
+        # ── Step 3: Send confirmations for today's pending appointments ──
         today = date.today()
+        deadline_utc = get_todays_deadline()
+
         appointments = Appointment.objects.filter(
             appointment_date__lte=today,
             status="PENDING",
@@ -60,7 +92,8 @@ class Command(BaseCommand):
             defaults = {
                 "status": "PENDING",
                 "email_sent_at": timezone.now(),
-                "response_deadline": timezone.now() + timedelta(hours=4),
+                # Fixed deadline: 9:30 AM IST today
+                "response_deadline": deadline_utc,
             }
             today_appt, created = TodaysAppointment.objects.get_or_create(
                 appointment=appt,
@@ -70,11 +103,17 @@ class Command(BaseCommand):
             if not created and today_appt.status != "PENDING":
                 continue  # Already responded or expired
 
+            # Update deadline on re-send (in case it's stale)
+            if not created:
+                today_appt.response_deadline = deadline_utc
+                today_appt.save(update_fields=["response_deadline"])
+
             self.send_confirmation_email(appt, today_appt.confirmation_token)
             count += 1
 
         self.stdout.write(self.style.SUCCESS(
-            f"Successfully sent {count} confirmation email(s)."
+            f"Successfully sent {count} confirmation email(s). "
+            f"Deadline set to 9:30 AM IST ({deadline_utc.strftime('%Y-%m-%d %H:%M UTC')})."
         ))
 
     def send_confirmation_email(self, appt, token):
@@ -112,12 +151,13 @@ class Command(BaseCommand):
             f"You have an appointment booked for {date_display}{doctor_str}.\n"
             f"Department: {department_display}\n"
             f"Time Slot: {time_display}\n\n"
-            f"Please confirm if you will be attending within the next 4 hours.\n\n"
+            f"Please confirm if you will be attending by 9:30 AM today.\n\n"
             f"To ACCEPT  : {accept_url}\n"
             f"To DECLINE : {decline_url}\n\n"
-            f"⚠️ IMPORTANT: If you do not respond within 4 hours, your appointment\n"
-            f"will be automatically cancelled and you will NOT be added to today's\n"
-            f"queue.\n\n"
+            f"⚠️ IMPORTANT: The confirmation window closes at 9:30 AM.\n"
+            f"If you do not respond by 9:30 AM, your appointment will be\n"
+            f"automatically cancelled at 10:00 AM and you will NOT be added\n"
+            f"to today's queue.\n\n"
             f"How FCFS Works: Once you confirm, you'll be assigned a queue position\n"
             f"based on when you responded. The earlier you confirm, the earlier\n"
             f"you'll be seen!\n\n"
@@ -202,14 +242,14 @@ class Command(BaseCommand):
               </tr>
             </table>
 
-            <!-- ─── 4-Hour Deadline Warning ─── -->
+            <!-- ─── 9:30 AM Deadline Warning ─── -->
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
               <tr>
                 <td style="background:#fff3cd;border-left:4px solid #f9a825;border-radius:0 10px 10px 0;padding:14px 16px;">
                   <p style="margin:0;font-size:.88rem;color:#7a5800;line-height:1.5;">
-                    &#9200; <strong>You have 4 hours to respond.</strong>
-                    If you don&rsquo;t confirm within this window, your appointment
-                    will be <strong>automatically cancelled</strong> and you will
+                    &#9200; <strong>Confirmation window closes at 9:30 AM today.</strong>
+                    If you don&rsquo;t confirm before 9:30 AM, your appointment
+                    will be <strong>automatically cancelled at 10:00 AM</strong> and you will
                     not be added to today&rsquo;s queue. Better click fast! &#127939;
                   </p>
                 </td>
@@ -250,7 +290,7 @@ class Command(BaseCommand):
 </html>"""
 
         msg = EmailMultiAlternatives(
-            subject="[AUdoc] ✅ Confirm Your Appointment Today",
+            subject="[AUdoc] ✅ Confirm Your Appointment — Closes at 9:30 AM",
             body=plain_text,
             from_email=from_email,
             to=[appt.email],

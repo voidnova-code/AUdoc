@@ -1545,6 +1545,11 @@ def donor_respond(request, token, action):
 def appointment_confirm(request, token, action):
     """Handle appointment confirmation from email link."""
     from .models import TodaysAppointment
+    import pytz
+
+    IST = pytz.timezone("Asia/Kolkata")
+    CONFIRMATION_CUTOFF_HOUR = 9
+    CONFIRMATION_CUTOFF_MINUTE = 30
 
     try:
         today_appt = TodaysAppointment.objects.select_related("appointment").get(confirmation_token=token)
@@ -1559,7 +1564,7 @@ def appointment_confirm(request, token, action):
             "appointment": today_appt.appointment,
         })
 
-    # Check if expired
+    # Check if expired (deadline passed)
     if today_appt.is_expired():
         today_appt.status = "DECLINED"
         today_appt.save(update_fields=["status"])
@@ -1568,6 +1573,27 @@ def appointment_confirm(request, token, action):
         today_appt.appointment.save(update_fields=["status"])
         return render(request, "app/appointment_confirm.html", {
             "expired": True,
+            "appointment": today_appt.appointment,
+        })
+
+    # ── Hard 9:30 AM IST cutoff for accepting ───────────────────────
+    now_ist = timezone.now().astimezone(IST)
+    cutoff_passed = (
+        now_ist.hour > CONFIRMATION_CUTOFF_HOUR or
+        (now_ist.hour == CONFIRMATION_CUTOFF_HOUR and now_ist.minute >= CONFIRMATION_CUTOFF_MINUTE)
+    )
+
+    if cutoff_passed and action == "accept":
+        # Auto-decline since the window is closed
+        today_appt.status = "DECLINED"
+        today_appt.responded_at = timezone.now()
+        today_appt.save(update_fields=["status", "responded_at"])
+
+        today_appt.appointment.status = "DECLINED"
+        today_appt.appointment.save(update_fields=["status"])
+
+        return render(request, "app/appointment_confirm.html", {
+            "window_closed": True,
             "appointment": today_appt.appointment,
         })
 
@@ -1671,11 +1697,10 @@ def admin_dashboard(request):
     # Query data for the dashboard
     todays_appointments = TodaysAppointment.objects.select_related(
         'appointment', 'appointment__doctor'
-    ).exclude(
-        status="DECLINED"
     ).filter(
+        status="CONFIRMED",
         appointment__appointment_date=date.today()
-    ).order_by('appointment__created_at')  # FCFS order
+    ).order_by('queue_position', 'responded_at')  # FCFS order by queue position
 
     blood_donations = BloodDonation.objects.order_by('-created_at')
     blood_requests = BloodRequest.objects.prefetch_related(

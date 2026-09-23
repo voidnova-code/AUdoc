@@ -3,6 +3,7 @@ asgiref==3.11.1
 djangorestframework==3.16.1
 sqlparse==0.5.5
 tzdata==2025.3
+pytz>=2024.1
 argon2-cffi==23.1.0
 psutil==5.9.5
 razorpay==1.4.1
