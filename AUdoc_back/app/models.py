@@ -780,6 +780,12 @@ class Medicine(models.Model):
         verbose_name="Unit of Measurement",
         help_text="e.g., Tablets, Capsules, Bottles, Strips, mL",
     )
+    pack_size = models.PositiveIntegerField(
+        default=1, verbose_name="Units per Pack/Strip",
+        help_text="e.g. 10 for a strip of 10 tablets. Leave as 1 if this "
+                   "medicine isn't received in packs/strips — stock always "
+                   "tracks individual units regardless.",
+    )
     is_active = models.BooleanField(default=True, verbose_name="Active")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -803,6 +809,23 @@ class Medicine(models.Model):
                 expiry_date__gt=timezone.now().date()
             )
         )
+
+    @property
+    def packs_and_loose(self):
+        """(full_packs, loose_units), derived from total_available_quantity — never stored."""
+        total = self.total_available_quantity
+        if self.pack_size and self.pack_size > 1:
+            return divmod(total, self.pack_size)
+        return (0, total)
+
+    @property
+    def stock_display(self):
+        """'54 Tablets (5 packs + 4 loose)' — or '54 Tablets' when pack_size == 1."""
+        total = self.total_available_quantity
+        if self.pack_size and self.pack_size > 1:
+            packs, loose = self.packs_and_loose
+            return f"{total} {self.unit} ({packs} packs + {loose} loose)"
+        return f"{total} {self.unit}"
 
     @property
     def has_expiring_soon(self):
@@ -878,6 +901,19 @@ class MedicineStock(models.Model):
         return (self.expiry_date - timezone.now().date()).days
 
     @property
+    def packs_and_loose(self):
+        if self.medicine.pack_size and self.medicine.pack_size > 1:
+            return divmod(self.quantity, self.medicine.pack_size)
+        return (0, self.quantity)
+
+    @property
+    def stock_display(self):
+        if self.medicine.pack_size and self.medicine.pack_size > 1:
+            packs, loose = self.packs_and_loose
+            return f"{self.quantity} {self.medicine.unit} ({packs} packs + {loose} loose)"
+        return f"{self.quantity} {self.medicine.unit}"
+
+    @property
     def status_label(self):
         if self.is_expired:
             return "EXPIRED"
@@ -943,15 +979,72 @@ class AIChatLog(models.Model):
         return f"AI Chat ({self.model_used}) — {self.total_tokens} tokens at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
 
 class PrescribedMedicine(models.Model):
+    FOOD_TIMING_CHOICES = [
+        ("BEFORE", "Before Food"), ("AFTER", "After Food"),
+        ("WITH", "With Food"), ("ANYTIME", "Anytime"),
+    ]
+    ROUTE_CHOICES = [
+        ("ORAL", "Oral"), ("TOPICAL", "Topical / Apply"), ("DROPS", "Drops"),
+        ("INJECTION", "Injection"), ("INHALER", "Inhaler"), ("OTHER", "Other"),
+    ]
     medical_history = models.ForeignKey('MedicalHistory', on_delete=models.CASCADE)
     medicine = models.ForeignKey('Medicine', on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
+    quantity = models.PositiveIntegerField(default=1, verbose_name="Total Units Dispensed")
+    dosage = models.CharField(max_length=100, blank=True, default="")
+    take_morning = models.BooleanField(default=False)
+    take_afternoon = models.BooleanField(default=False)
+    take_evening = models.BooleanField(default=False)
+    take_night = models.BooleanField(default=False)
+    food_timing = models.CharField(max_length=10, choices=FOOD_TIMING_CHOICES, default="AFTER")
+    duration_days = models.PositiveIntegerField(default=1)
+    route = models.CharField(max_length=10, choices=ROUTE_CHOICES, default="ORAL")
+    instructions = models.CharField(max_length=300, blank=True, default="")
 
     class Meta:
         db_table = 'app_medhistory_medicines'
 
+    @property
+    def frequency_pattern(self):
+        m = 1 if self.take_morning else 0
+        a = 1 if self.take_afternoon else 0
+        e = 1 if self.take_evening else 0
+        n = 1 if self.take_night else 0
+        return f"{m}-{a}-{e}-{n}"
+
+    @property
+    def doses_per_day(self):
+        return sum([self.take_morning, self.take_afternoon, self.take_evening, self.take_night])
+
+    @property
+    def schedule_display(self):
+        parts = []
+        if self.dosage:
+            parts.append(self.dosage)
+        
+        times = []
+        if self.take_morning: times.append("Morning")
+        if self.take_afternoon: times.append("Afternoon")
+        if self.take_evening: times.append("Evening")
+        if self.take_night: times.append("Night")
+        if times:
+            parts.append(", ".join(times))
+            
+        parts.append(self.get_food_timing_display())
+        parts.append(f"{self.duration_days} days")
+        return " · ".join(parts)
+
     def __str__(self):
-        return f"{self.quantity}x {self.medicine.name}"
+        return f"{self.quantity}x {self.medicine.name} ({self.schedule_display})"
+
+COMMON_ILLNESSES = [
+    "Common Cold", "Fever", "Headache", "Stomach Ache", "Cough",
+    "Sore Throat", "Allergy", "Body Ache", "Nausea", "Vomiting",
+    "Diarrhea", "Gastric Issue", "Acidity", "Skin Rash", "Itching",
+    "Eye Infection", "Ear Ache", "Toothache", "Sprain", "Muscle Pull",
+    "Cut / Wound", "Burn", "Dizziness", "Weakness", "Fatigue",
+    "Food Poisoning", "Migraine", "Asthma", "Sinusitis", "Tonsillitis",
+    "Urinary Tract Infection (UTI)", "Viral Fever", "Typhoid", "Malaria", "Dengue"
+]
 
 class MedicalHistory(models.Model):
     student_id = models.CharField(max_length=50, verbose_name="Student ID", blank=True, null=True)
@@ -964,4 +1057,4 @@ class MedicalHistory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"History for {self.appointment.student_name} on {self.appointment.appointment_date}"
+        return f"History for {self.student_id} — {self.illness} ({self.appointment_date})"

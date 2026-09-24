@@ -708,7 +708,7 @@
             {% with meds=record.prescribedmedicine_set.all %}
             {% if meds %}
             <div class="meds-line">
-              {% for pm in meds %}{% if forloop.counter <= 2 %}<span class="medicine-tag">{{ pm.medicine.name }}</span>{% endif %}{% endfor %}
+              {% for pm in meds %}{% if forloop.counter <= 2 %}<span class="medicine-tag">{{ pm.medicine.name }}{% if pm.frequency_pattern and pm.frequency_pattern != '0-0-0-0' %} <span class="badge bg-secondary" style="font-size: 0.65em; padding: 2px 4px; margin-left: 4px; border-radius: 4px; vertical-align: middle;">{{ pm.frequency_pattern }}</span>{% endif %}</span>{% endif %}{% endfor %}
                 {% if meds|length > 2 %}<span class="medicine-tag more">+{{ meds|length|add:"-2" }} more</span>{% endif %}
             </div>
             {% endif %}

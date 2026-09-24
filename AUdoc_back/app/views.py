@@ -25,7 +25,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm, MedicalHistoryForm
-from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, Medicine, MedicineStock, MedicineStockTransaction, AIChatLog, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES
+from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, Medicine, MedicineStock, MedicineStockTransaction, AIChatLog, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES, COMMON_ILLNESSES
 from .storage import upload_doctor_photo, delete_doctor_photo
 from .security import (
     generate_secure_otp,
@@ -1692,6 +1692,38 @@ def post_login_redirect(request):
     return redirect('home')
 
 
+def _medicines_with_stock():
+    from .models import Medicine, MedicineStock
+    from django.db.models import Sum
+    from django.utils import timezone
+    medicines = list(Medicine.objects.filter(is_active=True).order_by('name'))
+    stocks = MedicineStock.objects.filter(
+        expiry_date__gt=timezone.now().date(),
+        quantity__gt=0
+    ).values('medicine_id').annotate(total_stock=Sum('quantity'))
+    stock_map = {item['medicine_id']: item['total_stock'] for item in stocks}
+    for med in medicines:
+        med.live_stock = stock_map.get(med.id, 0)
+    return medicines
+
+def _frequent_medicines(limit=8):
+    from .models import PrescribedMedicine, Medicine
+    from django.db.models import Count
+    top_ids = list(PrescribedMedicine.objects.values_list('medicine_id', flat=True).annotate(count=Count('id')).order_by('-count')[:limit])
+    return Medicine.objects.filter(id__in=top_ids, is_active=True)
+
+def _medicine_catalog_json():
+    medicines = _medicines_with_stock()
+    return [
+        {
+            "id": med.id,
+            "name": med.name,
+            "stock": med.live_stock,
+            "unit": med.unit
+        }
+        for med in medicines
+    ]
+
 @_admin_required
 def admin_dashboard(request):
     # Query data for the dashboard
@@ -1763,7 +1795,10 @@ def admin_dashboard(request):
         
         # ── Medical History Form ──────────────────────────
         'medical_history_form': MedicalHistoryForm(),
-        'all_medicines': Medicine.objects.filter(is_active=True),
+        'all_medicines': _medicines_with_stock(),
+        'frequent_medicines': _frequent_medicines(),
+        'medicine_catalog': _medicine_catalog_json(),
+        'common_illnesses': COMMON_ILLNESSES,
 
         # ── Legacy table data (preserved for compatibility) ──
         'registrations':  StudentRegistration.objects.order_by('-registered_at'),
@@ -4038,6 +4073,12 @@ def admin_medicine_save(request):
         description = request.POST.get('description', '')
         is_active = request.POST.get('is_active') == 'on'
         
+        try:
+            pack_size = int(request.POST.get('pack_size', 1))
+            pack_size = max(1, min(pack_size, 1000))
+        except ValueError:
+            pack_size = 1
+        
         if med_id:
             med = get_object_or_404(Medicine, pk=med_id)
             med.name = name
@@ -4047,6 +4088,7 @@ def admin_medicine_save(request):
             med.unit = unit
             med.description = description
             med.is_active = is_active
+            med.pack_size = pack_size
             med.save()
             messages.success(request, f"Updated medicine {med.name} successfully.")
         else:
@@ -4057,7 +4099,8 @@ def admin_medicine_save(request):
                 manufacturer=manufacturer,
                 unit=unit,
                 description=description,
-                is_active=is_active
+                is_active=is_active,
+                pack_size=pack_size
             )
             messages.success(request, f"Added new medicine {name}.")
             
@@ -4091,7 +4134,22 @@ def admin_medicine_stock_save(request):
         stock_id = request.POST.get('stock_id')
         medicine_id = request.POST.get('medicine_id')
         batch_number = request.POST.get('batch_number')
-        quantity = int(request.POST.get('quantity', 0))
+        
+        entry_mode = request.POST.get('entry_mode', 'units')
+        
+        stock = None
+        medicine = None
+        if stock_id:
+            stock = get_object_or_404(MedicineStock, pk=stock_id)
+            medicine = stock.medicine
+        elif medicine_id:
+            medicine = get_object_or_404(Medicine, pk=medicine_id)
+            
+        if entry_mode == 'packs':
+            packs = int(request.POST.get('packs', 1))
+            quantity = packs * (medicine.pack_size if medicine else 1)
+        else:
+            quantity = int(request.POST.get('quantity', 0))
         
         # Parse dates
         expiry_date_str = request.POST.get('expiry_date')
@@ -4109,8 +4167,7 @@ def admin_medicine_stock_save(request):
             
         notes = request.POST.get('notes', '')
         
-        if stock_id:
-            stock = get_object_or_404(MedicineStock, pk=stock_id)
+        if stock:
             stock.batch_number = batch_number
             stock.quantity = quantity
             stock.expiry_date = expiry_date
@@ -4121,7 +4178,6 @@ def admin_medicine_stock_save(request):
             stock.save()
             messages.success(request, f"Updated stock for batch {batch_number}.")
         else:
-            medicine = get_object_or_404(Medicine, pk=medicine_id)
             MedicineStock.objects.create(
                 medicine=medicine,
                 batch_number=batch_number,
@@ -4164,10 +4220,16 @@ def admin_medicine_transaction_save(request):
     try:
         stock_id = request.POST.get('stock_id')
         transaction_type = request.POST.get('transaction_type')
-        quantity = int(request.POST.get('quantity', 0))
         reason = request.POST.get('reason', '')
         
         stock = get_object_or_404(MedicineStock, pk=stock_id)
+        
+        entry_mode = request.POST.get('entry_mode', 'units')
+        if entry_mode == 'packs':
+            packs = int(request.POST.get('packs', 1))
+            quantity = packs * stock.medicine.pack_size
+        else:
+            quantity = int(request.POST.get('quantity', 0))
         
         if quantity <= 0:
             messages.error(request, "Quantity must be greater than 0.")
@@ -4209,12 +4271,13 @@ def save_medical_history(request):
     try:
         from .forms import MedicalHistoryForm
         from .models import MedicalHistory, Appointment, Medicine, PrescribedMedicine
+        import json
         form = MedicalHistoryForm(request.POST)
         if form.is_valid():
             appointment_id = form.cleaned_data['appointment_id']
             illness = form.cleaned_data['illness']
             symptoms = form.cleaned_data['symptoms']
-            medicine_ids = form.cleaned_data.get('medicine_ids', '')
+            prescription_data_str = form.cleaned_data.get('prescription_data', '[]')
             
             appointment = Appointment.objects.get(id=appointment_id)
             history = MedicalHistory.objects.create(
@@ -4225,47 +4288,122 @@ def save_medical_history(request):
                 appointment_date=appointment.appointment_date
             )
             
-            if medicine_ids:
-                pairs = medicine_ids.split(',')
-                for pair in pairs:
-                    parts = pair.split(':')
-                    if len(parts) == 2 and parts[0].strip().isdigit() and parts[1].strip().isdigit():
-                        med_id = int(parts[0].strip())
-                        qty = int(parts[1].strip())
-                        medicine = Medicine.objects.filter(id=med_id).first()
-                        if medicine:
-                            PrescribedMedicine.objects.create(
-                                medical_history=history,
-                                medicine=medicine,
-                                quantity=qty
+            if prescription_data_str:
+                try:
+                    lines = json.loads(prescription_data_str)
+                except ValueError:
+                    lines = []
+                    
+                for line in lines:
+                    med_id = line.get("medicine_id")
+                    if not med_id:
+                        continue
+                    
+                    medicine = Medicine.objects.filter(id=med_id).first()
+                    if not medicine:
+                        continue
+                        
+                    qty = min(max(int(line.get("quantity", 1)), 1), 1000)
+                    duration_days = min(max(int(line.get("duration_days", 1)), 1), 90)
+                    
+                    food_timing = line.get("food_timing", "AFTER")
+                    if food_timing not in dict(PrescribedMedicine.FOOD_TIMING_CHOICES):
+                        food_timing = "AFTER"
+                        
+                    route = line.get("route", "ORAL")
+                    if route not in dict(PrescribedMedicine.ROUTE_CHOICES):
+                        route = "ORAL"
+
+                    PrescribedMedicine.objects.create(
+                        medical_history=history,
+                        medicine=medicine,
+                        quantity=qty,
+                        dosage=line.get("dosage", "")[:100],
+                        take_morning=bool(line.get("take_morning")),
+                        take_afternoon=bool(line.get("take_afternoon")),
+                        take_evening=bool(line.get("take_evening")),
+                        take_night=bool(line.get("take_night")),
+                        food_timing=food_timing,
+                        duration_days=duration_days,
+                        route=route,
+                        instructions=line.get("instructions", "")[:300]
+                    )
+                    
+                    # Deduct from stock and record transaction
+                    from django.utils import timezone
+                    from .models import MedicineStockTransaction
+                    remaining_qty = qty
+                    stocks = medicine.stocks.filter(
+                        expiry_date__gt=timezone.now().date(),
+                        quantity__gt=0
+                    ).order_by('expiry_date')
+                    
+                    for stock in stocks:
+                        if remaining_qty <= 0:
+                            break
+                        
+                        deduct_amount = min(stock.quantity, remaining_qty)
+                        stock.quantity -= deduct_amount
+                        stock.save(update_fields=["quantity"])
+                        
+                        MedicineStockTransaction.objects.create(
+                            stock=stock,
+                            transaction_type='SUBTRACT',
+                            quantity=deduct_amount,
+                            performed_by=request.user,
+                            reason=f"Prescribed to student: {appointment.student_name} ({appointment.student_id})"
+                        )
+                        
+                        remaining_qty -= deduct_amount
+                
+                # Feature C: Generate PNG and send Email
+                if appointment.email:
+                    from .prescription_render import generate_prescription_png
+                    import threading
+                    from django.core.mail import EmailMultiAlternatives
+                    from django.conf import settings
+                    from django.utils.html import strip_tags
+
+                    def send_prescription_email():
+                        try:
+                            png_bytes = generate_prescription_png(history)
+                            subject = f"Digital Prescription - AUdoc Clinic (Student ID: {history.student_id})"
+                            html_content = f"""
+                                <div style="font-family: Arial, sans-serif; color: #333333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                                    <div style="background-color: #4a7c59; padding: 20px; text-align: center;">
+                                        <h2 style="color: #ffffff; margin: 0;">AUdoc Clinic</h2>
+                                    </div>
+                                    <div style="padding: 20px;">
+                                        <p>Dear {appointment.student_name},</p>
+                                        <p>Thank you for visiting the AUdoc Clinic.</p>
+                                        <p>Please find attached your digital prescription from your consultation with <strong>{history.doctor_name}</strong> on {history.appointment_date}.</p>
+                                        <p style="margin-top: 30px; font-size: 0.9em; color: #666666;">
+                                            Regards,<br>
+                                            <strong>AUdoc Medical Team</strong>
+                                        </p>
+                                    </div>
+                                    <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 0.8em; color: #777777;">
+                                        This is an automated message, please do not reply.
+                                    </div>
+                                </div>
+                            """
+                            text_content = strip_tags(html_content)
+                            
+                            email_msg = EmailMultiAlternatives(
+                                subject=subject,
+                                body=text_content,
+                                from_email=settings.DEFAULT_FROM_EMAIL,
+                                to=[appointment.email]
                             )
-                            
-                            # Deduct from stock and record transaction
-                            from django.utils import timezone
-                            from .models import MedicineStockTransaction
-                            remaining_qty = qty
-                            stocks = medicine.stocks.filter(
-                                expiry_date__gt=timezone.now().date(),
-                                quantity__gt=0
-                            ).order_by('expiry_date')
-                            
-                            for stock in stocks:
-                                if remaining_qty <= 0:
-                                    break
-                                
-                                deduct_amount = min(stock.quantity, remaining_qty)
-                                stock.quantity -= deduct_amount
-                                stock.save(update_fields=["quantity"])
-                                
-                                MedicineStockTransaction.objects.create(
-                                    stock=stock,
-                                    transaction_type='SUBTRACT',
-                                    quantity=deduct_amount,
-                                    performed_by=request.user,
-                                    reason=f"Prescribed to student: {appointment.student_name} ({appointment.student_id})"
-                                )
-                                
-                                remaining_qty -= deduct_amount
+                            email_msg.attach_alternative(html_content, "text/html")
+                            email_msg.attach('prescription.png', png_bytes, 'image/png')
+                            email_msg.send(fail_silently=True)
+                        except Exception as e:
+                            import logging
+                            local_logger = logging.getLogger(__name__)
+                            local_logger.error(f"Error sending prescription email: {e}")
+
+                    threading.Thread(target=send_prescription_email, daemon=True).start()
             
             # Mark the appointment as visited
             appointment.status = "COMPLETED"
