@@ -74,6 +74,29 @@ class ResendBackend(BaseEmailBackend):
                 else:
                     email_params["text"] = text_content
 
+                if getattr(message, "attachments", None):
+                    resend_attachments = []
+                    for attachment in message.attachments:
+                        try:
+                            if isinstance(attachment, tuple):
+                                filename, content, _mimetype = (list(attachment) + [None, None, None])[:3]
+                            else:
+                                filename = attachment.get_filename() or "attachment"
+                                content = attachment.get_payload(decode=True)
+
+                            if isinstance(content, str):
+                                content = content.encode("utf-8")
+
+                            resend_attachments.append({
+                                "filename": filename or "attachment",
+                                "content": list(content),
+                            })
+                        except Exception as attach_err:
+                            logger.warning(f"Skipping unreadable attachment: {attach_err}")
+
+                    if resend_attachments:
+                        email_params["attachments"] = resend_attachments
+
                 # Send via Resend
                 response = resend.Emails.send(email_params)
                 logger.info(f"Email sent successfully: {response}")
