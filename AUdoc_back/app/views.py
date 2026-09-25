@@ -4367,28 +4367,92 @@ def save_medical_history(request):
                     def send_prescription_email():
                         try:
                             png_bytes = generate_prescription_png(history)
-                            subject = f"Digital Prescription - AUdoc Clinic (Student ID: {history.student_id})"
+
+                            visit_date = history.appointment_date.strftime('%d %B %Y') if history.appointment_date else 'N/A'
+                            doctor_display = history.doctor_name if history.doctor_name and history.doctor_name != "Not Assigned" else "the attending doctor"
+
+                            subject = "Your Prescription is Ready — AUdoc Clinic (Legible-ish Edition)"
+
                             html_content = f"""
-                                <div style="font-family: Arial, sans-serif; color: #333333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-                                    <div style="background-color: #4a7c59; padding: 20px; text-align: center;">
-                                        <h2 style="color: #ffffff; margin: 0;">AUdoc Clinic</h2>
-                                    </div>
-                                    <div style="padding: 20px;">
-                                        <p>Dear {appointment.student_name},</p>
-                                        <p>Thank you for visiting the AUdoc Clinic.</p>
-                                        <p>Please find attached your digital prescription from your consultation with <strong>{history.doctor_name}</strong> on {history.appointment_date}.</p>
-                                        <p style="margin-top: 30px; font-size: 0.9em; color: #666666;">
-                                            Regards,<br>
-                                            <strong>AUdoc Medical Team</strong>
-                                        </p>
-                                    </div>
-                                    <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 0.8em; color: #777777;">
-                                        This is an automated message, please do not reply.
-                                    </div>
-                                </div>
-                            """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+</head>
+<body style="margin:0;padding:0;background:#eef5f0;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#eef5f0;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(46,92,58,.16);">
+
+        <tr>
+          <td style="background:linear-gradient(135deg,#4a7c59 0%,#2e5c3a 100%);padding:36px 40px;text-align:center;">
+            <div style="display:inline-block;background:rgba(255,255,255,.15);border-radius:14px;padding:12px 18px;margin-bottom:14px;">
+              <span style="font-size:2rem;">&#128138;</span>
+            </div>
+            <h1 style="margin:0;color:#ffffff;font-size:1.6rem;font-weight:700;letter-spacing:-.5px;">AUdoc Campus Health</h1>
+            <p style="margin:6px 0 0;color:#d5ecdd;font-size:.9rem;">Your Prescription is Ready &mdash; We Tried to Make It Clear</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:40px 40px 32px;">
+            <p style="margin:0 0 8px;font-size:1.3rem;">Hi {appointment.student_name},</p>
+            <p style="margin:0 0 24px;color:#555;font-size:.97rem;line-height:1.6;">
+              Thank you for visiting <strong style="color:#2e5c3a;">AUdoc Campus Health</strong>.
+              Your prescription from today's consultation is attached as a downloadable image &mdash;
+              save it, print it, or show it at any pharmacy. We kept the doctor-speak to a minimum
+              and the instructions as clear as we could.
+            </p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+              <tr>
+                <td style="background:#f2f8f4;border:1px solid #d7ecdd;border-radius:14px;padding:20px 22px;">
+                  <p style="margin:0 0 10px;font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:#2e5c3a;font-weight:700;">Visit Summary</p>
+                  <p style="margin:0 0 4px;font-size:.92rem;color:#333;"><strong>Diagnosis:</strong> {history.illness}</p>
+                  <p style="margin:0 0 4px;font-size:.92rem;color:#333;"><strong>Doctor:</strong> {doctor_display}</p>
+                  <p style="margin:0;font-size:.92rem;color:#333;"><strong>Date:</strong> {visit_date}</p>
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+              <tr>
+                <td style="background:#fff8e1;border-left:4px solid #f9a825;border-radius:0 10px 10px 0;padding:14px 16px;">
+                  <p style="margin:0;font-size:.85rem;color:#7a5800;">
+                    &#128206; <strong>prescription.png</strong> is attached &mdash; it has your full medicine
+                    schedule, including dosage and timing. No secret codes, we promise.
+                    If something looks confusing, please ask before guessing.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0;color:#777;font-size:.85rem;line-height:1.6;">
+              If anything about your prescription is unclear, please reach out to the clinic before
+              starting your medication. We're happy to explain &mdash; and we'd rather answer a silly
+              question than have you wonder.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background:#f4f8fc;padding:20px 40px;text-align:center;border-top:1px solid #e5edf5;">
+            <p style="margin:0;font-size:.8rem;color:#999;">
+              &#169; 2026 <strong style="color:#2e5c3a;">AUdoc</strong> &mdash; Assam University Silchar Campus Health<br/>
+              Academic Block C, Room 101 &nbsp;|&nbsp; health@au.edu
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+"""
                             text_content = strip_tags(html_content)
-                            
+
                             email_msg = EmailMultiAlternatives(
                                 subject=subject,
                                 body=text_content,
