@@ -3077,30 +3077,6 @@
           </div>
         </div>
 
-        <!-- Shutdown Modal -->
-        <div class="modal fade" id="shutdownModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <form method="POST" action="{% url 'admin_request_shutdown' %}" class="modal-content" style="border: 2px solid #fbbf24; border-radius: 12px;">
-              {% csrf_token %}
-              <div class="modal-header border-0" style="background-color: #fef3c7;">
-                <h5 class="modal-title" style="color: #b45309; font-weight: 800;"><i class="bi bi-exclamation-triangle-fill me-2"></i> Request Site Shutdown</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body py-4">
-                <p>You are requesting to take the entire site offline. Non-staff users will be force-logged out.</p>
-                <div class="mb-3">
-                  <label for="shutdownReason" class="form-label fw-bold">Reason for shutdown (required):</label>
-                  <textarea id="shutdownReason" name="reason" class="form-control" rows="3" required placeholder="e.g. Critical security update" style="border-radius: 8px; border-color: #fcd34d;"></textarea>
-                </div>
-              </div>
-              <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Cancel</button>
-                <button type="submit" class="btn" style="background-color: #f59e0b; color: white; border-radius: 8px; font-weight: 600;">Send Approval Request</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
         <!-- Header Banner -->
         <div class="dz-header-banner" data-aos="fade-down">
           <h2><i class="bi bi-shield-exclamation me-2"></i> DATA MANAGEMENT CENTER</h2>
@@ -5867,7 +5843,30 @@
             </div>
           </div>
         </div>
-      
+  <!-- Shutdown Modal -->
+  <div class="modal fade" id="shutdownModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form method="POST" action="{% url 'admin_request_shutdown' %}" class="modal-content" style="border: 2px solid #fbbf24; border-radius: 12px;">
+        {% csrf_token %}
+        <div class="modal-header border-0" style="background-color: #fef3c7;">
+          <h5 class="modal-title" style="color: #b45309; font-weight: 800;"><i class="bi bi-exclamation-triangle-fill me-2"></i> Request Site Shutdown</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-4">
+          <p>You are requesting to take the entire site offline. Non-staff users will be force-logged out.</p>
+          <div class="mb-3">
+            <label for="shutdownReason" class="form-label fw-bold">Reason for shutdown (required):</label>
+            <textarea id="shutdownReason" name="reason" class="form-control" rows="3" required placeholder="e.g. Critical security update" style="border-radius: 8px; border-color: #fcd34d;"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Cancel</button>
+          <button type="submit" class="btn" style="background-color: #f59e0b; color: white; border-radius: 8px; font-weight: 600;">Send Approval Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </body>
 
 </html>
