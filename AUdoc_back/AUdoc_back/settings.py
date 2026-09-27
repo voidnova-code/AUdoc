@@ -257,7 +257,7 @@ AUTHENTICATION_BACKENDS = [
 # Get key: https://resend.com/api-keys
 EMAIL_BACKEND = "app.resend_backend.ResendBackend"
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-OWNER_APPROVAL_EMAIL = os.environ.get("OWNER_APPROVAL_EMAIL", "sayankumarr@gmail.com")
+OWNER_APPROVAL_EMAIL = os.environ.get("OWNER_APPROVAL_EMAIL", "sayankumarr02@gmail.com")
 MAINTENANCE_AUTO_RESTORE_HOURS = int(os.environ.get("MAINTENANCE_AUTO_RESTORE_HOURS", "12"))
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "AUdoc Campus Health <noreply@voiddoc.me>")
 
