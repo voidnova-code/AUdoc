@@ -43,6 +43,7 @@ urlpatterns = [
     path("manage/doctor/add/", views.add_doctor, name="add_doctor"),
     path("manage/clear-all-data/", views.admin_clear_all_data, name="admin_clear_all_data"),
     path("manage/clear-all-data/confirm/<str:token>/", views.admin_confirm_clear_all_data, name="admin_confirm_clear_all_data"),
+    path("manage/data-purge/decline/<str:token>/", views.admin_decline_data_action, name="admin_decline_data_action"),
     path("manage/export/<str:model_name>/", views.admin_export_data, name="admin_export_data"),
     path("manage/export-selected/", views.admin_export_selected, name="admin_export_selected"),
     path("manage/staff/save/", views.admin_staff_save, name="admin_staff_save"),

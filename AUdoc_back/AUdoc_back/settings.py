@@ -256,6 +256,7 @@ AUTHENTICATION_BACKENDS = [
 # Get key: https://resend.com/api-keys
 EMAIL_BACKEND = "app.resend_backend.ResendBackend"
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+OWNER_APPROVAL_EMAIL = os.environ.get("OWNER_APPROVAL_EMAIL", "sayankumarr@gmail.com")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "AUdoc Campus Health <noreply@voiddoc.me>")
 
 # Site URL for generating links in emails (e.g. appointment confirmation)

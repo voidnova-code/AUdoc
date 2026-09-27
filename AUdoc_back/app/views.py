@@ -2513,6 +2513,21 @@ def admin_blood_request_responses(request, pk):
     return JsonResponse({'responses': data, 'total': len(data)})
 
 
+def _notify_requester_of_decision(payload, approved: bool, deleted_summary: str = ""):
+    requester_email = payload.get("requested_by_email")
+    if not requester_email:
+        return
+    outcome = "approved and completed" if approved else "declined"
+    subject = f"Your data deletion request was {outcome}"
+    body = (
+        f"Your request to delete {'ALL student data' if payload.get('action') == 'FULL_WIPE' else ', '.join(payload.get('categories', []))} "
+        f"was {outcome} by the site owner."
+        + (f"\n\n{deleted_summary}" if deleted_summary else "")
+    )
+    msg = EmailMultiAlternatives(subject, body, None, [requester_email])
+    send_email_async(msg)
+
+@require_POST
 @_admin_required
 def admin_clear_all_data(request):
     """
@@ -2529,89 +2544,77 @@ def admin_clear_all_data(request):
             messages.error(request, "Incorrect password. Data purge cancelled.")
             return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
 
+        reason = request.POST.get("reason", "").strip()
+        if not reason:
+            messages.error(request, "A reason must be provided for data deletion.")
+            return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
         confirmation = request.POST.get('confirmation')
-        if confirmation == 'DELETE_ALL_STUDENT_DATA':
+        if confirmation in ['DELETE_ALL_STUDENT_DATA', 'CONFIRMED_SELECTIVE_DELETE']:
+            if confirmation == 'CONFIRMED_SELECTIVE_DELETE':
+                selected_data = request.POST.get('selected_data', '')
+                categories = [c.strip() for c in selected_data.split(',') if c.strip()]
+                if not categories:
+                    messages.error(request, "❌ No data categories selected for deletion.")
+                    return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+            else:
+                categories = []
+
             try:
                 from django.core.signing import TimestampSigner
+                import json
+                from django.conf import settings
+                
                 signer = TimestampSigner()
-                token = signer.sign("DELETE_ALL_STUDENT_DATA")
+                payload = json.dumps({
+                    "action": "FULL_WIPE" if confirmation == 'DELETE_ALL_STUDENT_DATA' else "SELECTIVE_DELETE",
+                    "categories": categories,
+                    "requested_by_id": request.user.id,
+                    "requested_by_email": request.user.email,
+                    "reason": reason,
+                })
+                token = signer.sign(payload)
                 
                 confirm_url = request.build_absolute_uri(reverse('admin_confirm_clear_all_data', args=[token]))
+                decline_url = request.build_absolute_uri(reverse('admin_decline_data_action', args=[token]))
+                
+                action_text = "PURGE ALL STUDENT DATA" if confirmation == 'DELETE_ALL_STUDENT_DATA' else "SELECTIVELY DELETE data categories: " + ", ".join(categories)
                 
                 subject = "⚠️ URGENT: Data Deletion Confirmation Requested"
                 html_body = f"""
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                     <h2 style="color: #dc2626;">Danger: Data Deletion Requested</h2>
-                    <p>An admin has requested to <strong>PURGE ALL STUDENT DATA</strong> from the AUdoc database.</p>
-                    <p>If you confirm this action, all student registrations, appointments, blood requests/donations, feedback, logs, and accounts will be permanently deleted.</p>
+                    <p>An admin has requested to <strong>{action_text}</strong> from the AUdoc database.</p>
+                    <p><strong>Reason provided:</strong> {reason}</p>
                     <p>To confirm and execute this deletion, click the button below:</p>
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="{confirm_url}" style="display: inline-block; padding: 15px 30px; background-color: #dc2626; color: white; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 16px;">CONFIRM & DELETE ALL DATA</a>
+                        <a href="{confirm_url}" style="display: inline-block; padding: 15px 30px; background-color: #dc2626; color: white; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 16px;">CONFIRM & DELETE DATA</a>
                     </div>
-                    <p style="color: #666; font-size: 14px;">If you did not authorize this, please ignore this email and secure your admin panel immediately.</p>
+                    <p>To decline this request, click the button below:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{decline_url}" style="display: inline-block; padding: 10px 20px; background-color: #6b7280; color: white; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px;">DECLINE</a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">If you did not authorize this, please click Decline or ignore this email.</p>
                     <p style="color: #999; font-size: 12px; margin-top: 20px;">This link will expire in 1 hour.</p>
                 </div>
                 """
-                plain_body = f"Admin requested to purge all student data.\nVisit this URL to confirm: {confirm_url}\nThis link expires in 1 hour."
+                plain_body = f"Admin requested to {action_text}.\nReason: {reason}\nVisit this URL to confirm: {confirm_url}\nVisit this URL to decline: {decline_url}\nThis link expires in 1 hour."
                 
-                msg = EmailMultiAlternatives(subject, plain_body, None, ["sayankumarr@gmail.com"])
+                approval_email = getattr(settings, 'OWNER_APPROVAL_EMAIL', 'sayankumarr@gmail.com')
+                msg = EmailMultiAlternatives(subject, plain_body, None, [approval_email])
                 msg.attach_alternative(html_body, "text/html")
                 send_email_async(msg)
                 
-                messages.success(request, "⚠️ A confirmation email has been sent to sayankumarr@gmail.com. Please check the inbox to proceed with the deletion.")
+                log_security_event("data_deletion_requested", request, {
+                    "action": "FULL_WIPE" if confirmation == 'DELETE_ALL_STUDENT_DATA' else "SELECTIVE_DELETE",
+                    "categories": categories,
+                    "reason": reason
+                }, level="warning")
+                
+                messages.success(request, f"⚠️ A confirmation email has been sent to {approval_email}. Please check the inbox to proceed with the deletion.")
             except Exception as e:
                 messages.error(request, f"❌ Error initiating data purge: {str(e)}")
 
-        elif confirmation == 'CONFIRMED_SELECTIVE_DELETE':
-            # ── Selective deletion: only delete chosen categories ──
-            selected_data = request.POST.get('selected_data', '')
-            categories = [c.strip() for c in selected_data.split(',') if c.strip()]
-
-            if not categories:
-                messages.error(request, "❌ No data categories selected for deletion.")
-                return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
-
-            try:
-                deletion_map = {
-                    'registrations': (StudentRegistration, 'Student Registrations'),
-                    'appointments': (Appointment, 'Appointments'),
-                    'blood_donations': (BloodDonation, 'Blood Donations'),
-                    'blood_requests': (BloodRequest, 'Blood Requests'),
-                    'feedback': (HelpDesk, 'Feedback Entries'),
-                    'login_logs': (LoginLog, 'Login Logs'),
-                    'donations': (Donation, 'Monetary Donations'),
-                }
-
-                total_deleted = 0
-                deleted_summary = []
-
-                # Delete dependent models first if parent is selected
-                if 'blood_requests' in categories:
-                    DonorResponse.objects.all().delete()
-                if 'appointments' in categories:
-                    TodaysAppointment.objects.all().delete()
-
-                for cat in categories:
-                    if cat in deletion_map:
-                        model_class, display_name = deletion_map[cat]
-                        count = model_class.objects.count()
-                        model_class.objects.all().delete()
-                        total_deleted += count
-                        deleted_summary.append(f"{count} {display_name}")
-
-                summary_text = ', '.join(deleted_summary) if deleted_summary else 'No records'
-                messages.success(
-                    request,
-                    f"🗑️ SELECTIVE DELETE COMPLETE: {total_deleted:,} records permanently deleted! "
-                    f"Deleted: {summary_text}."
-                )
-                log_security_event("selective_data_delete", request, {
-                    "categories": categories,
-                    "total_deleted": total_deleted,
-                }, level="warning")
-
-            except Exception as e:
-                messages.error(request, f"❌ Error during selective deletion: {str(e)}")
         else:
             messages.error(request, "❌ Incorrect confirmation phrase. Data purge cancelled for safety.")
 
@@ -2621,12 +2624,24 @@ def admin_clear_all_data(request):
 @_admin_required
 def admin_confirm_clear_all_data(request, token):
     from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
+    import json
     try:
         signer = TimestampSigner()
         # Valid for 1 hour (3600 seconds)
-        action = signer.unsign(token, max_age=3600)
+        payload_str = signer.unsign(token, max_age=3600)
         
-        if action == "DELETE_ALL_STUDENT_DATA":
+        try:
+            payload = json.loads(payload_str)
+        except json.JSONDecodeError:
+            # Fallback for old bare-string tokens
+            if payload_str == "DELETE_ALL_STUDENT_DATA":
+                payload = {"action": "FULL_WIPE", "categories": [], "requested_by_email": None, "reason": "Legacy token (no reason)"}
+            else:
+                raise BadSignature("Invalid legacy token")
+
+        action = payload.get("action")
+        
+        if action == "FULL_WIPE":
             # Count records before deletion for detailed feedback
             counts = {
                 'student_registrations': StudentRegistration.objects.count(),
@@ -2669,6 +2684,50 @@ def admin_confirm_clear_all_data(request, token):
                 f"{counts['blood_requests']} blood requests, {student_count} user accounts, "
                 f"{counts['feedback']} feedback entries, and {counts['login_logs']} login logs."
             )
+            log_security_event("data_deletion_executed", request, {"action": "FULL_WIPE"}, level="danger")
+            _notify_requester_of_decision(payload, approved=True, deleted_summary=f"{total_deleted} records deleted.")
+
+        elif action == "SELECTIVE_DELETE":
+            categories = payload.get("categories", [])
+            deletion_map = {
+                'registrations': (StudentRegistration, 'Student Registrations'),
+                'appointments': (Appointment, 'Appointments'),
+                'blood_donations': (BloodDonation, 'Blood Donations'),
+                'blood_requests': (BloodRequest, 'Blood Requests'),
+                'feedback': (HelpDesk, 'Feedback Entries'),
+                'login_logs': (LoginLog, 'Login Logs'),
+                'donations': (Donation, 'Monetary Donations'),
+            }
+
+            total_deleted = 0
+            deleted_summary = []
+
+            if 'blood_requests' in categories:
+                DonorResponse.objects.all().delete()
+            if 'appointments' in categories:
+                TodaysAppointment.objects.all().delete()
+
+            for cat in categories:
+                if cat in deletion_map:
+                    model_class, display_name = deletion_map[cat]
+                    count = model_class.objects.count()
+                    model_class.objects.all().delete()
+                    total_deleted += count
+                    deleted_summary.append(f"{count} {display_name}")
+
+            summary_text = ', '.join(deleted_summary) if deleted_summary else 'No records'
+            messages.success(
+                request,
+                f"🗑️ SELECTIVE DELETE COMPLETE: {total_deleted:,} records permanently deleted! "
+                f"Deleted: {summary_text}."
+            )
+            log_security_event("data_deletion_executed", request, {
+                "action": "SELECTIVE_DELETE",
+                "categories": categories,
+                "total_deleted": total_deleted,
+            }, level="danger")
+            _notify_requester_of_decision(payload, approved=True, deleted_summary=f"{total_deleted} records permanently deleted. Deleted: {summary_text}")
+
     except SignatureExpired:
         messages.error(request, "❌ The confirmation link has expired. Please initiate the deletion again.")
     except BadSignature:
@@ -2676,6 +2735,27 @@ def admin_confirm_clear_all_data(request, token):
     except Exception as e:
         messages.error(request, f"❌ Critical error during data purge: {str(e)}")
 
+    return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
+
+@_admin_required
+def admin_decline_data_action(request, token):
+    from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
+    import json
+    try:
+        signer = TimestampSigner()
+        payload = json.loads(signer.unsign(token, max_age=3600))
+        log_security_event("data_deletion_declined", request, {
+            "action": payload["action"],
+            "categories": payload.get("categories", []),
+            "reason": payload.get("reason", ""),
+        }, level="info")
+        _notify_requester_of_decision(payload, approved=False)
+        messages.info(request, "Deletion request declined. No data was changed.")
+    except (SignatureExpired, BadSignature):
+        messages.error(request, "This link has expired or is invalid.")
+    except json.JSONDecodeError:
+        messages.error(request, "Legacy deletion request declined. No data was changed.")
     return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
 
 

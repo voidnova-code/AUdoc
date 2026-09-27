@@ -3228,6 +3228,7 @@
           <input type="hidden" id="confirmationInput" name="confirmation" value="">
           <input type="hidden" id="selectedDataInput" name="selected_data" value="">
           <input type="hidden" id="adminPasswordHiddenInput" name="admin_password" value="">
+          <input type="hidden" id="adminReasonHiddenInput" name="reason" value="">
         </form>
 
         <!-- Security Notice -->
@@ -3264,6 +3265,12 @@
               </label>
               <input type="password" id="purgePasswordInput" placeholder="Enter your admin password" autocomplete="off"
                 style="width: 100%; margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                
+              <label for="purgeReasonInput" style="display: block; margin-bottom: 8px; margin-top: 10px;">
+                Reason for this deletion: <span class="text-danger">*</span>
+              </label>
+              <textarea id="purgeReasonInput" placeholder="Explain why this data is being deleted..." rows="2"
+                style="width: 100%; margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 6px;" required></textarea>
             </div>
             <div class="purge-modal-footer">
               <button class="btn btn-outline-secondary" onclick="dzClosePurgeModal()">
@@ -4864,11 +4871,13 @@
       const list = document.getElementById('purgeItemsList');
       const input = document.getElementById('purgeConfirmInput');
       const passInput = document.getElementById('purgePasswordInput');
+      const reasonInput = document.getElementById('purgeReasonInput');
       const execBtn = document.getElementById('purgeExecuteBtn');
       const phraseText = document.getElementById('purgeExpectedPhraseText');
 
       input.value = '';
       if (passInput) passInput.value = '';
+      if (reasonInput) reasonInput.value = '';
       execBtn.disabled = true;
 
       // Build items list
@@ -4894,11 +4903,13 @@
       const validateInputs = () => {
         const isPhraseValid = input.value === expectedPhrase;
         const isPassValid = passInput ? passInput.value.length > 0 : true;
-        execBtn.disabled = !(isPhraseValid && isPassValid);
+        const isReasonValid = reasonInput ? reasonInput.value.trim().length > 0 : true;
+        execBtn.disabled = !(isPhraseValid && isPassValid && isReasonValid);
       };
 
       input.oninput = validateInputs;
       if (passInput) passInput.oninput = validateInputs;
+      if (reasonInput) reasonInput.oninput = validateInputs;
 
       overlay.classList.add('active');
       setTimeout(() => input.focus(), 300);
@@ -4909,6 +4920,8 @@
       document.getElementById('purgeConfirmInput').value = '';
       const passInput = document.getElementById('purgePasswordInput');
       if (passInput) passInput.value = '';
+      const reasonInput = document.getElementById('purgeReasonInput');
+      if (reasonInput) reasonInput.value = '';
       document.getElementById('purgeExecuteBtn').disabled = true;
     }
 
@@ -4919,6 +4932,12 @@
 
       const passInput = document.getElementById('purgePasswordInput');
       if (passInput && passInput.value.length === 0) return;
+      
+      const reasonInput = document.getElementById('purgeReasonInput');
+      if (reasonInput && reasonInput.value.trim().length === 0) {
+        reasonInput.focus();
+        return;
+      }
 
       const execBtn = document.getElementById('purgeExecuteBtn');
       execBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Deleting...';
@@ -4936,6 +4955,10 @@
 
       if (passInput) {
         document.getElementById('adminPasswordHiddenInput').value = passInput.value;
+      }
+      
+      if (reasonInput) {
+        document.getElementById('adminReasonHiddenInput').value = reasonInput.value.trim();
       }
 
       document.getElementById('purgeForm').submit();
