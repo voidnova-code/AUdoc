@@ -2813,18 +2813,39 @@ def admin_request_shutdown(request):
     })
     token = signer.sign(payload)
 
-    subject = "AUdoc — Site Shutdown Requested, Approval Needed"
+    subject = "⚠️ URGENT: AUdoc Site Shutdown Requested"
     confirm_url = request.build_absolute_uri(reverse('admin_confirm_shutdown', args=[token]))
     decline_url = request.build_absolute_uri(reverse('admin_decline_shutdown', args=[token]))
-    body = (
+    
+    plain_body = (
         f"{request.user.get_full_name() or request.user.username} has requested "
         f"taking AUdoc offline.\n\nReason: {reason}\n\n"
         f"Confirm & shut down: {confirm_url}\n"
         f"Decline: {decline_url}\n\n"
         f"This link expires in 1 hour."
     )
-    approval_email = getattr(settings, 'OWNER_APPROVAL_EMAIL', 'sayankumarr@gmail.com')
-    msg = EmailMultiAlternatives(subject, body, None, [approval_email])
+    
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #d97706;">Site Lockdown Requested</h2>
+        <p>Admin <strong>{request.user.get_full_name() or request.user.username}</strong> has requested to take the entire AUdoc site <strong>OFFLINE</strong>.</p>
+        <p><strong>Reason provided:</strong> {reason}</p>
+        <p>To confirm and shut down the site (force-logging out all students), click the button below:</p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{confirm_url}" style="display: inline-block; padding: 15px 30px; background-color: #f59e0b; color: white; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 16px;">CONFIRM SHUTDOWN</a>
+        </div>
+        <p>To decline this request, click the button below:</p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{decline_url}" style="display: inline-block; padding: 10px 20px; background-color: #6b7280; color: white; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px;">DECLINE</a>
+        </div>
+        <p style="color: #666; font-size: 14px;">If you did not authorize this, please click Decline or ignore this email.</p>
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">This link will expire in 1 hour.</p>
+    </div>
+    """
+    
+    approval_email = getattr(settings, 'OWNER_APPROVAL_EMAIL', 'sayankumarr02@gmail.com')
+    msg = EmailMultiAlternatives(subject, plain_body, None, [approval_email])
+    msg.attach_alternative(html_body, "text/html")
     send_email_async(msg)
 
     log_security_event("shutdown_requested", request, {"reason": reason}, level="warning")
