@@ -1832,7 +1832,14 @@ def admin_dashboard(request):
         'active_tab':    request.GET.get('tab', 'dashboard'),
         'dept_choices':  MEDICAL_DEPT_CHOICES,
         'day_choices':   DAY_CHOICES,
+        'maintenance_active': False,
+        'maintenance_details': None,
     }
+    
+    from .models import SiteMaintenance
+    maintenance = SiteMaintenance.get_solo()
+    context['maintenance_active'] = maintenance.is_active
+    context['maintenance_details'] = maintenance
     return render(request, 'app/admin_panel.html', context)
 
 
@@ -2513,14 +2520,20 @@ def admin_blood_request_responses(request, pk):
     return JsonResponse({'responses': data, 'total': len(data)})
 
 
-def _notify_requester_of_decision(payload, approved: bool, deleted_summary: str = ""):
+def _notify_requester_of_decision(payload, approved: bool, deleted_summary: str = "", action_label: str = "data deletion"):
     requester_email = payload.get("requested_by_email")
     if not requester_email:
         return
     outcome = "approved and completed" if approved else "declined"
-    subject = f"Your data deletion request was {outcome}"
+    subject = f"Your {action_label} request was {outcome}"
+    
+    if action_label == "data deletion":
+        action_text = f"delete {'ALL student data' if payload.get('action') == 'FULL_WIPE' else ', '.join(payload.get('categories', []))}"
+    else:
+        action_text = "shut down AUdoc"
+        
     body = (
-        f"Your request to delete {'ALL student data' if payload.get('action') == 'FULL_WIPE' else ', '.join(payload.get('categories', []))} "
+        f"Your request to {action_text} "
         f"was {outcome} by the site owner."
         + (f"\n\n{deleted_summary}" if deleted_summary else "")
     )
@@ -2756,6 +2769,177 @@ def admin_decline_data_action(request, token):
         messages.error(request, "This link has expired or is invalid.")
     except json.JSONDecodeError:
         messages.error(request, "Legacy deletion request declined. No data was changed.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
+def _terminate_non_staff_sessions():
+    """
+    Force-logout every currently signed-in non-staff user by deleting
+    their session rows — reversible, safe: only clears ephemeral login
+    state, never touches StudentProfile/Appointment/etc. Staff sessions
+    are left untouched.
+    """
+    from django.contrib.sessions.models import Session
+    from django.db.models import Q
+    staff_ids = set(User.objects.filter(Q(is_staff=True) | Q(is_superuser=True)).values_list('id', flat=True))
+    cleared = 0
+    for session in Session.objects.all().iterator():
+        data = session.get_decoded()
+        uid = data.get('_auth_user_id')
+        if uid is not None and int(uid) not in staff_ids:
+            session.delete()
+            cleared += 1
+    return cleared
+
+@_admin_required
+def admin_request_shutdown(request):
+    if not request.user.is_superuser:
+        messages.error(request, "Only a superuser can request a site shutdown.")
+        return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
+    reason = request.POST.get('reason', '').strip()
+    if not reason:
+        messages.error(request, "A reason is required to request a shutdown.")
+        return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
+    from django.core.signing import TimestampSigner
+    import json
+    from django.conf import settings
+    signer = TimestampSigner()
+    payload = json.dumps({
+        "action": "SHUTDOWN_REQUEST",
+        "requested_by_id": request.user.id,
+        "requested_by_email": request.user.email,
+        "reason": reason,
+    })
+    token = signer.sign(payload)
+
+    subject = "AUdoc — Site Shutdown Requested, Approval Needed"
+    confirm_url = request.build_absolute_uri(reverse('admin_confirm_shutdown', args=[token]))
+    decline_url = request.build_absolute_uri(reverse('admin_decline_shutdown', args=[token]))
+    body = (
+        f"{request.user.get_full_name() or request.user.username} has requested "
+        f"taking AUdoc offline.\n\nReason: {reason}\n\n"
+        f"Confirm & shut down: {confirm_url}\n"
+        f"Decline: {decline_url}\n\n"
+        f"This link expires in 1 hour."
+    )
+    approval_email = getattr(settings, 'OWNER_APPROVAL_EMAIL', 'sayankumarr@gmail.com')
+    msg = EmailMultiAlternatives(subject, body, None, [approval_email])
+    send_email_async(msg)
+
+    log_security_event("shutdown_requested", request, {"reason": reason}, level="warning")
+    messages.success(request, "Shutdown request sent to the site owner for approval. The site is NOT down yet.")
+    return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
+
+def _send_restore_link_email(maintenance, payload):
+    from django.core.signing import TimestampSigner
+    import json
+    from django.conf import settings
+    signer = TimestampSigner()
+    restore_token = signer.sign(json.dumps({"action": "RESTORE"}))
+    
+    # We can rely on settings.SITE_BASE_URL if it exists, or just use the current request.
+    # Since this is a helper, we should try to pass the request. Wait, the plan explicitly mentions 
+    # to reuse the existing SITE_BASE_URL setting.
+    base_url = getattr(settings, 'SITE_BASE_URL', 'http://127.0.0.1:8000')
+    restore_url = f"{base_url}/restore-site/{restore_token}/"
+    
+    subject = "AUdoc — Site is Now Offline"
+    auto_restore_hours = getattr(settings, 'MAINTENANCE_AUTO_RESTORE_HOURS', 12)
+    body = (
+        f"AUdoc is now offline (reason: {payload.get('reason', '')}).\n\n"
+        f"Restore it any time, no login needed: {restore_url}\n\n"
+        f"If nobody restores it manually, it will automatically come back "
+        f"online in {auto_restore_hours} hours."
+    )
+    approval_email = getattr(settings, 'OWNER_APPROVAL_EMAIL', 'sayankumarr@gmail.com')
+    msg = EmailMultiAlternatives(subject, body, None, [approval_email])
+    send_email_async(msg)
+
+@_admin_required
+def admin_confirm_shutdown(request, token):
+    from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
+    import json
+    from django.utils import timezone
+    from .models import SiteMaintenance
+    try:
+        payload = json.loads(TimestampSigner().unsign(token, max_age=3600))
+    except (SignatureExpired, BadSignature):
+        messages.error(request, "This shutdown approval link has expired or is invalid.")
+        return redirect('admin_dashboard')
+
+    cleared = _terminate_non_staff_sessions()
+    maintenance = SiteMaintenance.get_solo()
+    maintenance.is_active = True
+    maintenance.reason = payload.get("reason", "")
+    maintenance.activated_at = timezone.now()
+    maintenance.activated_by = request.user
+    maintenance.deactivated_at = None
+    maintenance.sessions_cleared = cleared
+    maintenance.save()
+
+    log_security_event("shutdown_confirmed", request, {"sessions_cleared": cleared}, level="warning")
+    
+    # Fix the missing base URL dynamically since SITE_BASE_URL might not have scheme
+    base_url = f"{request.scheme}://{request.get_host()}"
+    import django.conf
+    django.conf.settings.SITE_BASE_URL = base_url
+    
+    _send_restore_link_email(maintenance, payload)
+    _notify_requester_of_decision(payload, approved=True, action_label="site shutdown")
+
+    messages.success(request, f"Site is now offline. {cleared} session(s) logged out. A restore link was emailed to you.")
+    return redirect('admin_dashboard')
+
+@_admin_required
+def admin_decline_shutdown(request, token):
+    from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
+    import json
+    try:
+        payload = json.loads(TimestampSigner().unsign(token, max_age=3600))
+        log_security_event("shutdown_declined", request, {"reason": payload.get("reason", "")}, level="info")
+        _notify_requester_of_decision(payload, approved=False, action_label="site shutdown")
+        messages.info(request, "Shutdown request declined. Nothing was changed.")
+    except (SignatureExpired, BadSignature):
+        messages.error(request, "This link has expired or is invalid.")
+    return redirect('admin_dashboard')
+
+def restore_site_via_link(request, token):
+    from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
+    import json
+    from django.utils import timezone
+    from .models import SiteMaintenance
+    try:
+        payload = json.loads(TimestampSigner().unsign(token, max_age=3600 * 48))
+        if payload.get("action") != "RESTORE":
+            raise BadSignature("wrong action")
+    except (SignatureExpired, BadSignature):
+        return render(request, "app/maintenance.html", {
+            "custom_message": "This restore link has expired or already been used."
+        }, status=400)
+
+    maintenance = SiteMaintenance.get_solo()
+    maintenance.is_active = False
+    maintenance.deactivated_at = timezone.now()
+    maintenance.deactivated_via = "email_link"
+    maintenance.save()
+    log_security_event("shutdown_restored_via_link", request, {}, level="info")
+    return render(request, "app/maintenance.html", {
+        "custom_message": "The site has been restored and is back online."
+    })
+
+@_admin_required
+def admin_maintenance_toggle(request):
+    from django.utils import timezone
+    from .models import SiteMaintenance
+    if request.method == 'POST' and request.POST.get('action') == 'deactivate':
+        maintenance = SiteMaintenance.get_solo()
+        maintenance.is_active = False
+        maintenance.deactivated_at = timezone.now()
+        maintenance.deactivated_via = "manual"
+        maintenance.save()
+        log_security_event("shutdown_restored_manually", request, {}, level="info")
+        messages.success(request, "Site is back online.")
     return redirect(f"{reverse('admin_dashboard')}?tab=danger-zone")
 
 

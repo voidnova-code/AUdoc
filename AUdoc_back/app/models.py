@@ -1058,3 +1058,68 @@ class MedicalHistory(models.Model):
 
     def __str__(self):
         return f"History for {self.student_id} — {self.illness} ({self.appointment_date})"
+
+class SiteMaintenance(models.Model):
+    """Site-wide shutdown switch (singleton — always pk=1)."""
+    is_active        = models.BooleanField(default=False)
+    message           = models.TextField(blank=True, default="")   # optional note shown to visitors
+    reason            = models.TextField(blank=True, default="")   # why it was requested
+    activated_at      = models.DateTimeField(null=True, blank=True)
+    activated_by      = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    deactivated_at    = models.DateTimeField(null=True, blank=True)
+    deactivated_via    = models.CharField(max_length=20, blank=True, default="")  # "manual" | "email_link" | "auto_expiry"
+    sessions_cleared  = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Site Maintenance"
+        verbose_name_plural = "Site Maintenance"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+        from django.core.cache import cache
+        cache.delete("site_maintenance_state")
+
+    def delete(self, *args, **kwargs):
+        pass  # singleton row is never deleted
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @classmethod
+    def is_currently_active(cls):
+        """
+        Cached (5s) lookup used by the middleware on every request. Also
+        where the auto-restore check lives — cheap enough to run on every
+        cache miss without a separate scheduled job.
+        """
+        from django.core.cache import cache
+        from django.utils import timezone
+        import datetime
+
+        cached = cache.get("site_maintenance_state")
+        if cached is not None:
+            return cached
+
+        obj = cls.objects.filter(pk=1).first()
+        active = bool(obj and obj.is_active)
+
+        if active and obj.activated_at:
+            from django.conf import settings as dj_settings
+            max_hours = dj_settings.MAINTENANCE_AUTO_RESTORE_HOURS
+            if timezone.now() - obj.activated_at > datetime.timedelta(hours=max_hours):
+                obj.is_active = False
+                obj.deactivated_at = timezone.now()
+                obj.deactivated_via = "auto_expiry"
+                obj.save()
+                active = False
+                # Best-effort notify — see §6.4, do not let a failure here
+                # block the request that triggered this check.
+
+        cache.set("site_maintenance_state", active, timeout=5)
+        return active
+
+    def __str__(self):
+        return "Maintenance: ON" if self.is_active else "Maintenance: OFF"

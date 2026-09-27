@@ -44,6 +44,12 @@ urlpatterns = [
     path("manage/clear-all-data/", views.admin_clear_all_data, name="admin_clear_all_data"),
     path("manage/clear-all-data/confirm/<str:token>/", views.admin_confirm_clear_all_data, name="admin_confirm_clear_all_data"),
     path("manage/data-purge/decline/<str:token>/", views.admin_decline_data_action, name="admin_decline_data_action"),
+    
+    path("manage/shutdown/request/", views.admin_request_shutdown, name="admin_request_shutdown"),
+    path("manage/shutdown/confirm/<str:token>/", views.admin_confirm_shutdown, name="admin_confirm_shutdown"),
+    path("manage/shutdown/decline/<str:token>/", views.admin_decline_shutdown, name="admin_decline_shutdown"),
+    path("manage/shutdown/toggle/", views.admin_maintenance_toggle, name="admin_maintenance_toggle"),
+    path("restore-site/<str:token>/", views.restore_site_via_link, name="restore_site_via_link"),
     path("manage/export/<str:model_name>/", views.admin_export_data, name="admin_export_data"),
     path("manage/export-selected/", views.admin_export_selected, name="admin_export_selected"),
     path("manage/staff/save/", views.admin_staff_save, name="admin_staff_save"),

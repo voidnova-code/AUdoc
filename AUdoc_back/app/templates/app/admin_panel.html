@@ -1263,6 +1263,13 @@
 
   <!-- Main Content -->
   <div class="content-wrapper">
+    {% if maintenance_active %}
+    <div style="background-color: #ffc107; color: #000; padding: 10px 20px; text-align: center; font-weight: bold; margin-bottom: 20px; border-radius: 8px;">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      SITE IS CURRENTLY OFFLINE FOR MAINTENANCE
+      <span class="ms-3" style="font-weight: normal;">(Requested by {{ maintenance_details.activated_by.username }})</span>
+    </div>
+    {% endif %}
     <div class="content-header">
       <div class="d-flex justify-content-between align-items-center">
         <h1>Admin Dashboard</h1>
@@ -3041,6 +3048,58 @@
             font-size: .95rem;
           }
         </style>
+
+        <!-- Site Lockdown Card -->
+        <div class="card mb-4" style="border-left: 4px solid #f59e0b; border-radius: 12px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">
+          <div class="card-body">
+            <h5 class="card-title" style="color: #d97706; font-weight: 800;"><i class="bi bi-shield-lock-fill me-2"></i> EMERGENCY SITE LOCKDOWN</h5>
+            {% if maintenance_active %}
+              <p class="mb-3">The site is currently <strong>offline</strong> and non-staff users are blocked.</p>
+              <ul class="list-unstyled mb-3" style="font-size: 0.95rem;">
+                <li><strong>Requested by:</strong> {{ maintenance_details.activated_by.username|default:"Unknown" }}</li>
+                <li><strong>Time:</strong> {{ maintenance_details.activated_at|date:"F j, Y, g:i a" }}</li>
+                <li><strong>Reason:</strong> {{ maintenance_details.reason }}</li>
+                <li><strong>Sessions Cleared:</strong> {{ maintenance_details.sessions_cleared }}</li>
+              </ul>
+              <form method="POST" action="{% url 'admin_maintenance_toggle' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="deactivate">
+                <button type="submit" class="btn" style="background-color: #f59e0b; color: white; font-weight: 600; border-radius: 8px;">
+                  <i class="bi bi-unlock-fill me-2"></i> Turn Site Back On
+                </button>
+              </form>
+            {% else %}
+              <p class="mb-3 text-muted">Requesting a shutdown will force-logout all students and put the site in maintenance mode. This requires owner approval via email.</p>
+              <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#shutdownModal" style="font-weight: 600; border-radius: 8px; color: #d97706; border-color: #fcd34d; background: #fffbeb;">
+                <i class="bi bi-power me-2"></i> Request Shutdown
+              </button>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Shutdown Modal -->
+        <div class="modal fade" id="shutdownModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" action="{% url 'admin_request_shutdown' %}" class="modal-content" style="border: 2px solid #fbbf24; border-radius: 12px;">
+              {% csrf_token %}
+              <div class="modal-header border-0" style="background-color: #fef3c7;">
+                <h5 class="modal-title" style="color: #b45309; font-weight: 800;"><i class="bi bi-exclamation-triangle-fill me-2"></i> Request Site Shutdown</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body py-4">
+                <p>You are requesting to take the entire site offline. Non-staff users will be force-logged out.</p>
+                <div class="mb-3">
+                  <label for="shutdownReason" class="form-label fw-bold">Reason for shutdown (required):</label>
+                  <textarea id="shutdownReason" name="reason" class="form-control" rows="3" required placeholder="e.g. Critical security update" style="border-radius: 8px; border-color: #fcd34d;"></textarea>
+                </div>
+              </div>
+              <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Cancel</button>
+                <button type="submit" class="btn" style="background-color: #f59e0b; color: white; border-radius: 8px; font-weight: 600;">Send Approval Request</button>
+              </div>
+            </form>
+          </div>
+        </div>
 
         <!-- Header Banner -->
         <div class="dz-header-banner" data-aos="fade-down">
