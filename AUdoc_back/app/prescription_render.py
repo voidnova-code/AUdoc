@@ -54,7 +54,6 @@ def generate_prescription_png(medical_history):
     try:
         font_logo = get_font("Inter-Bold.ttf", 32)
         font_logo_sub = get_font("Inter-Medium.ttf", 14)
-        font_rx = get_font("Georgia-Bold.ttf", 48)  # Using a serif fallback for Rx
         font_rx_small = get_font("Georgia-Bold.ttf", 20)
         
         font_bold_l = get_font("Inter-Bold.ttf", 22)
@@ -68,7 +67,7 @@ def generate_prescription_png(medical_history):
         font_italic_s = get_font("Inter-Italic.ttf", 14)
     except Exception:
         # Extreme fallback
-        font_logo = font_logo_sub = font_rx = font_rx_small = ImageFont.load_default()
+        font_logo = font_logo_sub = font_rx_small = ImageFont.load_default()
         font_bold_l = font_bold_m = font_bold_s = ImageFont.load_default()
         font_reg_m = font_reg_s = font_reg_xs = font_italic_s = ImageFont.load_default()
 
@@ -81,9 +80,6 @@ def generate_prescription_png(medical_history):
     draw.rectangle([0, 0, WIDTH, 100], fill=PRIMARY_COLOR)
     draw.text((40, 25), "AUdoc", font=font_logo, fill="#FFFFFF")
     draw.text((40, 65), "Assam University Silchar • Student Health Center", font=font_logo_sub, fill="#E5E7EB")
-    
-    # Stylized Rx in Header Right
-    draw.text((WIDTH - 70, 25), "R", font=font_rx, fill="#FFFFFF")
     
     # ── Sub-header (Date / ID) ──
     draw.rectangle([0, 100, WIDTH, 140], fill="#F3F4F6")
