@@ -101,11 +101,13 @@ def generate_prescription_png(medical_history):
     
     # Right: Doctor
     draw.text((WIDTH // 2 + 20, y_offset), "ATTENDING DOCTOR", font=font_bold_s, fill=TEXT_LIGHT)
-    doctor_name = medical_history.doctor_name or "General Physician"
-    if not doctor_name.startswith("Dr."):
-        doctor_name = f"Dr. {doctor_name}"
+    doctor_name = medical_history.doctor_name
+    if not doctor_name or doctor_name == "Not Assigned":
+        doctor_name = "Attending Physician"
+    elif not doctor_name.startswith("Dr."):
+        doctor_name = f"Dr. {doctor_name}" 
     draw.text((WIDTH // 2 + 20, y_offset + 25), doctor_name, font=font_bold_l, fill=TEXT_MAIN)
-    draw.text((WIDTH // 2 + 20, y_offset + 55), "General Physician • AUdoc Health Center", font=font_reg_s, fill=TEXT_MUTED)
+    draw.text((WIDTH // 2 + 20, y_offset + 55), "• AUdoc Health Center", font=font_reg_s, fill=TEXT_MUTED)
     
     y_offset += 100
     
