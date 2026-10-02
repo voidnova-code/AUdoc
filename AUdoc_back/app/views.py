@@ -2374,7 +2374,7 @@ def admin_doctor_save(request):
     phone          = request.POST.get('phone', '').strip()
     specialized_in = request.POST.get('specialized_in', '').strip()
     available_days = request.POST.get('available_days', '').strip()
-    available_time = request.POST.get('available_time', '').strip()
+    shift          = request.POST.get('shift', 'MORNING').strip()
     is_available   = request.POST.get('is_available') == 'on'
 
     if not name:
@@ -2386,8 +2386,8 @@ def admin_doctor_save(request):
         doc.name = name; doc.email = email; doc.phone = phone
         doc.specialized_in = specialized_in
         doc.available_days = available_days
-        doc.available_time = available_time
-        doc.is_available = is_available
+        doc.shift          = shift
+        doc.is_available   = is_available
         photo = request.FILES.get('photo')
         if photo:
             try:
@@ -2403,7 +2403,7 @@ def admin_doctor_save(request):
             except ValueError as e:
                 messages.error(request, str(e))
                 return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
-        doc.save()
+        doc.save()   # _sync_shift_fields() runs inside save()
         messages.success(request, f"Doctor '{name}' updated.")
     else:
         photo = request.FILES.get('photo')
@@ -2423,7 +2423,7 @@ def admin_doctor_save(request):
             name=name, email=email, phone=phone,
             specialized_in=specialized_in,
             available_days=available_days,
-            available_time=available_time,
+            shift=shift,
             is_available=is_available,
             photo=photo_url,
         )
@@ -4058,9 +4058,9 @@ def add_doctor(request):
         email = sanitize_string(request.POST.get('email', ''), max_length=254)
         phone = sanitize_string(request.POST.get('phone', ''), max_length=20)
         specialized_in = sanitize_string(request.POST.get('specialized_in', ''), max_length=20)
-        available_time = sanitize_string(request.POST.get('available_time', ''), max_length=100)
+        shift = sanitize_string(request.POST.get('shift', 'MORNING'), max_length=10)
 
-        if not all([name, email, phone, specialized_in, available_time]):
+        if not all([name, email, phone, specialized_in, shift]):
             return JsonResponse({'success': False, 'message': 'All fields are required'}, status=400)
 
         # Get selected days from checkboxes
@@ -4082,7 +4082,7 @@ def add_doctor(request):
             phone=phone,
             specialized_in=specialized_in,
             available_days=available_days,
-            available_time=available_time,
+            shift=shift,
             is_available=is_available,
         )
 

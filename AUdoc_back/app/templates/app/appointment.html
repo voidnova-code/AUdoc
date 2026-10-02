@@ -631,7 +631,7 @@
                     data-dept="{{ doc.specialized_in }}"
                     {% if form.doctor.value|stringformat:"s" == doc.pk|stringformat:"s" %}selected{% endif %}
                   >
-                    {{ doc.name }} ({{ doc.get_specialized_in_display }}) · {{ doc.available_time }}
+                    {{ doc.name }} ({{ doc.get_specialized_in_display }}) &middot; {{ doc.shift_label }} &mdash; {{ doc.shift_hours }}
                   </option>
                 {% endfor %}
               </select>

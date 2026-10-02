@@ -1506,8 +1506,17 @@
                 </div>
                 <small
                   style="color:rgba(255,255,255,.7);display:block;text-align:center;margin-bottom:18px;font-size:.76rem;">
-                  <i class="bi bi-clock me-1"></i>{{ doctor.available_time|default:"Hours TBA" }}
+                  {% if doctor.shift == 'MORNING' %}
+                    <i class="bi bi-brightness-high me-1"></i>Morning Shift &bull; 8:00 AM &ndash; 2:00 PM
+                  {% elif doctor.shift == 'EVENING' %}
+                    <i class="bi bi-sunset me-1"></i>Evening Shift &bull; 2:00 PM &ndash; 8:00 PM
+                  {% elif doctor.shift == 'NIGHT' %}
+                    <i class="bi bi-moon-stars me-1"></i>Night Shift &bull; 8:00 PM &ndash; 8:00 AM
+                  {% else %}
+                    <i class="bi bi-clock me-1"></i>{{ doctor.available_time|default:"Hours TBA" }}
+                  {% endif %}
                 </small>
+
                 <a href="{% url 'appointment' %}" class="btn btn-sm w-100 rounded-pill"
                   style="background:#d4edda;color:#1d5c35;font-size:.78rem;font-weight:600;"
                   onclick="event.stopPropagation()">

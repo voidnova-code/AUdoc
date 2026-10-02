@@ -2185,7 +2185,7 @@
                     <th>Phone</th>
                     <th>Specialization</th>
                     <th>Available Days</th>
-                    <th>Available Time</th>
+                    <th>Shift</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -2199,7 +2199,26 @@
                     <td>{{ doctor.phone }}</td>
                     <td>{{ doctor.specialized_in }}</td>
                     <td>{{ doctor.available_days }}</td>
-                    <td>{{ doctor.available_time }}</td>
+                    <td>
+                      {% if doctor.shift == 'MORNING' %}
+                        <span class="badge" style="background:#fff3cd;color:#856404;border:1px solid #ffc107;">
+                          &#9728;&#65039; Morning
+                        </span>
+                        <small class="text-muted d-block" style="font-size:11px;">8:00 AM &ndash; 2:00 PM</small>
+                      {% elif doctor.shift == 'EVENING' %}
+                        <span class="badge" style="background:#cff4fc;color:#055160;border:1px solid #0dcaf0;">
+                          &#127764;&#65039; Evening
+                        </span>
+                        <small class="text-muted d-block" style="font-size:11px;">2:00 PM &ndash; 8:00 PM</small>
+                      {% elif doctor.shift == 'NIGHT' %}
+                        <span class="badge" style="background:#e2d9f3;color:#432874;border:1px solid #6f42c1;">
+                          &#127769; Night
+                        </span>
+                        <small class="text-muted d-block" style="font-size:11px;">8:00 PM &ndash; 8:00 AM</small>
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </td>
                     <td>
                       {% if doctor.is_available %}
                       <span class="badge status-confirmed">Active</span>
@@ -2212,7 +2231,7 @@
                         <i class="bi bi-eye"></i>
                       </button>
                       <button class="btn btn-sm btn-outline-secondary"
-                        onclick="editDoctor({{ doctor.id }}, '{{ doctor.name }}', '{{ doctor.email }}', '{{ doctor.phone }}', '{{ doctor.specialized_in }}', '{{ doctor.available_days }}', '{{ doctor.available_time }}', {{ doctor.is_available|lower }})">
+                        onclick="editDoctor({{ doctor.id }}, '{{ doctor.name }}', '{{ doctor.email }}', '{{ doctor.phone }}', '{{ doctor.specialized_in }}', '{{ doctor.available_days }}', '{{ doctor.shift }}', {{ doctor.is_available|lower }})">
                         <i class="bi bi-pencil"></i>
                       </button>
                       <button class="btn btn-sm btn-outline-danger"
@@ -3515,13 +3534,12 @@
                   placeholder="e.g., Monday, Tuesday, Wednesday">
               </div>
               <div class="col-md-6 mb-3">
-                <label class="form-label"><strong>Available Time</strong></label>
-                <div class="d-flex align-items-center gap-2">
-                  <input type="time" id="editStartTime" class="form-control">
-                  <span>-</span>
-                  <input type="time" id="editEndTime" class="form-control">
-                </div>
-                <input type="hidden" id="doctorTime" name="available_time">
+                <label class="form-label"><strong>Shift</strong></label>
+                <select id="doctorShift" name="shift" class="form-control" required>
+                  <option value="MORNING">&#9728;&#65039; Morning Shift &mdash; 8:00 AM to 2:00 PM</option>
+                  <option value="EVENING">&#127764;&#65039; Evening Shift &mdash; 2:00 PM to 8:00 PM</option>
+                  <option value="NIGHT">&#127769; Night Shift &mdash; 8:00 PM to 8:00 AM</option>
+                </select>
               </div>
             </div>
 
@@ -3613,26 +3631,18 @@
     }
 
     // Edit Doctor Modal Function
-    function editDoctor(id, name, email, phone, spec, days, time, is_available) {
+    function editDoctor(id, name, email, phone, spec, days, shift, is_available) {
       document.getElementById('doctorPk').value = id;
       document.getElementById('doctorName').value = name;
       document.getElementById('doctorEmail').value = email;
       document.getElementById('doctorPhone').value = phone;
       document.getElementById('doctorSpec').value = spec;
       document.getElementById('doctorDays').value = days;
-      document.getElementById('doctorTime').value = time;
       document.getElementById('doctorAvailable').checked = is_available;
 
-      if (time) {
-        const parts = time.split('-');
-        if (parts.length === 2) {
-          document.getElementById('editStartTime').value = parseFromAMPM(parts[0]);
-          document.getElementById('editEndTime').value = parseFromAMPM(parts[1]);
-        }
-      } else {
-        document.getElementById('editStartTime').value = '';
-        document.getElementById('editEndTime').value = '';
-      }
+      // Set the shift dropdown
+      const shiftSel = document.getElementById('doctorShift');
+      if (shiftSel) shiftSel.value = shift || 'MORNING';
 
       // Show the modal
       new bootstrap.Modal(document.getElementById('editDoctorModal')).show();
@@ -5175,17 +5185,14 @@
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Start Time *</label>
-                <input type="time" class="form-control" id="addStartTime" required>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label class="form-label">End Time *</label>
-                <input type="time" class="form-control" id="addEndTime" required>
-              </div>
+            <div class="mb-3">
+              <label class="form-label">Shift *</label>
+              <select class="form-control" name="shift" id="addDoctorShift" required>
+                <option value="MORNING">&#9728;&#65039; Morning Shift (8:00 AM &ndash; 2:00 PM)</option>
+                <option value="EVENING">&#127764;&#65039; Evening Shift (2:00 PM &ndash; 8:00 PM)</option>
+                <option value="NIGHT">&#127769; Night Shift (8:00 PM &ndash; 8:00 AM)</option>
+              </select>
             </div>
-            <input type="hidden" name="available_time" id="addDoctorAvailableTime">
             <div class="mb-3">
               <label class="form-label">Profile Photo (Optional)</label>
               <input type="file" class="form-control" name="photo" accept="image/*">
@@ -5257,14 +5264,8 @@
   </div>
 
   <script>
-    // Handle Edit Doctor Form Submit
-    document.getElementById('editDoctorForm')?.addEventListener('submit', function(e) {
-      const startTime = document.getElementById('editStartTime').value;
-      const endTime = document.getElementById('editEndTime').value;
-      if (startTime && endTime) {
-        document.getElementById('doctorTime').value = `${formatToAMPM(startTime)} - ${formatToAMPM(endTime)}`;
-      }
-    });
+    // Handle Edit Doctor Form Submit — shift is a <select>, no pre-processing needed
+    // (old start/end time logic removed)
 
     // Handle Add Doctor Form
     document.getElementById('addDoctorForm')?.addEventListener('submit', async (e) => {
@@ -5277,9 +5278,8 @@
         return;
       }
       
-      const startTime = document.getElementById('addStartTime').value;
-      const endTime = document.getElementById('addEndTime').value;
-      document.getElementById('addDoctorAvailableTime').value = `${formatToAMPM(startTime)} - ${formatToAMPM(endTime)}`;
+      // Shift is a <select> — no pre-processing needed; FormData picks it up automatically.
+
 
       const formData = new FormData(e.target);
 

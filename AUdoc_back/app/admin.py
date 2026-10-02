@@ -169,13 +169,13 @@ class StudentProfileAdmin(admin.ModelAdmin):
 class DoctorAdmin(admin.ModelAdmin):
     list_display = (
         "doctor_id", "name", "email", "phone",
-        "specialized_in", "is_available",
+        "specialized_in", "shift", "is_available",
     )
-    list_filter  = ("specialized_in", "is_available")
+    list_filter  = ("specialized_in", "shift", "is_available")
     search_fields = ("doctor_id", "name", "email", "phone")
     ordering     = ("name",)
-    list_editable = ("is_available",)
-    readonly_fields = ("doctor_id",)
+    list_editable = ("is_available", "shift")
+    readonly_fields = ("doctor_id", "available_time", "working_hours_start", "working_hours_end")
     fieldsets = (
         ("Doctor Information", {
             "fields": ("doctor_id", "name", "email", "phone", "specialized_in"),
@@ -186,12 +186,17 @@ class DoctorAdmin(admin.ModelAdmin):
             "description": "Upload a doctor profile photo (optional)",
         }),
         ("Availability", {
-            "fields": ("available_days", "available_time", "is_available"),
-            "description": "Enter days as comma-separated (e.g., 'Monday, Tuesday, Wednesday')",
+            "fields": ("shift", "available_days", "is_available"),
+            "description": (
+                "Select the fixed shift. Available days should be comma-separated "
+                "(e.g., 'Monday, Tuesday, Wednesday'). "
+                "The 'Available Time' field below is auto-filled from the shift."
+            ),
         }),
-        ("Working Hours (Optional - for advanced scheduling)", {
-            "fields": ("working_hours_start", "working_hours_end", "lunch_break_start", "lunch_break_end"),
+        ("Auto-computed (read-only)", {
+            "fields": ("available_time", "working_hours_start", "working_hours_end"),
             "classes": ("collapse",),
+            "description": "These fields are automatically derived from the Shift setting — do not edit manually.",
         }),
     )
 

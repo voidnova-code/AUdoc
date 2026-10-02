@@ -186,6 +186,21 @@ class StaffProfile(models.Model):
         return f"{self.name} ({self.staff_id}) — {role}"
 
 
+# ── Doctor shift constants ──────────────────────────────────────────────────
+SHIFT_CHOICES = [
+    ("MORNING", "Morning Shift  (8:00 AM – 2:00 PM)"),
+    ("EVENING", "Evening Shift  (2:00 PM – 8:00 PM)"),
+    ("NIGHT",   "Night Shift    (8:00 PM – 8:00 AM)"),
+]
+
+# Shift → (working_hours_start, working_hours_end) as (hour, minute) tuples
+SHIFT_HOURS = {
+    "MORNING": {"start": (8, 0),  "end": (14, 0)},
+    "EVENING": {"start": (14, 0), "end": (20, 0)},
+    "NIGHT":   {"start": (20, 0), "end": (8, 0)},   # crosses midnight
+}
+
+
 class Doctor(models.Model):
     doctor_id       = models.CharField(
         max_length=20, unique=True, editable=False, verbose_name="Doctor ID",
@@ -203,17 +218,27 @@ class Doctor(models.Model):
     available_days  = models.CharField(
         max_length=200,
         verbose_name="Available Days",
-        help_text="Hold Ctrl / Cmd to select multiple days (e.g., 'Monday, Tuesday, Wednesday, Thursday, Friday')",
+        help_text="Comma-separated days, e.g. 'Monday, Tuesday, Wednesday'",
     )
+    # Shift replaces the old free-text available_time / manual time pickers
+    shift = models.CharField(
+        max_length=10,
+        choices=SHIFT_CHOICES,
+        default="MORNING",
+        verbose_name="Shift",
+        help_text="Select the doctor's working shift.",
+    )
+    # Keep these for backward compat — auto-filled from shift in save()
     available_time  = models.CharField(
         max_length=100,
         verbose_name="Available Time",
-        help_text='e.g. "9:00 AM – 5:00 PM"',
+        blank=True,
+        help_text="Auto-filled from shift — do not edit manually.",
     )
     working_hours_start = models.TimeField(null=True, blank=True, verbose_name="Working Hours Start")
-    working_hours_end = models.TimeField(null=True, blank=True, verbose_name="Working Hours End")
-    lunch_break_start = models.TimeField(null=True, blank=True, verbose_name="Lunch Break Start")
-    lunch_break_end = models.TimeField(null=True, blank=True, verbose_name="Lunch Break End")
+    working_hours_end   = models.TimeField(null=True, blank=True, verbose_name="Working Hours End")
+    lunch_break_start   = models.TimeField(null=True, blank=True, verbose_name="Lunch Break Start")
+    lunch_break_end     = models.TimeField(null=True, blank=True, verbose_name="Lunch Break End")
     is_available    = models.BooleanField(default=True, verbose_name="Available")
     photo           = models.URLField(
         max_length=500,
@@ -223,19 +248,60 @@ class Doctor(models.Model):
         help_text="Public URL of the doctor's profile photo (stored in Supabase Storage)",
     )
 
+    # ── helpers ──────────────────────────────────────────────────────────────
+
     @property
     def available_days_list(self):
         if self.available_days:
             return [d.strip() for d in self.available_days.split(',') if d.strip()]
         return []
 
+    @property
+    def shift_label(self):
+        """Return human-readable shift label, e.g. 'Morning Shift'."""
+        labels = {"MORNING": "Morning Shift", "EVENING": "Evening Shift", "NIGHT": "Night Shift"}
+        return labels.get(self.shift, self.shift)
+
+    @property
+    def shift_hours(self):
+        """Return formatted hours string for the shift, e.g. '8:00 AM – 2:00 PM'."""
+        hours = {
+            "MORNING": "8:00 AM – 2:00 PM",
+            "EVENING": "2:00 PM – 8:00 PM",
+            "NIGHT":   "8:00 PM – 8:00 AM",
+        }
+        return hours.get(self.shift, "")
+
+    @property
+    def shift_icon(self):
+        """Emoji icon for the shift."""
+        icons = {"MORNING": "☀️", "EVENING": "🌤️", "NIGHT": "🌙"}
+        return icons.get(self.shift, "🕐")
+
+    def _sync_shift_fields(self):
+        """Auto-fill legacy time fields and available_time from selected shift."""
+        from datetime import time as _time
+        info = SHIFT_HOURS.get(self.shift)
+        if info:
+            self.working_hours_start = _time(*info["start"])
+            self.working_hours_end   = _time(*info["end"])
+        labels = {
+            "MORNING": "8:00 AM – 2:00 PM",
+            "EVENING": "2:00 PM – 8:00 PM",
+            "NIGHT":   "8:00 PM – 8:00 AM",
+        }
+        self.available_time = labels.get(self.shift, "")
+
     def save(self, *args, **kwargs):
+        # Auto-generate doctor ID
         if not self.doctor_id:
             while True:
                 random_suffix = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
                 self.doctor_id = f"DOC{random_suffix}"
                 if not Doctor.objects.filter(doctor_id=self.doctor_id).exists():
                     break
+        # Keep shift-derived fields in sync
+        self._sync_shift_fields()
         super().save(*args, **kwargs)
 
     class Meta:
@@ -247,17 +313,35 @@ class Doctor(models.Model):
         return f"{self.name} ({self.get_specialized_in_display()})"
 
 
+# ── Full 24-hour time slot choices (30-min intervals) ────────────────────────
 TIME_SLOT_CHOICES = [
-    # Morning OPD (9:00 AM – 1:00 PM)
+    # Morning Shift slots  (8:00 AM – 2:00 PM)
+    ("08:00 AM", "08:00 AM"), ("08:30 AM", "08:30 AM"),
     ("09:00 AM", "09:00 AM"), ("09:30 AM", "09:30 AM"),
     ("10:00 AM", "10:00 AM"), ("10:30 AM", "10:30 AM"),
     ("11:00 AM", "11:00 AM"), ("11:30 AM", "11:30 AM"),
     ("12:00 PM", "12:00 PM"), ("12:30 PM", "12:30 PM"),
-    # Lunch break: 1:00 PM – 2:00 PM
-    # Afternoon OPD (2:00 PM – 5:00 PM)
+    ("01:00 PM", "01:00 PM"), ("01:30 PM", "01:30 PM"),
+    # Evening Shift slots  (2:00 PM – 8:00 PM)
     ("02:00 PM", "02:00 PM"), ("02:30 PM", "02:30 PM"),
     ("03:00 PM", "03:00 PM"), ("03:30 PM", "03:30 PM"),
     ("04:00 PM", "04:00 PM"), ("04:30 PM", "04:30 PM"),
+    ("05:00 PM", "05:00 PM"), ("05:30 PM", "05:30 PM"),
+    ("06:00 PM", "06:00 PM"), ("06:30 PM", "06:30 PM"),
+    ("07:00 PM", "07:00 PM"), ("07:30 PM", "07:30 PM"),
+    # Night Shift slots    (8:00 PM – 8:00 AM)
+    ("08:00 PM", "08:00 PM"), ("08:30 PM", "08:30 PM"),
+    ("09:00 PM", "09:00 PM"), ("09:30 PM", "09:30 PM"),
+    ("10:00 PM", "10:00 PM"), ("10:30 PM", "10:30 PM"),
+    ("11:00 PM", "11:00 PM"), ("11:30 PM", "11:30 PM"),
+    ("12:00 AM", "12:00 AM"), ("12:30 AM", "12:30 AM"),
+    ("01:00 AM", "01:00 AM"), ("01:30 AM", "01:30 AM"),
+    ("02:00 AM", "02:00 AM"), ("02:30 AM", "02:30 AM"),
+    ("03:00 AM", "03:00 AM"), ("03:30 AM", "03:30 AM"),
+    ("04:00 AM", "04:00 AM"), ("04:30 AM", "04:30 AM"),
+    ("05:00 AM", "05:00 AM"), ("05:30 AM", "05:30 AM"),
+    ("06:00 AM", "06:00 AM"), ("06:30 AM", "06:30 AM"),
+    ("07:00 AM", "07:00 AM"), ("07:30 AM", "07:30 AM"),
 ]
 
 
