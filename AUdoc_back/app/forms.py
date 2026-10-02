@@ -312,10 +312,9 @@ class BloodDonationForm(forms.Form):
         widget=forms.TextInput(attrs={"placeholder": "e.g., diabetes, heart disease, allergies, etc."}),
         help_text="Please mention if you have any health conditions",
     )
-    message = forms.CharField(
-        required=False,
-        label="Additional Message (optional)",
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Any additional information you'd like to share…"}),
+    contact_permission = forms.BooleanField(
+        required=True,
+        label="I agree to be contacted by admin via phone or email for blood donation requests.",
     )
 
     def clean_blood_group(self):

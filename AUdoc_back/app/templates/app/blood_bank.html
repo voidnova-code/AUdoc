@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,31 +14,70 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <style>
     :root {
-      --primary:      #4a7c59;
+      --primary: #4a7c59;
       --primary-dark: #2e5c3a;
-      --accent:       #e8f5ec;
-      --green:        #1d8348;
-      --green-light:  #d5f0e2;
-      --red:          #c41e3a;
-      --bs-primary:          #4a7c59;
-      --bs-primary-rgb:      74, 124, 89;
-      --bs-link-color:       #4a7c59;
+      --accent: #e8f5ec;
+      --green: #1d8348;
+      --green-light: #d5f0e2;
+      --red: #c41e3a;
+      --bs-primary: #4a7c59;
+      --bs-primary-rgb: 74, 124, 89;
+      --bs-link-color: #4a7c59;
       --bs-link-hover-color: #2e5c3a;
     }
 
-    body { font-family: 'Segoe UI', sans-serif; color: #333; background: #faf9f4; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
+      background: #faf9f4;
+    }
 
     /* Topbar */
-    .topbar { background: var(--primary-dark); color: #c8e6d0; font-size: .82rem; padding: 6px 0; }
-    .topbar a { color: #c8e6d0; text-decoration: none; }
-    .topbar a:hover { color: #fff; }
+    .topbar {
+      background: var(--primary-dark);
+      color: #c8e6d0;
+      font-size: .82rem;
+      padding: 6px 0;
+    }
+
+    .topbar a {
+      color: #c8e6d0;
+      text-decoration: none;
+    }
+
+    .topbar a:hover {
+      color: #fff;
+    }
 
     /* Navbar */
-    .navbar { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-    .navbar-brand .brand-name { color: var(--primary); font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
-    .navbar-brand .brand-sub  { color: #777; font-size: .72rem; font-weight: 400; display: block; }
-    .nav-link { color: #555 !important; font-weight: 500; }
-    .nav-link:hover, .nav-link.active { color: var(--primary) !important; }
+    .navbar {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    .navbar-brand .brand-name {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.25rem;
+      line-height: 1.1;
+    }
+
+    .navbar-brand .brand-sub {
+      color: #777;
+      font-size: .72rem;
+      font-weight: 400;
+      display: block;
+    }
+
+    .nav-link {
+      color: #555 !important;
+      font-weight: 500;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--primary) !important;
+    }
 
     /* Page header */
     .page-header {
@@ -45,8 +85,16 @@
       color: #fff;
       padding: 52px 0 48px;
     }
-    .page-header h1 { font-size: 2rem; font-weight: 700; }
-    .page-header p  { opacity: .85; font-size: 1rem; }
+
+    .page-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .page-header p {
+      opacity: .85;
+      font-size: 1rem;
+    }
 
     /* Tab styling */
     .nav-tabs {
@@ -79,7 +127,7 @@
     .form-card {
       background: #fff;
       border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(74,124,89,.12);
+      box-shadow: 0 8px 32px rgba(74, 124, 89, .12);
       padding: 36px 40px;
     }
 
@@ -87,15 +135,20 @@
     .info-card {
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(74,124,89,.08);
+      box-shadow: 0 4px 16px rgba(74, 124, 89, .08);
       padding: 24px;
     }
 
     .info-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      background: var(--accent); color: var(--primary);
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--primary);
       font-size: 1.3rem;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
     }
 
@@ -112,19 +165,34 @@
     }
 
     /* Form controls */
-    .form-label { font-weight: 600; font-size: .88rem; color: #444; }
-    .form-control, .form-select {
+    .form-label {
+      font-weight: 600;
+      font-size: .88rem;
+      color: #444;
+    }
+
+    .form-control,
+    .form-select {
       border-radius: 10px;
       border: 1.5px solid #d5e8d9;
       font-size: .93rem;
       padding: 10px 14px;
     }
-    .form-control:focus, .form-select:focus {
+
+    .form-control:focus,
+    .form-select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(74,124,89,.1);
+      box-shadow: 0 0 0 3px rgba(74, 124, 89, .1);
     }
-    textarea.form-control { resize: vertical; min-height: 90px; }
-    .invalid-feedback { font-size: .82rem; }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .invalid-feedback {
+      font-size: .82rem;
+    }
 
     /* Blood badge */
     .blood-badge {
@@ -171,151 +239,295 @@
     }
 
     /* Urgency request cards */
-    .req-card { border-radius: 14px; border: 1.5px solid; padding: 16px; }
-    .req-card-urgent { border-color: #f5c6cb; background: #fff5f7; }
-    .req-card-high   { border-color: #ffc078; background: #fffbf5; }
-    .req-card-medium { border-color: #ffd86e; background: #fffdf5; }
-    .req-card-low    { border-color: #b2dfdb; background: #f5fffb; }
+    .req-card {
+      border-radius: 14px;
+      border: 1.5px solid;
+      padding: 16px;
+    }
+
+    .req-card-urgent {
+      border-color: #f5c6cb;
+      background: #fff5f7;
+    }
+
+    .req-card-high {
+      border-color: #ffc078;
+      background: #fffbf5;
+    }
+
+    .req-card-medium {
+      border-color: #ffd86e;
+      background: #fffdf5;
+    }
+
+    .req-card-low {
+      border-color: #b2dfdb;
+      background: #f5fffb;
+    }
 
     /* Footer */
-    footer { background: #0d2418; color: #9abea8; padding: 40px 0 20px; }
-    footer .divider { border-color: #1e4a2e; margin: 20px 0 14px; }
+    footer {
+      background: #0d2418;
+      color: #9abea8;
+      padding: 40px 0 20px;
+    }
+
+    footer .divider {
+      border-color: #1e4a2e;
+      margin: 20px 0 14px;
+    }
 
     /* ── Navbar sliding pill indicator ── */
-    .navbar-nav { position: relative; }
+    .navbar-nav {
+      position: relative;
+    }
+
     .nav-pill-indicator {
       position: absolute;
       background: var(--accent);
       border-radius: 8px;
-      transition: left   0.32s cubic-bezier(.4,0,.2,1),
-                  top    0.32s cubic-bezier(.4,0,.2,1),
-                  width  0.32s cubic-bezier(.4,0,.2,1),
-                  height 0.32s cubic-bezier(.4,0,.2,1),
-                  opacity 0.2s ease;
+      transition: left 0.32s cubic-bezier(.4, 0, .2, 1),
+        top 0.32s cubic-bezier(.4, 0, .2, 1),
+        width 0.32s cubic-bezier(.4, 0, .2, 1),
+        height 0.32s cubic-bezier(.4, 0, .2, 1),
+        opacity 0.2s ease;
       pointer-events: none;
       z-index: 0;
     }
-    .navbar-nav .nav-link { position: relative; z-index: 1; }
+
+    .navbar-nav .nav-link {
+      position: relative;
+      z-index: 1;
+    }
+
     /* ── Scroll-reveal ── */
-    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
-    .reveal.visible { opacity: 1; transform: none; }
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
     /* ── Scroll-to-top ── */
     #scroll-top {
-      position: fixed; bottom: 30px; right: 30px;
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--primary); color: #fff; border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; box-shadow: 0 4px 16px rgba(74,124,89,.3);
-      opacity: 0; visibility: hidden; z-index: 998;
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 16px rgba(74, 124, 89, .3);
+      opacity: 0;
+      visibility: hidden;
+      z-index: 998;
       transition: opacity .3s, visibility .3s, transform .3s;
     }
-    #scroll-top.show { opacity: 1; visibility: visible; }
-    #scroll-top:hover { transform: translateY(-3px); }
+
+    #scroll-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #scroll-top:hover {
+      transform: translateY(-3px);
+    }
+
     /* ── Page fade-in ── */
-    @keyframes pagein { from { opacity:0; } to { opacity:1; } }
-    body { animation: pagein .4s ease; }
+    @keyframes pagein {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    body {
+      animation: pagein .4s ease;
+    }
+
     /* ── Submit loading state ── */
-    .btn-loading { pointer-events: none; opacity: .75; }
-    .btn-spinner { display: none; width: 1rem; height: 1rem;
-      border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
-      border-radius: 50%; animation: spin .7s linear infinite; margin-right: .4rem; }
-    .btn-loading .btn-spinner { display: inline-block; }
-    .btn-loading .btn-text { display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-loading {
+      pointer-events: none;
+      opacity: .75;
+    }
+
+    .btn-spinner {
+      display: none;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid rgba(255, 255, 255, .4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin-right: .4rem;
+    }
+
+    .btn-loading .btn-spinner {
+      display: inline-block;
+    }
+
+    .btn-loading .btn-text {
+      display: none;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* ══════════════════════════════════════════
        MOBILE RESPONSIVE
     ══════════════════════════════════════════ */
     @media (max-width: 767px) {
-      .page-header { padding: 32px 0 28px; }
-      .page-header h1 { font-size: 1.4rem; }
-      .page-header p { font-size: .88rem; }
+      .page-header {
+        padding: 32px 0 28px;
+      }
 
-      .form-card { padding: 20px 16px; border-radius: 14px; }
+      .page-header h1 {
+        font-size: 1.4rem;
+      }
 
-      .nav-tabs .nav-link { padding: 10px 12px; font-size: .85rem; }
+      .page-header p {
+        font-size: .88rem;
+      }
 
-      .info-card { padding: 18px; }
-      .info-icon { width: 40px; height: 40px; font-size: 1.1rem; }
+      .form-card {
+        padding: 20px 16px;
+        border-radius: 14px;
+      }
 
-      .section-label { font-size: .68rem; }
+      .nav-tabs .nav-link {
+        padding: 10px 12px;
+        font-size: .85rem;
+      }
 
-      .blood-badge { padding: 6px 12px; font-size: .8rem; }
+      .info-card {
+        padding: 18px;
+      }
 
-      .req-card { padding: 12px; }
+      .info-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+      }
 
-      .checkbox-wrapper { padding: 10px; }
+      .section-label {
+        font-size: .68rem;
+      }
 
-      footer { padding: 28px 0 14px; }
+      .blood-badge {
+        padding: 6px 12px;
+        font-size: .8rem;
+      }
+
+      .req-card {
+        padding: 12px;
+      }
+
+      .checkbox-wrapper {
+        padding: 10px;
+      }
+
+      footer {
+        padding: 28px 0 14px;
+      }
     }
 
     @media (max-width: 480px) {
-      .page-header h1 { font-size: 1.2rem; }
-      .form-card { padding: 16px 12px; }
-      .nav-tabs .nav-link { padding: 8px 8px; font-size: .78rem; }
+      .page-header h1 {
+        font-size: 1.2rem;
+      }
+
+      .form-card {
+        padding: 16px 12px;
+      }
+
+      .nav-tabs .nav-link {
+        padding: 8px 8px;
+        font-size: .78rem;
+      }
     }
   </style>
 
   <!-- SEO Enhancements -->
-  <meta name="description" content="Save lives by donating blood or find the blood you need. Manage your donations and requests at the AUdoc Campus Health Blood Bank.">
+  <meta name="description"
+    content="Save lives by donating blood or find the blood you need. Manage your donations and requests at the AUdoc Campus Health Blood Bank.">
   <meta property="og:title" content="Blood Bank – AUdoc Campus Health">
-<meta property="og:description" content="Save lives by donating blood or find the blood you need. Manage your donations and requests at the AUdoc Campus Health Blood Bank.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://voiddoc.me{% url 'blood_bank' %}">
+  <meta property="og:description"
+    content="Save lives by donating blood or find the blood you need. Manage your donations and requests at the AUdoc Campus Health Blood Bank.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://voiddoc.me{% url 'blood_bank' %}">
 
   <!-- Anti-DevTools Snippet -->
   <script>
-    document.addEventListener('contextmenu', function(e) {
+    document.addEventListener('contextmenu', function (e) {
       e.preventDefault();
     });
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'F12' || 
-          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
-          (e.ctrlKey && e.key === 'U')) {
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'U')) {
         e.preventDefault();
       }
     });
   </script>
 </head>
+
 <body>
 
-<!-- ══════════ TOPBAR ══════════ -->
-<div class="topbar d-none d-md-block">
-  <div class="container d-flex justify-content-between align-items-center">
-    <div class="d-flex gap-4">
-      <span><i class="bi bi-geo-alt me-1"></i>AUS Health Center, Academic Block C, Room 101</span>
-      <span><i class="bi bi-clock me-1"></i>Open 24 × 7</span>
-    </div>
-    <div class="d-flex gap-3">
-      <span><i class="bi bi-telephone me-1"></i>+91 6900577470</span>
-      <span><i class="bi bi-envelope me-1"></i>sayankumarr02@gmail.com</span>
+  <!-- ══════════ TOPBAR ══════════ -->
+  <div class="topbar d-none d-md-block">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="d-flex gap-4">
+        <span><i class="bi bi-geo-alt me-1"></i>AUS Health Center, Academic Block C, Room 101</span>
+        <span><i class="bi bi-clock me-1"></i>Open 24 × 7</span>
+      </div>
+      <div class="d-flex gap-3">
+        <span><i class="bi bi-telephone me-1"></i>+91 6900577470</span>
+        <span><i class="bi bi-envelope me-1"></i>sayankumarr02@gmail.com</span>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ══════════ NAVBAR ══════════ -->
-<nav class="navbar navbar-expand-lg sticky-top">
-  <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
-      <img src="{% static 'app/images/e3fc6cfc-17e4-4ee2-98d4-8f64cd160590.jpg' %}" alt="AUdoc Logo" style="width:38px;height:38px;border-radius:10px;object-fit:cover;">
-      <div>
-        <div class="brand-name">AUdoc</div>
-        <span class="brand-sub">Campus Health Portal</span>
-      </div>
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navMenu">
-      <ul class="navbar-nav mx-auto gap-1">
-        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'appointment' %}">Appointments</a></li>
-        <li class="nav-item"><a class="nav-link active" href="{% url 'blood_bank' %}">Blood Bank</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'donation' %}">Donation</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
-      </ul>
-      <div class="d-flex gap-2 align-items-center">
-        {% if user.is_authenticated %}
+  <!-- ══════════ NAVBAR ══════════ -->
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+        <img src="{% static 'app/images/e3fc6cfc-17e4-4ee2-98d4-8f64cd160590.jpg' %}" alt="AUdoc Logo"
+          style="width:38px;height:38px;border-radius:10px;object-fit:cover;">
+        <div>
+          <div class="brand-name">AUdoc</div>
+          <span class="brand-sub">Campus Health Portal</span>
+        </div>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav mx-auto gap-1">
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'appointment' %}">Appointments</a></li>
+          <li class="nav-item"><a class="nav-link active" href="{% url 'blood_bank' %}">Blood Bank</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'donation' %}">Donation</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
+        </ul>
+        <div class="d-flex gap-2 align-items-center">
+          {% if user.is_authenticated %}
           <span class="text-muted small d-none d-md-inline">
             <i class="bi bi-person-circle me-1"></i>
             <strong>{{ user.get_full_name|default:user.username }}</strong>
@@ -326,790 +538,781 @@
               <i class="bi bi-box-arrow-right me-1"></i>Logout
             </button>
           </form>
-        {% else %}
+          {% else %}
           <a href="/accounts/login/" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
             <i class="bi bi-box-arrow-in-right me-1"></i>Login
           </a>
           <a href="{% url 'register' %}" class="btn btn-primary btn-sm px-3 rounded-pill">Register</a>
-        {% endif %}
+          {% endif %}
+        </div>
       </div>
     </div>
+  </nav>
+
+  <!-- ══════════ PAGE HEADER ══════════ -->
+  <div class="page-header">
+    <div class="container">
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color:#9abea8;font-size:.85rem;">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a>
+          </li>
+          <li class="breadcrumb-item active text-white">Blood Bank</li>
+        </ol>
+      </nav>
+      <h1><i class="bi bi-droplet-fill me-2"></i>Campus Blood Bank</h1>
+      <p class="mb-0">Save lives by donating blood or find the blood you need. Manage your donations and requests in one
+        place.</p>
+    </div>
   </div>
-</nav>
 
-<!-- ══════════ PAGE HEADER ══════════ -->
-<div class="page-header">
-  <div class="container">
-    <nav aria-label="breadcrumb" class="mb-3">
-      <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color:#9abea8;font-size:.85rem;">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a></li>
-        <li class="breadcrumb-item active text-white">Blood Bank</li>
-      </ol>
-    </nav>
-    <h1><i class="bi bi-droplet-fill me-2"></i>Campus Blood Bank</h1>
-    <p class="mb-0">Save lives by donating blood or find the blood you need. Manage your donations and requests in one place.</p>
-  </div>
-</div>
+  <!-- ══════════ MAIN CONTENT ══════════ -->
+  <div class="container py-5">
 
-<!-- ══════════ MAIN CONTENT ══════════ -->
-<div class="container py-5">
-
-  {% if messages %}
+    {% if messages %}
     {% for msg in messages %}
-      <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>{{ msg }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
+    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i>{{ msg }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     {% endfor %}
-  {% endif %}
+    {% endif %}
 
-  <div class="row g-4">
-    <!-- ── Main Form Area ── -->
-    <div class="col-lg-7">
+    <div class="row g-4">
+      <!-- ── Main Form Area ── -->
+      <div class="col-lg-7">
 
-      <!-- Tab Navigation -->
-      <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link {% if active_tab == 'request' %}{% else %}active{% endif %}" id="donate-tab" data-bs-toggle="tab" data-bs-target="#donate-content" type="button" role="tab">
-            <i class="bi bi-heart-pulse-fill me-2"></i>Donate Blood
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link {% if active_tab == 'request' %}active{% endif %}" id="request-tab" data-bs-toggle="tab" data-bs-target="#request-content" type="button" role="tab">
-            <i class="bi bi-droplet-fill me-2"></i>Request Blood
-          </button>
-        </li>
-      </ul>
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'request' %}{% else %}active{% endif %}" id="donate-tab"
+              data-bs-toggle="tab" data-bs-target="#donate-content" type="button" role="tab">
+              <i class="bi bi-heart-pulse-fill me-2"></i>Donate Blood
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'request' %}active{% endif %}" id="request-tab"
+              data-bs-toggle="tab" data-bs-target="#request-content" type="button" role="tab">
+              <i class="bi bi-droplet-fill me-2"></i>Request Blood
+            </button>
+          </li>
+        </ul>
 
-      <!-- Tab Content -->
-      <div class="tab-content">
+        <!-- Tab Content -->
+        <div class="tab-content">
 
-        <!-- ═════════════════════════════════════ DONATE TAB ═════════════════════════════════════ -->
-        <div class="tab-pane fade {% if active_tab == 'request' %}{% else %}show active{% endif %}" id="donate-content" role="tabpanel">
+          <!-- ═════════════════════════════════════ DONATE TAB ═════════════════════════════════════ -->
+          <div class="tab-pane fade {% if active_tab == 'request' %}{% else %}show active{% endif %}"
+            id="donate-content" role="tabpanel">
 
-          {% if existing_donation %}
+            {% if existing_donation %}
 
-          <!-- ── Already registered: show donor status card ── -->
-          <div class="form-card mb-4">
-            <div class="d-flex align-items-center gap-3 mb-4">
-              <div style="width:56px;height:56px;border-radius:14px;background:#ffe8eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <i class="bi bi-heart-pulse-fill" style="font-size:1.6rem;color:var(--red);"></i>
-              </div>
-              <div>
-                <div class="blood-badge mb-1"><i class="bi bi-patch-check-fill me-1"></i> Registered </div>
-                <p class="text-muted small mb-0">You have already submitted your donor registration. See your status below.</p>
-              </div>
-            </div>
-            <div class="row g-3">
-              <div class="col-6">
-                <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
-                  <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">Donor Name</div>
-                  <div class="fw-semibold mt-1">{{ existing_donation.donor_name }}</div>
+            <!-- ── Already registered: show donor status card ── -->
+            <div class="form-card mb-4">
+              <div class="d-flex align-items-center gap-3 mb-4">
+                <div
+                  style="width:56px;height:56px;border-radius:14px;background:#ffe8eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="bi bi-heart-pulse-fill" style="font-size:1.6rem;color:var(--red);"></i>
+                </div>
+                <div>
+                  <div class="blood-badge mb-1"><i class="bi bi-patch-check-fill me-1"></i> Registered </div>
+                  <p class="text-muted small mb-0">You have already submitted your donor registration. See your status
+                    below.</p>
                 </div>
               </div>
-              <div class="col-6">
-                <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
-                  <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">Blood Group</div>
-                  <div class="fw-bold mt-1" style="color:var(--red);font-size:1.1rem;">{{ existing_donation.blood_group }}</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
-                  <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">Application Status</div>
-                  <div class="mt-1">
-                    {% if existing_donation.status == "APPROVED" %}
-                      <span class="badge bg-success rounded-pill px-3">Approved</span>
-                    {% elif existing_donation.status == "PENDING" %}
-                      <span class="badge bg-warning text-dark rounded-pill px-3">Pending Review</span>
-                    {% elif existing_donation.status == "REJECTED" %}
-                      <span class="badge bg-danger rounded-pill px-3">Rejected</span>
-                    {% else %}
-                      <span class="badge bg-secondary rounded-pill px-3">{{ existing_donation.status }}</span>
-                    {% endif %}
+              <div class="row g-3">
+                <div class="col-6">
+                  <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
+                    <div
+                      style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">
+                      Donor Name</div>
+                    <div class="fw-semibold mt-1">{{ existing_donation.donor_name }}</div>
                   </div>
                 </div>
-              </div>
-              <div class="col-6">
-                <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
-                  <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">Registered On</div>
-                  <div class="fw-semibold mt-1">{{ existing_donation.created_at|date:"d M Y" }}</div>
+                <div class="col-6">
+                  <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
+                    <div
+                      style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">
+                      Blood Group</div>
+                    <div class="fw-bold mt-1" style="color:var(--red);font-size:1.1rem;">{{
+                      existing_donation.blood_group }}</div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ── Blood Requests List ── -->
-          <div class="form-card">
-            <div class="blood-badge"><i class="bi bi-list-ul me-2"></i>Blood Donation Requests</div>
-            <h5 class="fw-bold mb-1" style="color:#0d2a1a;">People Who Need Blood</h5>
-            <p class="text-muted small mb-4">Active blood requests from the community. If you can help, contact them directly.</p>
-
-            {% if blood_requests %}
-              <div class="d-flex flex-column gap-3">
-                {% for req in blood_requests %}
-                  <div class="req-card {% if req.urgency == 'URGENT' %}req-card-urgent{% elif req.urgency == 'HIGH' %}req-card-high{% elif req.urgency == 'MEDIUM' %}req-card-medium{% else %}req-card-low{% endif %}">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-                      <div>
-                        <span class="fw-bold" style="font-size:1rem;color:#0d2a1a;">{{ req.requester_name }}</span>
-                        <span class="ms-2 fw-bold" style="font-size:1.15rem;color:var(--red);">{{ req.blood_group }}</span>
-                      </div>
-                      <div class="d-flex gap-2 flex-wrap">
-                        {% if req.urgency == 'URGENT' %}
-                          <span class="badge bg-danger rounded-pill"><i class="bi bi-exclamation-octagon-fill me-1"></i>URGENT</span>
-                        {% elif req.urgency == 'HIGH' %}
-                          <span class="badge rounded-pill" style="background:#e65100;"><i class="bi bi-exclamation-circle-fill me-1"></i>HIGH</span>
-                        {% elif req.urgency == 'MEDIUM' %}
-                          <span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-dash-circle-fill me-1"></i>MEDIUM</span>
-                        {% else %}
-                          <span class="badge bg-success rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>LOW</span>
-                        {% endif %}
-                        {% if req.status == 'APPROVED' %}
-                          <span class="badge bg-primary rounded-pill">Verified</span>
-                        {% else %}
-                          <span class="badge bg-secondary rounded-pill">Pending</span>
-                        {% endif %}
-                      </div>
-                    </div>
-                    <div class="row g-2" style="font-size:.88rem;">
-                      <div class="col-sm-6">
-                        <i class="bi bi-hospital me-1 text-muted"></i><strong>Hospital:</strong> {{ req.hospital_name }}
-                      </div>
-                      <div class="col-sm-6">
-                        <i class="bi bi-calendar-event me-1 text-muted"></i><strong>Needed by:</strong> {{ req.required_date|date:"d M Y" }}
-                      </div>
-                      <div class="col-sm-6">
-                        <i class="bi bi-droplet-half me-1 text-muted"></i><strong>Units needed:</strong> {{ req.units_required }}
-                      </div>
-                      <div class="col-sm-6">
-                        <i class="bi bi-telephone me-1 text-muted"></i><strong>Contact:</strong> {{ req.phone }}
-                      </div>
-                      <div class="col-12">
-                        <i class="bi bi-info-circle me-1 text-muted"></i><strong>Reason:</strong> {{ req.reason }}
-                      </div>
-                      {% if req.hospital_contact %}
-                      <div class="col-12">
-                        <i class="bi bi-geo-alt me-1 text-muted"></i><strong>Hospital Contact:</strong> {{ req.hospital_contact }}
-                      </div>
+                <div class="col-6">
+                  <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
+                    <div
+                      style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">
+                      Application Status</div>
+                    <div class="mt-1">
+                      {% if existing_donation.status == "APPROVED" %}
+                      <span class="badge bg-success rounded-pill px-3">Approved</span>
+                      {% elif existing_donation.status == "PENDING" %}
+                      <span class="badge bg-warning text-dark rounded-pill px-3">Pending Review</span>
+                      {% elif existing_donation.status == "REJECTED" %}
+                      <span class="badge bg-danger rounded-pill px-3">Rejected</span>
+                      {% else %}
+                      <span class="badge bg-secondary rounded-pill px-3">{{ existing_donation.status }}</span>
                       {% endif %}
                     </div>
                   </div>
+                </div>
+                <div class="col-6">
+                  <div style="background:#eef7f1;border-radius:10px;padding:12px 14px;">
+                    <div
+                      style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">
+                      Registered On</div>
+                    <div class="fw-semibold mt-1">{{ existing_donation.created_at|date:"d M Y" }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Blood Requests List ── -->
+            <div class="form-card">
+              <div class="blood-badge"><i class="bi bi-list-ul me-2"></i>Blood Donation Requests</div>
+              <h5 class="fw-bold mb-1" style="color:#0d2a1a;">People Who Need Blood</h5>
+              <p class="text-muted small mb-4">Active blood requests from the community. If you can help, contact them
+                directly.</p>
+
+              {% if blood_requests %}
+              <div class="d-flex flex-column gap-3">
+                {% for req in blood_requests %}
+                <div
+                  class="req-card {% if req.urgency == 'URGENT' %}req-card-urgent{% elif req.urgency == 'HIGH' %}req-card-high{% elif req.urgency == 'MEDIUM' %}req-card-medium{% else %}req-card-low{% endif %}">
+                  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                    <div>
+                      <span class="fw-bold" style="font-size:1rem;color:#0d2a1a;">{{ req.requester_name }}</span>
+                      <span class="ms-2 fw-bold" style="font-size:1.15rem;color:var(--red);">{{ req.blood_group
+                        }}</span>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                      {% if req.urgency == 'URGENT' %}
+                      <span class="badge bg-danger rounded-pill"><i
+                          class="bi bi-exclamation-octagon-fill me-1"></i>URGENT</span>
+                      {% elif req.urgency == 'HIGH' %}
+                      <span class="badge rounded-pill" style="background:#e65100;"><i
+                          class="bi bi-exclamation-circle-fill me-1"></i>HIGH</span>
+                      {% elif req.urgency == 'MEDIUM' %}
+                      <span class="badge bg-warning text-dark rounded-pill"><i
+                          class="bi bi-dash-circle-fill me-1"></i>MEDIUM</span>
+                      {% else %}
+                      <span class="badge bg-success rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>LOW</span>
+                      {% endif %}
+                      {% if req.status == 'APPROVED' %}
+                      <span class="badge bg-primary rounded-pill">Verified</span>
+                      {% else %}
+                      <span class="badge bg-secondary rounded-pill">Pending</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="row g-2" style="font-size:.88rem;">
+                    <div class="col-sm-6">
+                      <i class="bi bi-hospital me-1 text-muted"></i><strong>Hospital:</strong> {{ req.hospital_name }}
+                    </div>
+                    <div class="col-sm-6">
+                      <i class="bi bi-calendar-event me-1 text-muted"></i><strong>Needed by:</strong> {{
+                      req.required_date|date:"d M Y" }}
+                    </div>
+                    <div class="col-sm-6">
+                      <i class="bi bi-droplet-half me-1 text-muted"></i><strong>Units needed:</strong> {{
+                      req.units_required }}
+                    </div>
+                    <div class="col-sm-6">
+                      <i class="bi bi-telephone me-1 text-muted"></i><strong>Contact:</strong> {{ req.phone }}
+                    </div>
+                    <div class="col-12">
+                      <i class="bi bi-info-circle me-1 text-muted"></i><strong>Reason:</strong> {{ req.reason }}
+                    </div>
+                    {% if req.hospital_contact %}
+                    <div class="col-12">
+                      <i class="bi bi-geo-alt me-1 text-muted"></i><strong>Hospital Contact:</strong> {{
+                      req.hospital_contact }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
                 {% endfor %}
               </div>
-            {% else %}
+              {% else %}
               <div class="text-center py-5">
                 <i class="bi bi-check2-circle" style="font-size:3rem;color:#28a745;"></i>
                 <p class="mt-3 fw-semibold" style="color:#555;">No active blood requests right now.</p>
-                <p class="small text-muted mb-0">Check back later. Requests will appear here when someone in the community needs blood.</p>
+                <p class="small text-muted mb-0">Check back later. Requests will appear here when someone in the
+                  community needs blood.</p>
               </div>
-            {% endif %}
-          </div>
+              {% endif %}
+            </div>
 
-          {% else %}
+            {% else %}
 
-          <!-- ── Registration Form (first-time donor) ── -->
-          <div class="form-card">
-            <div class="blood-badge"><i class="bi bi-heart-pulse-fill me-2"></i>Blood Donor Registration</div>
-            <h5 class="fw-bold mb-1" style="color:#0d2a1a;">Register as a Blood Donor</h5>
-            <p class="text-muted small mb-4">Complete this form to register as a blood donor. We'll contact you when your blood type is needed.</p>
+            <!-- ── Registration Form (first-time donor) ── -->
+            <div class="form-card">
+              <div class="blood-badge"><i class="bi bi-heart-pulse-fill me-2"></i>Blood Donor Registration</div>
+              <h5 class="fw-bold mb-1" style="color:#0d2a1a;">Register as a Blood Donor</h5>
+              <p class="text-muted small mb-4">Complete this form to register as a blood donor. We'll contact you when
+                your blood type is needed.</p>
 
-            <form method="post" novalidate>
-              {% csrf_token %}
-              <input type="hidden" name="form_type" value="donate" />
+              <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="donate" />
 
-              <!-- Non-field errors -->
-              {% if form_donate.non_field_errors %}
+                <!-- Non-field errors -->
+                {% if form_donate.non_field_errors %}
                 <div class="alert alert-danger rounded-3 py-2 mb-3">
                   {% for err in form_donate.non_field_errors %}
-                    <div><i class="bi bi-exclamation-circle me-1"></i>{{ err }}</div>
+                  <div><i class="bi bi-exclamation-circle me-1"></i>{{ err }}</div>
                   {% endfor %}
                 </div>
-              {% endif %}
+                {% endif %}
 
-              <!-- ── Personal Information ── -->
-              <p class="section-label">Personal Information</p>
+                <!-- ── Personal Information ── -->
+                <p class="section-label">Personal Information</p>
 
-              <!-- Full Name -->
-              <div class="mb-3">
-                <label class="form-label" for="id_donor_name">
-                  Full Name <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text" name="donor_name" id="id_donor_name"
-                  class="form-control{% if form_donate.donor_name.errors %} is-invalid{% endif %}"
-                  placeholder="Enter your full name"
-                  value="{{ form_donate.donor_name.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_donate.donor_name.errors %}
+                <!-- Full Name -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_donor_name">
+                    Full Name <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" name="donor_name" id="id_donor_name"
+                    class="form-control{% if form_donate.donor_name.errors %} is-invalid{% endif %}"
+                    placeholder="Enter your full name" value="{{ form_donate.donor_name.value|default_if_none:'' }}"
+                    required />
+                  {% for err in form_donate.donor_name.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
-
-              <!-- Email -->
-              <div class="mb-3">
-                <label class="form-label" for="id_email_donate">
-                  Email Address <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="email" name="email" id="id_email_donate"
-                  class="form-control{% if form_donate.email.errors %} is-invalid{% endif %}"
-                  placeholder="Enter your email"
-                  value="{{ form_donate.email.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_donate.email.errors %}
-                  <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
-
-              <!-- Phone -->
-              <div class="mb-3">
-                <label class="form-label" for="id_phone_donate">
-                  Phone Number <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="tel" name="phone" id="id_phone_donate"
-                  class="form-control{% if form_donate.phone.errors %} is-invalid{% endif %}"
-                  placeholder="e.g. 01XXXXXXXXX"
-                  value="{{ form_donate.phone.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_donate.phone.errors %}
-                  <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
-
-              <!-- ── Blood Information ── -->
-              <p class="section-label">Blood Information</p>
-
-              <!-- Blood Group -->
-              <div class="mb-3">
-                <label class="form-label" for="id_blood_group_donate">
-                  Blood Group <span class="text-danger">*</span>
-                </label>
-                <select
-                  name="blood_group" id="id_blood_group_donate"
-                  class="form-select{% if form_donate.blood_group.errors %} is-invalid{% endif %}"
-                  required
-                >
-                  <option value="">— Select blood group —</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                </select>
-                {% for err in form_donate.blood_group.errors %}
-                  <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
-
-              <!-- ── Health Information ── -->
-              <p class="section-label">Health Information</p>
-
-              <!-- Date of Birth -->
-              <div class="mb-3">
-                <label class="form-label" for="id_date_of_birth">
-                  Date of Birth <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="date" name="date_of_birth" id="id_date_of_birth"
-                  class="form-control{% if form_donate.date_of_birth.errors %} is-invalid{% endif %}"
-                  value="{{ form_donate.date_of_birth.value|default_if_none:'' }}"
-                  required
-                />
-                <div class="form-text"><i class="bi bi-info-circle me-1"></i>You must be at least 18 years old to donate blood.</div>
-                {% for err in form_donate.date_of_birth.errors %}
-                  <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
-
-              <!-- Weight -->
-              <div class="mb-3">
-                <label class="form-label" for="id_weight">
-                  Weight (kg) <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="number" name="weight" id="id_weight"
-                  class="form-control{% if form_donate.weight.errors %} is-invalid{% endif %}"
-                  placeholder="e.g. 65"
-                  min="50"
-                  value="{{ form_donate.weight.value|default_if_none:'' }}"
-                  required
-                />
-                <div class="form-text"><i class="bi bi-info-circle me-1"></i>Minimum 50 kg required for blood donation.</div>
-                {% for err in form_donate.weight.errors %}
-                  <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
-
-              <!-- Previous Donation -->
-              <div class="mb-4">
-                <div class="checkbox-wrapper">
-                  <input
-                    type="checkbox" name="previous_donation" id="id_previous_donation"
-                    {% if form_donate.previous_donation.value %}checked{% endif %}
-                  />
-                  <label for="id_previous_donation">I have donated blood before</label>
+                  {% endfor %}
                 </div>
-              </div>
 
-              <!-- Health Condition -->
-              <div class="mb-4">
-                <label class="form-label" for="id_health_condition">
-                  Medical Conditions <span class="text-muted fw-normal">(optional)</span>
-                </label>
-                <input
-                  type="text" name="health_condition" id="id_health_condition"
-                  class="form-control"
-                  placeholder="e.g., diabetes, heart disease, allergies, etc."
-                  value="{{ form_donate.health_condition.value|default_if_none:'' }}"
-                />
-                <div class="form-text"><i class="bi bi-info-circle me-1"></i>Please mention if you have any health conditions that we should be aware of.</div>
-              </div>
+                <!-- Email -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_email_donate">
+                    Email Address <span class="text-danger">*</span>
+                  </label>
+                  <input type="email" name="email" id="id_email_donate"
+                    class="form-control{% if form_donate.email.errors %} is-invalid{% endif %}"
+                    placeholder="Enter your email" value="{{ form_donate.email.value|default_if_none:'' }}" required />
+                  {% for err in form_donate.email.errors %}
+                  <div class="invalid-feedback">{{ err }}</div>
+                  {% endfor %}
+                </div>
 
-              <!-- ── Additional Message ── -->
-              <p class="section-label">Additional Information</p>
+                <!-- Phone -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_phone_donate">
+                    Phone Number <span class="text-danger">*</span>
+                  </label>
+                  <input type="tel" name="phone" id="id_phone_donate"
+                    class="form-control{% if form_donate.phone.errors %} is-invalid{% endif %}"
+                    placeholder="e.g. 01XXXXXXXXX" value="{{ form_donate.phone.value|default_if_none:'' }}" required />
+                  {% for err in form_donate.phone.errors %}
+                  <div class="invalid-feedback">{{ err }}</div>
+                  {% endfor %}
+                </div>
 
-              <div class="mb-4">
-                <label class="form-label" for="id_message">Message <span class="text-muted fw-normal">(optional)</span></label>
-                <textarea
-                  name="message" id="id_message"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Any additional information you'd like to share…"
-                >{{ form_donate.message.value|default_if_none:'' }}</textarea>
-              </div>
+                <!-- ── Blood Information ── -->
+                <p class="section-label">Blood Information</p>
 
-              <!-- ── Submit ── -->
-              <button type="submit" id="donateSubmitBtn" class="btn btn-danger btn-lg w-100 rounded-pill fw-semibold">
-                <span class="btn-spinner"></span>
-                <span class="btn-text"><i class="bi bi-heart-pulse-fill me-2"></i>Register as a Donor</span>
-              </button>
-              <p class="text-muted small text-center mt-3 mb-0">
-                <i class="bi bi-lock me-1"></i>Your information is kept secure and confidential.
-              </p>
+                <!-- Blood Group -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_blood_group_donate">
+                    Blood Group <span class="text-danger">*</span>
+                  </label>
+                  <select name="blood_group" id="id_blood_group_donate"
+                    class="form-select{% if form_donate.blood_group.errors %} is-invalid{% endif %}" required>
+                    <option value="">— Select blood group —</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                  {% for err in form_donate.blood_group.errors %}
+                  <div class="invalid-feedback">{{ err }}</div>
+                  {% endfor %}
+                </div>
 
-            </form>
+                <!-- ── Health Information ── -->
+                <p class="section-label">Health Information</p>
+
+                <!-- Date of Birth -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_date_of_birth">
+                    Date of Birth <span class="text-danger">*</span>
+                  </label>
+                  <input type="date" name="date_of_birth" id="id_date_of_birth"
+                    class="form-control{% if form_donate.date_of_birth.errors %} is-invalid{% endif %}"
+                    value="{{ form_donate.date_of_birth.value|default_if_none:'' }}" required />
+                  <div class="form-text"><i class="bi bi-info-circle me-1"></i>You must be at least 18 years old to
+                    donate blood.</div>
+                  {% for err in form_donate.date_of_birth.errors %}
+                  <div class="invalid-feedback">{{ err }}</div>
+                  {% endfor %}
+                </div>
+
+                <!-- Weight -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_weight">
+                    Weight (kg) <span class="text-danger">*</span>
+                  </label>
+                  <input type="number" name="weight" id="id_weight"
+                    class="form-control{% if form_donate.weight.errors %} is-invalid{% endif %}" placeholder="e.g. 65"
+                    min="50" value="{{ form_donate.weight.value|default_if_none:'' }}" required />
+                  <div class="form-text"><i class="bi bi-info-circle me-1"></i>Minimum 50 kg required for blood
+                    donation.</div>
+                  {% for err in form_donate.weight.errors %}
+                  <div class="invalid-feedback">{{ err }}</div>
+                  {% endfor %}
+                </div>
+
+                <!-- Previous Donation -->
+                <div class="mb-4">
+                  <div class="checkbox-wrapper">
+                    <input type="checkbox" name="previous_donation" id="id_previous_donation" {% if
+                      form_donate.previous_donation.value %}checked{% endif %} />
+                    <label for="id_previous_donation">I have donated blood before</label>
+                  </div>
+                </div>
+
+                <!-- Health Condition -->
+                <div class="mb-4">
+                  <label class="form-label" for="id_health_condition">
+                    Medical Conditions <span class="text-muted fw-normal">(optional)</span>
+                  </label>
+                  <input type="text" name="health_condition" id="id_health_condition" class="form-control"
+                    placeholder="e.g., diabetes, heart disease, allergies, etc."
+                    value="{{ form_donate.health_condition.value|default_if_none:'' }}" />
+                  <div class="form-text"><i class="bi bi-info-circle me-1"></i>Please mention if you have any health
+                    conditions that we should be aware of.</div>
+                </div>
+
+
+                <!-- ── Contact Permission ── -->
+                <p class="section-label">Contact Permission</p>
+
+                <div class="mb-4">
+                  <div
+                    class="checkbox-wrapper{% if form_donate.contact_permission.errors %} border border-danger rounded{% endif %}"
+                    style="background:#fff8f8; border: 1.5px solid #f5c6cb; border-radius: 8px; padding: 14px 16px;">
+                    <input type="checkbox" name="contact_permission" id="id_contact_permission" required {% if
+                      form_donate.contact_permission.value %}checked{% endif %} />
+                    <label for="id_contact_permission" style="font-weight:500; cursor:pointer;">
+                      I give permission for the admin to contact me via my <strong>phone number</strong> or
+                      <strong>email</strong> for blood donation-related purposes.
+                    </label>
+                  </div>
+                  {% if form_donate.contact_permission.errors %}
+                  {% for err in form_donate.contact_permission.errors %}
+                  <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ err }}</div>
+                  {% endfor %}
+                  {% endif %}
+                  <div class="form-text mt-2">
+                    <i class="bi bi-info-circle me-1"></i>
+                    This permission is <strong>required</strong> to register as a donor. Without it, the admin cannot
+                    reach you when your blood type is urgently needed.
+                  </div>
+                </div>
+
+                <!-- ── Submit ── -->
+                <button type="submit" id="donateSubmitBtn" class="btn btn-danger btn-lg w-100 rounded-pill fw-semibold">
+                  <span class="btn-spinner"></span>
+                  <span class="btn-text"><i class="bi bi-heart-pulse-fill me-2"></i>Register as a Donor</span>
+                </button>
+                <p class="text-muted small text-center mt-3 mb-0">
+                  <i class="bi bi-lock me-1"></i>Your information is kept secure and confidential.
+                </p>
+
+              </form>
+            </div>
+
+            {% endif %}
+
           </div>
 
-          {% endif %}
+          <!-- ═════════════════════════════════════ REQUEST TAB ═════════════════════════════════════ -->
+          <div class="tab-pane fade {% if active_tab == 'request' %}show active{% endif %}" id="request-content"
+            role="tabpanel">
+            <div class="form-card">
+              <div class="blood-badge request"><i class="bi bi-droplet-fill me-2"></i>Blood Request Form</div>
+              <h5 class="fw-bold mb-1" style="color:#0d2a1a;">Request Blood Urgently</h5>
+              <p class="text-muted small mb-4">Fill out this form to request blood. Our team will match your request
+                with available donors and contact you shortly.</p>
 
-        </div>
+              <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="request" />
 
-        <!-- ═════════════════════════════════════ REQUEST TAB ═════════════════════════════════════ -->
-        <div class="tab-pane fade {% if active_tab == 'request' %}show active{% endif %}" id="request-content" role="tabpanel">
-          <div class="form-card">
-            <div class="blood-badge request"><i class="bi bi-droplet-fill me-2"></i>Blood Request Form</div>
-            <h5 class="fw-bold mb-1" style="color:#0d2a1a;">Request Blood Urgently</h5>
-            <p class="text-muted small mb-4">Fill out this form to request blood. Our team will match your request with available donors and contact you shortly.</p>
-
-            <form method="post" novalidate>
-              {% csrf_token %}
-              <input type="hidden" name="form_type" value="request" />
-
-              <!-- Non-field errors -->
-              {% if form_request.non_field_errors %}
+                <!-- Non-field errors -->
+                {% if form_request.non_field_errors %}
                 <div class="alert alert-danger rounded-3 py-2 mb-3">
                   {% for err in form_request.non_field_errors %}
-                    <div><i class="bi bi-exclamation-circle me-1"></i>{{ err }}</div>
+                  <div><i class="bi bi-exclamation-circle me-1"></i>{{ err }}</div>
                   {% endfor %}
                 </div>
-              {% endif %}
+                {% endif %}
 
-              <!-- ── Personal Information ── -->
-              <p class="section-label">Personal Information</p>
+                <!-- ── Personal Information ── -->
+                <p class="section-label">Personal Information</p>
 
-              <!-- Requester Name -->
-              <div class="mb-3">
-                <label class="form-label" for="id_requester_name">
-                  Full Name <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text" name="requester_name" id="id_requester_name"
-                  class="form-control{% if form_request.requester_name.errors %} is-invalid{% endif %}"
-                  placeholder="Enter your full name"
-                  value="{{ form_request.requester_name.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_request.requester_name.errors %}
+                <!-- Requester Name -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_requester_name">
+                    Full Name <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" name="requester_name" id="id_requester_name"
+                    class="form-control{% if form_request.requester_name.errors %} is-invalid{% endif %}"
+                    placeholder="Enter your full name"
+                    value="{{ form_request.requester_name.value|default_if_none:'' }}" required />
+                  {% for err in form_request.requester_name.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+                  {% endfor %}
+                </div>
 
-              <!-- Email -->
-              <div class="mb-3">
-                <label class="form-label" for="id_email_request">
-                  Email Address <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="email" name="email" id="id_email_request"
-                  class="form-control{% if form_request.email.errors %} is-invalid{% endif %}"
-                  placeholder="Enter your email"
-                  value="{{ form_request.email.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_request.email.errors %}
+                <!-- Email -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_email_request">
+                    Email Address <span class="text-danger">*</span>
+                  </label>
+                  <input type="email" name="email" id="id_email_request"
+                    class="form-control{% if form_request.email.errors %} is-invalid{% endif %}"
+                    placeholder="Enter your email" value="{{ form_request.email.value|default_if_none:'' }}" required />
+                  {% for err in form_request.email.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+                  {% endfor %}
+                </div>
 
-              <!-- Phone -->
-              <div class="mb-3">
-                <label class="form-label" for="id_phone_request">
-                  Phone Number <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="tel" name="phone" id="id_phone_request"
-                  class="form-control{% if form_request.phone.errors %} is-invalid{% endif %}"
-                  placeholder="e.g. 01XXXXXXXXX"
-                  value="{{ form_request.phone.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_request.phone.errors %}
+                <!-- Phone -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_phone_request">
+                    Phone Number <span class="text-danger">*</span>
+                  </label>
+                  <input type="tel" name="phone" id="id_phone_request"
+                    class="form-control{% if form_request.phone.errors %} is-invalid{% endif %}"
+                    placeholder="e.g. 01XXXXXXXXX" value="{{ form_request.phone.value|default_if_none:'' }}" required />
+                  {% for err in form_request.phone.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+                  {% endfor %}
+                </div>
 
-              <!-- ── Blood Details ── -->
-              <p class="section-label">Blood Details</p>
+                <!-- ── Blood Details ── -->
+                <p class="section-label">Blood Details</p>
 
-              <!-- Blood Group -->
-              <div class="mb-3">
-                <label class="form-label" for="id_blood_group_request">
-                  Blood Group Needed <span class="text-danger">*</span>
-                </label>
-                <select
-                  name="blood_group" id="id_blood_group_request"
-                  class="form-select{% if form_request.blood_group.errors %} is-invalid{% endif %}"
-                  required
-                >
-                  <option value="">— Select blood group —</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                </select>
-                {% for err in form_request.blood_group.errors %}
+                <!-- Blood Group -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_blood_group_request">
+                    Blood Group Needed <span class="text-danger">*</span>
+                  </label>
+                  <select name="blood_group" id="id_blood_group_request"
+                    class="form-select{% if form_request.blood_group.errors %} is-invalid{% endif %}" required>
+                    <option value="">— Select blood group —</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                  {% for err in form_request.blood_group.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+                  {% endfor %}
+                </div>
 
-              <!-- Units Required -->
-              <div class="mb-3">
-                <label class="form-label" for="id_units_required">
-                  Units Required <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="number" name="units_required" id="id_units_required"
-                  class="form-control{% if form_request.units_required.errors %} is-invalid{% endif %}"
-                  placeholder="e.g. 2"
-                  min="1"
-                  value="{{ form_request.units_required.value|default_if_none:'' }}"
-                  required
-                />
-                <div class="form-text"><i class="bi bi-info-circle me-1"></i>Number of blood units needed (1 unit = 450ml)</div>
-                {% for err in form_request.units_required.errors %}
+                <!-- Units Required -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_units_required">
+                    Units Required <span class="text-danger">*</span>
+                  </label>
+                  <input type="number" name="units_required" id="id_units_required"
+                    class="form-control{% if form_request.units_required.errors %} is-invalid{% endif %}"
+                    placeholder="e.g. 2" min="1" value="{{ form_request.units_required.value|default_if_none:'' }}"
+                    required />
+                  <div class="form-text"><i class="bi bi-info-circle me-1"></i>Number of blood units needed (1 unit =
+                    450ml)</div>
+                  {% for err in form_request.units_required.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+                  {% endfor %}
+                </div>
 
-              <!-- ── Medical Information ── -->
-              <p class="section-label">Medical Information</p>
+                <!-- ── Medical Information ── -->
+                <p class="section-label">Medical Information</p>
 
-              <!-- Reason -->
-              <div class="mb-3">
-                <label class="form-label" for="id_reason">
-                  Reason for Blood <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text" name="reason" id="id_reason"
-                  class="form-control{% if form_request.reason.errors %} is-invalid{% endif %}"
-                  placeholder="e.g., Surgery, Accident, Transfusion"
-                  value="{{ form_request.reason.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_request.reason.errors %}
+                <!-- Reason -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_reason">
+                    Reason for Blood <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" name="reason" id="id_reason"
+                    class="form-control{% if form_request.reason.errors %} is-invalid{% endif %}"
+                    placeholder="e.g., Surgery, Accident, Transfusion"
+                    value="{{ form_request.reason.value|default_if_none:'' }}" required />
+                  {% for err in form_request.reason.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+                  {% endfor %}
+                </div>
 
-              <!-- Urgency -->
-              <div class="mb-3">
-                <label class="form-label" for="id_urgency">
-                  Urgency Level <span class="text-danger">*</span>
-                </label>
-                <select
-                  name="urgency" id="id_urgency"
-                  class="form-select{% if form_request.urgency.errors %} is-invalid{% endif %}"
-                  required
-                >
-                  <option value="">— Select urgency —</option>
-                  <option value="LOW">Low (within a week)</option>
-                  <option value="MEDIUM">Medium (within 2-3 days)</option>
-                  <option value="HIGH">High (within 24 hours)</option>
-                  <option value="URGENT">Urgent (immediately)</option>
-                </select>
-                {% for err in form_request.urgency.errors %}
+                <!-- Urgency -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_urgency">
+                    Urgency Level <span class="text-danger">*</span>
+                  </label>
+                  <select name="urgency" id="id_urgency"
+                    class="form-select{% if form_request.urgency.errors %} is-invalid{% endif %}" required>
+                    <option value="">— Select urgency —</option>
+                    <option value="LOW">Low (within a week)</option>
+                    <option value="MEDIUM">Medium (within 2-3 days)</option>
+                    <option value="HIGH">High (within 24 hours)</option>
+                    <option value="URGENT">Urgent (immediately)</option>
+                  </select>
+                  {% for err in form_request.urgency.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+                  {% endfor %}
+                </div>
 
-              {{ form_request.required_date }}
+                {{ form_request.required_date }}
 
-              <!-- ── Hospital Information ── -->
-              <p class="section-label">Hospital Information</p>
+                <!-- ── Hospital Information ── -->
+                <p class="section-label">Hospital Information</p>
 
-              <!-- Hospital Name -->
-              <div class="mb-3">
-                <label class="form-label" for="id_hospital_name">
-                  Hospital/Medical Facility Name <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text" name="hospital_name" id="id_hospital_name"
-                  class="form-control{% if form_request.hospital_name.errors %} is-invalid{% endif %}"
-                  placeholder="Name of the hospital or medical facility"
-                  value="{{ form_request.hospital_name.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_request.hospital_name.errors %}
+                <!-- Hospital Name -->
+                <div class="mb-3">
+                  <label class="form-label" for="id_hospital_name">
+                    Hospital/Medical Facility Name <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" name="hospital_name" id="id_hospital_name"
+                    class="form-control{% if form_request.hospital_name.errors %} is-invalid{% endif %}"
+                    placeholder="Name of the hospital or medical facility"
+                    value="{{ form_request.hospital_name.value|default_if_none:'' }}" required />
+                  {% for err in form_request.hospital_name.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+                  {% endfor %}
+                </div>
 
-              <!-- Hospital Contact -->
-              <div class="mb-4">
-                <label class="form-label" for="id_hospital_contact">
-                  Hospital Contact <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text" name="hospital_contact" id="id_hospital_contact"
-                  class="form-control{% if form_request.hospital_contact.errors %} is-invalid{% endif %}"
-                  placeholder="Phone number or address"
-                  value="{{ form_request.hospital_contact.value|default_if_none:'' }}"
-                  required
-                />
-                {% for err in form_request.hospital_contact.errors %}
+                <!-- Hospital Contact -->
+                <div class="mb-4">
+                  <label class="form-label" for="id_hospital_contact">
+                    Hospital Contact <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" name="hospital_contact" id="id_hospital_contact"
+                    class="form-control{% if form_request.hospital_contact.errors %} is-invalid{% endif %}"
+                    placeholder="Phone number or address"
+                    value="{{ form_request.hospital_contact.value|default_if_none:'' }}" required />
+                  {% for err in form_request.hospital_contact.errors %}
                   <div class="invalid-feedback">{{ err }}</div>
-                {% endfor %}
-              </div>
+                  {% endfor %}
+                </div>
 
-              <!-- ── Additional Information ── -->
-              <p class="section-label">Additional Information</p>
+                <!-- ── Additional Information ── -->
+                <p class="section-label">Additional Information</p>
 
-              <div class="mb-4">
-                <label class="form-label" for="id_notes">Notes <span class="text-muted fw-normal">(optional)</span></label>
-                <textarea
-                  name="notes" id="id_notes"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Any additional information…"
-                >{{ form_request.notes.value|default_if_none:'' }}</textarea>
-              </div>
+                <div class="mb-4">
+                  <label class="form-label" for="id_notes">Notes <span
+                      class="text-muted fw-normal">(optional)</span></label>
+                  <textarea name="notes" id="id_notes" class="form-control" rows="3"
+                    placeholder="Any additional information…">{{ form_request.notes.value|default_if_none:'' }}</textarea>
+                </div>
 
-              <!-- ── Submit ── -->
-              <button type="submit" id="requestSubmitBtn" class="btn btn-danger btn-lg w-100 rounded-pill fw-semibold">
-                <span class="btn-spinner"></span>
-                <span class="btn-text"><i class="bi bi-droplet-fill me-2"></i>Submit Blood Request</span>
-              </button>
-              <p class="text-muted small text-center mt-3 mb-0">
-                <i class="bi bi-lock me-1"></i>Your information is kept secure and confidential.
-              </p>
+                <!-- ── Submit ── -->
+                <button type="submit" id="requestSubmitBtn"
+                  class="btn btn-danger btn-lg w-100 rounded-pill fw-semibold">
+                  <span class="btn-spinner"></span>
+                  <span class="btn-text"><i class="bi bi-droplet-fill me-2"></i>Submit Blood Request</span>
+                </button>
+                <p class="text-muted small text-center mt-3 mb-0">
+                  <i class="bi bi-lock me-1"></i>Your information is kept secure and confidential.
+                </p>
 
-            </form>
+              </form>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ── Sidebar: Quick Links & Info ── -->
+      <div class="col-lg-5 d-flex flex-column gap-3">
+
+        <!-- Donor Benefits -->
+        <div class="info-card">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="info-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+            <h6 class="fw-bold mb-0">Why Donate Blood?</h6>
+          </div>
+          <p class="small text-muted mb-0">
+            Blood is essential for surgeries, trauma care, cancer treatment, and managing chronic diseases.
+            One blood donation can save up to three lives. On campus, we rely on student donors to maintain
+            adequate blood supplies for emergencies.
+          </p>
+        </div>
+
+        <!-- Eligibility -->
+        <div class="info-card">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="info-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
+            <h6 class="fw-bold mb-0">Donor Eligibility</h6>
+          </div>
+          <ul class="list-unstyled small text-muted mb-0">
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Age: 18–65 years</li>
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Weight: Minimum 50 kg</li>
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Hemoglobin: 12 g/dL or higher</li>
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Blood pressure: Normal range</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i>No major illnesses or infections</li>
+          </ul>
+        </div>
+
+        <!-- Donor Benefits -->
+        <div class="info-card">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="info-icon"><i class="bi bi-gift-fill"></i></div>
+            <h6 class="fw-bold mb-0">Donor Rewards</h6>
+          </div>
+          <ul class="list-unstyled small text-muted mb-0">
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Free health screening</li>
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Refreshments after donation</li>
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Donor recognition certificate</li>
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority blood access if needed
+            </li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Campus health points reward</li>
+          </ul>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="info-card" style="background:linear-gradient(135deg,#ffe8eb,#ffd4d9);">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="info-icon" style="background:#ffd4d9;color:var(--red);"><i class="bi bi-link-45deg"></i></div>
+            <h6 class="fw-bold mb-0">Quick Links</h6>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            <a href="mailto:sayankumarr02@gmail.com" class="btn btn-sm btn-danger rounded-pill">
+              <i class="bi bi-envelope me-1"></i>Contact Health Center
+            </a>
           </div>
         </div>
 
       </div>
 
     </div>
-
-    <!-- ── Sidebar: Quick Links & Info ── -->
-    <div class="col-lg-5 d-flex flex-column gap-3">
-
-      <!-- Donor Benefits -->
-      <div class="info-card">
-        <div class="d-flex align-items-center gap-3 mb-3">
-          <div class="info-icon"><i class="bi bi-heart-pulse-fill"></i></div>
-          <h6 class="fw-bold mb-0">Why Donate Blood?</h6>
-        </div>
-        <p class="small text-muted mb-0">
-          Blood is essential for surgeries, trauma care, cancer treatment, and managing chronic diseases.
-          One blood donation can save up to three lives. On campus, we rely on student donors to maintain
-          adequate blood supplies for emergencies.
-        </p>
-      </div>
-
-      <!-- Eligibility -->
-      <div class="info-card">
-        <div class="d-flex align-items-center gap-3 mb-3">
-          <div class="info-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
-          <h6 class="fw-bold mb-0">Donor Eligibility</h6>
-        </div>
-        <ul class="list-unstyled small text-muted mb-0">
-          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Age: 18–65 years</li>
-          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Weight: Minimum 50 kg</li>
-          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Hemoglobin: 12 g/dL or higher</li>
-          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Blood pressure: Normal range</li>
-          <li><i class="bi bi-check-circle-fill text-success me-2"></i>No major illnesses or infections</li>
-        </ul>
-      </div>
-
-      <!-- Donor Benefits -->
-      <div class="info-card">
-        <div class="d-flex align-items-center gap-3 mb-3">
-          <div class="info-icon"><i class="bi bi-gift-fill"></i></div>
-          <h6 class="fw-bold mb-0">Donor Rewards</h6>
-        </div>
-        <ul class="list-unstyled small text-muted mb-0">
-          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Free health screening</li>
-          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Refreshments after donation</li>
-          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Donor recognition certificate</li>
-          <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority blood access if needed</li>
-          <li><i class="bi bi-check-circle-fill text-success me-2"></i>Campus health points reward</li>
-        </ul>
-      </div>
-
-      <!-- Quick Links -->
-      <div class="info-card" style="background:linear-gradient(135deg,#ffe8eb,#ffd4d9);">
-        <div class="d-flex align-items-center gap-3 mb-3">
-          <div class="info-icon" style="background:#ffd4d9;color:var(--red);"><i class="bi bi-link-45deg"></i></div>
-          <h6 class="fw-bold mb-0">Quick Links</h6>
-        </div>
-        <div class="d-flex flex-column gap-2">
-          <a href="mailto:sayankumarr02@gmail.com" class="btn btn-sm btn-danger rounded-pill">
-            <i class="bi bi-envelope me-1"></i>Contact Health Center
-          </a>
-        </div>
-      </div>
-
-    </div>
-
   </div>
-</div>
 
-<!-- ══════════ FOOTER ══════════ -->
-<footer>
-  <div class="container">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-      <div class="d-flex align-items-center gap-2">
-        <div style="width:30px;height:30px;background:var(--primary);border-radius:7px;display:flex;align-items:center;justify-content:center;">
-          <i class="bi bi-hospital-fill text-white" style="font-size:.85rem;"></i>
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer>
+    <div class="container">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <div
+            style="width:30px;height:30px;background:var(--primary);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-hospital-fill text-white" style="font-size:.85rem;"></i>
+          </div>
+          <span class="text-white fw-bold">AUdoc</span>
+          <span class="text-muted small">Campus Health Portal</span>
         </div>
-        <span class="text-white fw-bold">AUdoc</span>
-        <span class="text-muted small">Campus Health Portal</span>
+        <small>Block C, Room 101 &nbsp;|&nbsp; sayankumarr02@gmail.com &nbsp;|&nbsp; +91 6900577470</small>
       </div>
-      <small>Block C, Room 101 &nbsp;|&nbsp; sayankumarr02@gmail.com &nbsp;|&nbsp; +91 6900577470</small>
+      <hr class="divider" />
+      <small class="d-block text-center">&copy; 2026 AUdoc – Assam University Silchar Campus Health. All rights
+        reserved.</small>
     </div>
-    <hr class="divider" />
-    <small class="d-block text-center">&copy; 2026 AUdoc – Assam University Silchar Campus Health. All rights reserved.</small>
-  </div>
-</footer>
+  </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Set active tab based on URL parameter
-  document.addEventListener('DOMContentLoaded', function() {
-    const activeTab = new URLSearchParams(window.location.search).get('tab');
-    if (activeTab === 'request') {
-      document.getElementById('request-tab').click();
-    }
-  });
-</script>
-<script>
-  // ── Sliding pill indicator on navbar ─────────────────────────
-  (function () {
-    const nav = document.querySelector('.navbar-nav');
-    if (!nav) return;
-
-    const pill = document.createElement('div');
-    pill.className = 'nav-pill-indicator';
-    pill.style.opacity = '0';
-    nav.appendChild(pill);
-
-    function moveTo(el) {
-      const nr = nav.getBoundingClientRect();
-      const er = el.getBoundingClientRect();
-      pill.style.left    = (er.left   - nr.left) + 'px';
-      pill.style.top     = (er.top    - nr.top)  + 'px';
-      pill.style.width   = er.width  + 'px';
-      pill.style.height  = er.height + 'px';
-      pill.style.opacity = '1';
-    }
-
-    const links = nav.querySelectorAll('.nav-link');
-    const active = nav.querySelector('.nav-link.active');
-    if (active) moveTo(active);
-
-    links.forEach(link => {
-      link.addEventListener('mouseenter', () => moveTo(link));
-    });
-
-    nav.addEventListener('mouseleave', () => {
-      const cur = nav.querySelector('.nav-link.active');
-      if (cur) moveTo(cur); else pill.style.opacity = '0';
-    });
-  })();
-</script>
-
-<!-- ══════════ SCROLL TO TOP ══════════ -->
-<button id="scroll-top" aria-label="Back to top"><i class="bi bi-chevron-up"></i></button>
-
-<script>
-  // ── Scroll-reveal ──────────────────────────────────────────
-  (function () {
-    const els = document.querySelectorAll('.reveal');
-    if (!els.length) return;
-    const seen = new Set();
-    els.forEach(el => {
-      const p = el.parentElement;
-      if (p && !seen.has(p)) {
-        seen.add(p);
-        Array.from(p.querySelectorAll(':scope > .reveal')).forEach((s, i) => {
-          s.style.transitionDelay = (i * 0.1) + 's';
-        });
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Set active tab based on URL parameter
+    document.addEventListener('DOMContentLoaded', function () {
+      const activeTab = new URLSearchParams(window.location.search).get('tab');
+      if (activeTab === 'request') {
+        document.getElementById('request-tab').click();
       }
     });
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
-    }, { threshold: 0.1 });
-    els.forEach(el => io.observe(el));
-  })();
+  </script>
+  <script>
+    // ── Sliding pill indicator on navbar ─────────────────────────
+    (function () {
+      const nav = document.querySelector('.navbar-nav');
+      if (!nav) return;
 
-  // ── Scroll-to-top ──────────────────────────────────────────
-  (function () {
-    const btn = document.getElementById('scroll-top');
-    if (!btn) return;
-    window.addEventListener('scroll', () => btn.classList.toggle('show', window.scrollY > 320));
-    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  })();
+      const pill = document.createElement('div');
+      pill.className = 'nav-pill-indicator';
+      pill.style.opacity = '0';
+      nav.appendChild(pill);
 
-  // ── Form submit loading state ──────────────────────────────
-  (function () {
-    [['form[name="donate_form"]', 'donateSubmitBtn'],
-     ['form[name="request_form"]', 'requestSubmitBtn']].forEach(function ([sel, btnId]) {
-      const form = document.querySelector(sel);
-      const btn  = document.getElementById(btnId);
-      if (form && btn) {
-        form.addEventListener('submit', function () { btn.classList.add('btn-loading'); });
+      function moveTo(el) {
+        const nr = nav.getBoundingClientRect();
+        const er = el.getBoundingClientRect();
+        pill.style.left = (er.left - nr.left) + 'px';
+        pill.style.top = (er.top - nr.top) + 'px';
+        pill.style.width = er.width + 'px';
+        pill.style.height = er.height + 'px';
+        pill.style.opacity = '1';
       }
-    });
-    // Fallback: any form with these buttons
-    document.querySelectorAll('form').forEach(function (form) {
-      form.addEventListener('submit', function () {
-        const btn = form.querySelector('#donateSubmitBtn, #requestSubmitBtn');
-        if (btn) btn.classList.add('btn-loading');
+
+      const links = nav.querySelectorAll('.nav-link');
+      const active = nav.querySelector('.nav-link.active');
+      if (active) moveTo(active);
+
+      links.forEach(link => {
+        link.addEventListener('mouseenter', () => moveTo(link));
       });
-    });
-  })();
-</script>
+
+      nav.addEventListener('mouseleave', () => {
+        const cur = nav.querySelector('.nav-link.active');
+        if (cur) moveTo(cur); else pill.style.opacity = '0';
+      });
+    })();
+  </script>
+
+  <!-- ══════════ SCROLL TO TOP ══════════ -->
+  <button id="scroll-top" aria-label="Back to top"><i class="bi bi-chevron-up"></i></button>
+
+  <script>
+    // ── Scroll-reveal ──────────────────────────────────────────
+    (function () {
+      const els = document.querySelectorAll('.reveal');
+      if (!els.length) return;
+      const seen = new Set();
+      els.forEach(el => {
+        const p = el.parentElement;
+        if (p && !seen.has(p)) {
+          seen.add(p);
+          Array.from(p.querySelectorAll(':scope > .reveal')).forEach((s, i) => {
+            s.style.transitionDelay = (i * 0.1) + 's';
+          });
+        }
+      });
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+      }, { threshold: 0.1 });
+      els.forEach(el => io.observe(el));
+    })();
+
+    // ── Scroll-to-top ──────────────────────────────────────────
+    (function () {
+      const btn = document.getElementById('scroll-top');
+      if (!btn) return;
+      window.addEventListener('scroll', () => btn.classList.toggle('show', window.scrollY > 320));
+      btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    })();
+
+    // ── Form submit loading state ──────────────────────────────
+    (function () {
+      [['form[name="donate_form"]', 'donateSubmitBtn'],
+      ['form[name="request_form"]', 'requestSubmitBtn']].forEach(function ([sel, btnId]) {
+        const form = document.querySelector(sel);
+        const btn = document.getElementById(btnId);
+        if (form && btn) {
+          form.addEventListener('submit', function () { btn.classList.add('btn-loading'); });
+        }
+      });
+      // Fallback: any form with these buttons
+      document.querySelectorAll('form').forEach(function (form) {
+        form.addEventListener('submit', function () {
+          const btn = form.querySelector('#donateSubmitBtn, #requestSubmitBtn');
+          if (btn) btn.classList.add('btn-loading');
+        });
+      });
+    })();
+  </script>
 
   <!-- Schema.org Data -->
   <script type="application/ld+json">
@@ -1132,4 +1335,5 @@
 }
 </script>
 </body>
+
 </html>

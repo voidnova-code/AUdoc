@@ -1120,7 +1120,6 @@ def blood_bank(request):
                 weight=cd["weight"],
                 previous_donation=cd["previous_donation"],
                 health_condition=cd["health_condition"],
-                message=cd["message"],
                 status="APPROVED",
             )
             log_security_event("blood_donation_registered", request,

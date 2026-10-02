@@ -506,10 +506,6 @@ class BloodDonation(models.Model):
         verbose_name="Any medical conditions?",
         help_text="e.g., diabetes, heart disease, etc."
     )
-    message           = models.TextField(
-        blank=True,
-        verbose_name="Additional Message",
-    )
     status            = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
