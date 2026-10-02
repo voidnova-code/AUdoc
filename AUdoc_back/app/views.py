@@ -3645,7 +3645,6 @@ def api_blood_donations(request):
             "weight": donation.weight,
             "previous_donation": donation.previous_donation,
             "health_condition": donation.health_condition,
-            "message": donation.message,
             "status": donation.status,
             "created_at": donation.created_at.isoformat(),
         })
@@ -3699,7 +3698,6 @@ def api_blood_donations(request):
             weight=weight,
             previous_donation=bool(data.get("previous_donation", False)),
             health_condition=sanitize_string(data.get("health_condition", ""), max_length=200),
-            message=sanitize_string(data.get("message", ""), max_length=500),
         )
 
         return JsonResponse({
