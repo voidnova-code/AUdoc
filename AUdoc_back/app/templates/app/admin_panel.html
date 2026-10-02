@@ -3532,28 +3532,118 @@
               <div class="border rounded p-3" style="background-color: #ffffff;">
                 <p class="text-muted small mb-3">Check the box for each day the doctor works, and select their shift for that day.</p>
                 
-                {% for day_name, day_val in "Monday|Monday,Tuesday|Tuesday,Wednesday|Wednesday,Thursday|Thursday,Friday|Friday,Saturday|Saturday,Sunday|Sunday"|split:","|slice:":7" %}
-                <!-- This loop is not actually Django template code because split/slice like this isn't standard, we will manually write the HTML for the 7 days -->
-                {% endfor %}
-                
                 <!-- Manual definition for the 7 days for the Edit Form -->
-                {% for day in "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split %}
                 <div class="row align-items-center mb-2">
                   <div class="col-4">
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input edit-day-toggle" id="edit-day-{{ day|lower }}" name="available_days" value="{{ day }}">
-                      <label class="form-check-label fw-medium" for="edit-day-{{ day|lower }}">{{ day }}</label>
+                      <input type="checkbox" class="form-check-input edit-day-toggle" id="edit-day-monday" name="available_days" value="Monday">
+                      <label class="form-check-label fw-medium" for="edit-day-monday">Monday</label>
                     </div>
                   </div>
                   <div class="col-8">
-                    <select class="form-select form-select-sm edit-shift-select" name="{{ day|lower }}_shift" id="edit-shift-{{ day|lower }}" disabled>
+                    <select class="form-select form-select-sm edit-shift-select" name="monday_shift" id="edit-shift-monday" disabled>
                       <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
                       <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
                       <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
                     </select>
                   </div>
                 </div>
-                {% endfor %}
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input edit-day-toggle" id="edit-day-tuesday" name="available_days" value="Tuesday">
+                      <label class="form-check-label fw-medium" for="edit-day-tuesday">Tuesday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm edit-shift-select" name="tuesday_shift" id="edit-shift-tuesday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input edit-day-toggle" id="edit-day-wednesday" name="available_days" value="Wednesday">
+                      <label class="form-check-label fw-medium" for="edit-day-wednesday">Wednesday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm edit-shift-select" name="wednesday_shift" id="edit-shift-wednesday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input edit-day-toggle" id="edit-day-thursday" name="available_days" value="Thursday">
+                      <label class="form-check-label fw-medium" for="edit-day-thursday">Thursday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm edit-shift-select" name="thursday_shift" id="edit-shift-thursday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input edit-day-toggle" id="edit-day-friday" name="available_days" value="Friday">
+                      <label class="form-check-label fw-medium" for="edit-day-friday">Friday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm edit-shift-select" name="friday_shift" id="edit-shift-friday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input edit-day-toggle" id="edit-day-saturday" name="available_days" value="Saturday">
+                      <label class="form-check-label fw-medium" for="edit-day-saturday">Saturday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm edit-shift-select" name="saturday_shift" id="edit-shift-saturday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input edit-day-toggle" id="edit-day-sunday" name="available_days" value="Sunday">
+                      <label class="form-check-label fw-medium" for="edit-day-sunday">Sunday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm edit-shift-select" name="sunday_shift" id="edit-shift-sunday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -5198,23 +5288,118 @@
               <div class="border rounded p-3" style="background-color: #f9f9f9;">
                 <p class="text-muted small mb-3">Check the box for each day the doctor works, and select their shift for that day.</p>
                 
-                {% for day in "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split %}
+                <!-- Manual definition for the 7 days for the Add Form -->
                 <div class="row align-items-center mb-2">
                   <div class="col-4">
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input add-day-toggle" id="add-day-{{ day|lower }}" name="available_days" value="{{ day }}">
-                      <label class="form-check-label fw-medium" for="add-day-{{ day|lower }}">{{ day }}</label>
+                      <input type="checkbox" class="form-check-input add-day-toggle" id="add-day-monday" name="available_days" value="Monday">
+                      <label class="form-check-label fw-medium" for="add-day-monday">Monday</label>
                     </div>
                   </div>
                   <div class="col-8">
-                    <select class="form-select form-select-sm add-shift-select" name="{{ day|lower }}_shift" id="add-shift-{{ day|lower }}" disabled>
+                    <select class="form-select form-select-sm add-shift-select" name="monday_shift" id="add-shift-monday" disabled>
                       <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
                       <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
                       <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
                     </select>
                   </div>
                 </div>
-                {% endfor %}
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input add-day-toggle" id="add-day-tuesday" name="available_days" value="Tuesday">
+                      <label class="form-check-label fw-medium" for="add-day-tuesday">Tuesday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm add-shift-select" name="tuesday_shift" id="add-shift-tuesday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input add-day-toggle" id="add-day-wednesday" name="available_days" value="Wednesday">
+                      <label class="form-check-label fw-medium" for="add-day-wednesday">Wednesday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm add-shift-select" name="wednesday_shift" id="add-shift-wednesday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input add-day-toggle" id="add-day-thursday" name="available_days" value="Thursday">
+                      <label class="form-check-label fw-medium" for="add-day-thursday">Thursday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm add-shift-select" name="thursday_shift" id="add-shift-thursday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input add-day-toggle" id="add-day-friday" name="available_days" value="Friday">
+                      <label class="form-check-label fw-medium" for="add-day-friday">Friday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm add-shift-select" name="friday_shift" id="add-shift-friday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input add-day-toggle" id="add-day-saturday" name="available_days" value="Saturday">
+                      <label class="form-check-label fw-medium" for="add-day-saturday">Saturday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm add-shift-select" name="saturday_shift" id="add-shift-saturday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input add-day-toggle" id="add-day-sunday" name="available_days" value="Sunday">
+                      <label class="form-check-label fw-medium" for="add-day-sunday">Sunday</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm add-shift-select" name="sunday_shift" id="add-shift-sunday" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="mb-3">
