@@ -633,8 +633,7 @@
                     <div
                       style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#888;">
                       Blood Group</div>
-                    <div class="fw-bold mt-1" style="color:var(--red);font-size:1.1rem;">{{
-                      existing_donation.blood_group }}</div>
+                    <div class="fw-bold mt-1" style="color:var(--red);font-size:1.1rem;">{{ existing_donation.blood_group }}</div>
                   </div>
                 </div>
                 <div class="col-6">
@@ -681,8 +680,7 @@
                   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                     <div>
                       <span class="fw-bold" style="font-size:1rem;color:#0d2a1a;">{{ req.requester_name }}</span>
-                      <span class="ms-2 fw-bold" style="font-size:1.15rem;color:var(--red);">{{ req.blood_group
-                        }}</span>
+                      <span class="ms-2 fw-bold" style="font-size:1.15rem;color:var(--red);">{{ req.blood_group }}</span>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
                       {% if req.urgency == 'URGENT' %}
@@ -709,12 +707,10 @@
                       <i class="bi bi-hospital me-1 text-muted"></i><strong>Hospital:</strong> {{ req.hospital_name }}
                     </div>
                     <div class="col-sm-6">
-                      <i class="bi bi-calendar-event me-1 text-muted"></i><strong>Needed by:</strong> {{
-                      req.required_date|date:"d M Y" }}
+                      <i class="bi bi-calendar-event me-1 text-muted"></i><strong>Needed by:</strong> {{ req.required_date|date:"d M Y" }}
                     </div>
                     <div class="col-sm-6">
-                      <i class="bi bi-droplet-half me-1 text-muted"></i><strong>Units needed:</strong> {{
-                      req.units_required }}
+                      <i class="bi bi-droplet-half me-1 text-muted"></i><strong>Units needed:</strong> {{ req.units_required }}
                     </div>
                     <div class="col-sm-6">
                       <i class="bi bi-telephone me-1 text-muted"></i><strong>Contact:</strong> {{ req.phone }}
@@ -724,8 +720,7 @@
                     </div>
                     {% if req.hospital_contact %}
                     <div class="col-12">
-                      <i class="bi bi-geo-alt me-1 text-muted"></i><strong>Hospital Contact:</strong> {{
-                      req.hospital_contact }}
+                      <i class="bi bi-geo-alt me-1 text-muted"></i><strong>Hospital Contact:</strong> {{ req.hospital_contact }}
                     </div>
                     {% endif %}
                   </div>
@@ -868,8 +863,7 @@
                 <!-- Previous Donation -->
                 <div class="mb-4">
                   <div class="checkbox-wrapper">
-                    <input type="checkbox" name="previous_donation" id="id_previous_donation" {% if
-                      form_donate.previous_donation.value %}checked{% endif %} />
+                    <input type="checkbox" name="previous_donation" id="id_previous_donation" {% if form_donate.previous_donation.value %}checked{% endif %} />
                     <label for="id_previous_donation">I have donated blood before</label>
                   </div>
                 </div>
@@ -894,8 +888,7 @@
                   <div
                     class="checkbox-wrapper{% if form_donate.contact_permission.errors %} border border-danger rounded{% endif %}"
                     style="background:#fff8f8; border: 1.5px solid #f5c6cb; border-radius: 8px; padding: 14px 16px;">
-                    <input type="checkbox" name="contact_permission" id="id_contact_permission" required {% if
-                      form_donate.contact_permission.value %}checked{% endif %} />
+                    <input type="checkbox" name="contact_permission" id="id_contact_permission" required {% if form_donate.contact_permission.value %}checked{% endif %} />
                     <label for="id_contact_permission" style="font-weight:500; cursor:pointer;">
                       I give permission for the admin to contact me via my <strong>phone number</strong> or
                       <strong>email</strong> for blood donation-related purposes.
