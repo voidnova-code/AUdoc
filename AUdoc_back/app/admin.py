@@ -265,7 +265,7 @@ class BloodDonationAdmin(admin.ModelAdmin):
             "fields": ("blood_group", "date_of_birth", "weight", "health_condition", "previous_donation"),
         }),
         ("Donation Details", {
-            "fields": ("message", "status", "created_at"),
+            "fields": ("status", "created_at"),
         }),
     )
 
