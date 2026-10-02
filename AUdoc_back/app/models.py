@@ -280,6 +280,38 @@ class Doctor(models.Model):
         return getattr(self, day_field, None)
 
     @property
+    def today_shift(self):
+        """Return the shift value (e.g., 'MORNING') assigned for today's weekday."""
+        from datetime import datetime
+        day_name = datetime.now().strftime("%A")  # e.g., "Saturday"
+        return self.get_shift_for_day(day_name)
+
+    @property
+    def today_day_name(self):
+        """Return today's weekday name, e.g. 'Saturday'."""
+        from datetime import datetime
+        return datetime.now().strftime("%A")
+
+    @property
+    def today_shift_info(self):
+        """
+        Return a dict with display info for today's shift:
+          {'shift': 'MORNING', 'icon': 'bi-brightness-high', 'label': 'Morning Shift', 'hours': '8:00 AM – 2:00 PM'}
+        or None if not working today.
+        """
+        shift = self.today_shift
+        if not shift:
+            return None
+        info = {
+            'MORNING': {'icon': 'bi-brightness-high', 'label': 'Morning Shift', 'hours': '8:00 AM – 2:00 PM'},
+            'EVENING': {'icon': 'bi-sunset',           'label': 'Evening Shift', 'hours': '2:00 PM – 8:00 PM'},
+            'NIGHT':   {'icon': 'bi-moon-stars',       'label': 'Night Shift',   'hours': '8:00 PM – 8:00 AM'},
+        }
+        entry = info.get(shift, {})
+        entry['shift'] = shift
+        return entry
+
+    @property
     def shift(self):
         """Backward compatibility for a 'primary' shift label if needed."""
         # Find the first assigned shift, or return None

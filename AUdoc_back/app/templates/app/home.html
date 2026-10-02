@@ -1506,15 +1506,30 @@
                 </div>
                 <small
                   style="color:rgba(255,255,255,.7);display:block;text-align:center;margin-bottom:18px;font-size:.76rem;">
-                  {% if doctor.shift == 'MORNING' %}
-                    <i class="bi bi-brightness-high me-1"></i>Morning Shift &bull; 8:00 AM &ndash; 2:00 PM
-                  {% elif doctor.shift == 'EVENING' %}
-                    <i class="bi bi-sunset me-1"></i>Evening Shift &bull; 2:00 PM &ndash; 8:00 PM
-                  {% elif doctor.shift == 'NIGHT' %}
-                    <i class="bi bi-moon-stars me-1"></i>Night Shift &bull; 8:00 PM &ndash; 8:00 AM
-                  {% else %}
-                    <i class="bi bi-clock me-1"></i>{{ doctor.available_time|default:"Hours TBA" }}
-                  {% endif %}
+                  {% with info=doctor.today_shift_info %}
+                    {% if info %}
+                      {% if info.shift == 'MORNING' %}
+                        <span style="background:rgba(255,213,79,.18);border:1px solid rgba(255,213,79,.4);border-radius:20px;padding:3px 10px;display:inline-block;">
+                          <i class="bi bi-brightness-high me-1" style="color:#ffd54f;"></i>
+                          <strong style="color:#ffd54f;">Today:</strong>&nbsp;{{ info.label }} &bull; {{ info.hours }}
+                        </span>
+                      {% elif info.shift == 'EVENING' %}
+                        <span style="background:rgba(255,167,38,.18);border:1px solid rgba(255,167,38,.4);border-radius:20px;padding:3px 10px;display:inline-block;">
+                          <i class="bi bi-sunset me-1" style="color:#ffa726;"></i>
+                          <strong style="color:#ffa726;">Today:</strong>&nbsp;{{ info.label }} &bull; {{ info.hours }}
+                        </span>
+                      {% elif info.shift == 'NIGHT' %}
+                        <span style="background:rgba(144,164,254,.18);border:1px solid rgba(144,164,254,.4);border-radius:20px;padding:3px 10px;display:inline-block;">
+                          <i class="bi bi-moon-stars me-1" style="color:#9fa8da;"></i>
+                          <strong style="color:#9fa8da;">Tonight:</strong>&nbsp;{{ info.label }} &bull; {{ info.hours }}
+                        </span>
+                      {% endif %}
+                    {% else %}
+                      <span style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:3px 10px;display:inline-block;color:rgba(255,255,255,.5);">
+                        <i class="bi bi-moon me-1"></i>Not available today ({{ doctor.today_day_name }})
+                      </span>
+                    {% endif %}
+                  {% endwith %}
                 </small>
 
                 <a href="{% url 'appointment' %}" class="btn btn-sm w-100 rounded-pill"
