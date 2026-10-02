@@ -215,25 +215,33 @@ class Doctor(models.Model):
         choices=MEDICAL_DEPT_CHOICES,
         verbose_name="Specialized In",
     )
-    available_days  = models.CharField(
-        max_length=200,
-        verbose_name="Available Days",
-        help_text="Comma-separated days, e.g. 'Monday, Tuesday, Wednesday'",
+    monday_shift = models.CharField(
+        max_length=10, choices=SHIFT_CHOICES, blank=True, null=True, verbose_name="Monday Shift"
     )
-    # Shift replaces the old free-text available_time / manual time pickers
-    shift = models.CharField(
-        max_length=10,
-        choices=SHIFT_CHOICES,
-        default="MORNING",
-        verbose_name="Shift",
-        help_text="Select the doctor's working shift.",
+    tuesday_shift = models.CharField(
+        max_length=10, choices=SHIFT_CHOICES, blank=True, null=True, verbose_name="Tuesday Shift"
     )
-    # Keep these for backward compat — auto-filled from shift in save()
+    wednesday_shift = models.CharField(
+        max_length=10, choices=SHIFT_CHOICES, blank=True, null=True, verbose_name="Wednesday Shift"
+    )
+    thursday_shift = models.CharField(
+        max_length=10, choices=SHIFT_CHOICES, blank=True, null=True, verbose_name="Thursday Shift"
+    )
+    friday_shift = models.CharField(
+        max_length=10, choices=SHIFT_CHOICES, blank=True, null=True, verbose_name="Friday Shift"
+    )
+    saturday_shift = models.CharField(
+        max_length=10, choices=SHIFT_CHOICES, blank=True, null=True, verbose_name="Saturday Shift"
+    )
+    sunday_shift = models.CharField(
+        max_length=10, choices=SHIFT_CHOICES, blank=True, null=True, verbose_name="Sunday Shift"
+    )
+    # Keep these for backward compat — auto-filled from shifts in save()
     available_time  = models.CharField(
         max_length=100,
         verbose_name="Available Time",
         blank=True,
-        help_text="Auto-filled from shift — do not edit manually.",
+        help_text="Auto-filled from shifts — do not edit manually.",
     )
     working_hours_start = models.TimeField(null=True, blank=True, verbose_name="Working Hours Start")
     working_hours_end   = models.TimeField(null=True, blank=True, verbose_name="Working Hours End")
@@ -252,45 +260,94 @@ class Doctor(models.Model):
 
     @property
     def available_days_list(self):
-        if self.available_days:
-            return [d.strip() for d in self.available_days.split(',') if d.strip()]
-        return []
+        days = []
+        if self.monday_shift: days.append("Monday")
+        if self.tuesday_shift: days.append("Tuesday")
+        if self.wednesday_shift: days.append("Wednesday")
+        if self.thursday_shift: days.append("Thursday")
+        if self.friday_shift: days.append("Friday")
+        if self.saturday_shift: days.append("Saturday")
+        if self.sunday_shift: days.append("Sunday")
+        return days
+
+    @property
+    def available_days(self):
+        return ", ".join(self.available_days_list)
+        
+    def get_shift_for_day(self, day_name):
+        """Return the shift assigned to a specific day name (e.g., 'Monday')."""
+        day_field = f"{day_name.lower()}_shift"
+        return getattr(self, day_field, None)
+
+    @property
+    def shift(self):
+        """Backward compatibility for a 'primary' shift label if needed."""
+        # Find the first assigned shift, or return None
+        for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
+            s = getattr(self, f"{day}_shift")
+            if s:
+                return s
+        return None
 
     @property
     def shift_label(self):
-        """Return human-readable shift label, e.g. 'Morning Shift'."""
+        """Return human-readable shift label, e.g. 'Varies by day' or 'Morning Shift'."""
+        shifts = set([s for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] 
+                      if (s := getattr(self, f"{day}_shift"))])
+        if not shifts:
+            return "No Shifts Assigned"
+        if len(shifts) > 1:
+            return "Multiple Shifts (Varies by day)"
+        
+        # Only one distinct shift type across all days
+        primary_shift = shifts.pop()
         labels = {"MORNING": "Morning Shift", "EVENING": "Evening Shift", "NIGHT": "Night Shift"}
-        return labels.get(self.shift, self.shift)
+        return labels.get(primary_shift, primary_shift)
 
     @property
     def shift_hours(self):
-        """Return formatted hours string for the shift, e.g. '8:00 AM – 2:00 PM'."""
+        """Return formatted hours string for the shift."""
+        shifts = set([s for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] 
+                      if (s := getattr(self, f"{day}_shift"))])
+        if not shifts:
+            return ""
+        if len(shifts) > 1:
+            return "Check schedule for details"
+            
+        primary_shift = shifts.pop()
         hours = {
             "MORNING": "8:00 AM – 2:00 PM",
             "EVENING": "2:00 PM – 8:00 PM",
             "NIGHT":   "8:00 PM – 8:00 AM",
         }
-        return hours.get(self.shift, "")
+        return hours.get(primary_shift, "")
 
     @property
     def shift_icon(self):
         """Emoji icon for the shift."""
+        shifts = set([s for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] 
+                      if (s := getattr(self, f"{day}_shift"))])
+        if len(shifts) != 1:
+            return "📅"
+            
+        primary_shift = shifts.pop()
         icons = {"MORNING": "☀️", "EVENING": "🌤️", "NIGHT": "🌙"}
-        return icons.get(self.shift, "🕐")
+        return icons.get(primary_shift, "📅")
 
     def _sync_shift_fields(self):
-        """Auto-fill legacy time fields and available_time from selected shift."""
+        """Auto-fill legacy time fields and available_time from selected shifts."""
         from datetime import time as _time
-        info = SHIFT_HOURS.get(self.shift)
-        if info:
-            self.working_hours_start = _time(*info["start"])
-            self.working_hours_end   = _time(*info["end"])
-        labels = {
-            "MORNING": "8:00 AM – 2:00 PM",
-            "EVENING": "2:00 PM – 8:00 PM",
-            "NIGHT":   "8:00 PM – 8:00 AM",
-        }
-        self.available_time = labels.get(self.shift, "")
+        primary_shift = self.shift
+        if primary_shift:
+            info = SHIFT_HOURS.get(primary_shift)
+            if info:
+                self.working_hours_start = _time(*info["start"])
+                self.working_hours_end   = _time(*info["end"])
+        
+        if self.shift_hours == "Check schedule for details":
+            self.available_time = "Multiple Shifts"
+        else:
+            self.available_time = self.shift_hours
 
     def save(self, *args, **kwargs):
         # Auto-generate doctor ID

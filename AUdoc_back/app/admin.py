@@ -169,13 +169,13 @@ class StudentProfileAdmin(admin.ModelAdmin):
 class DoctorAdmin(admin.ModelAdmin):
     list_display = (
         "doctor_id", "name", "email", "phone",
-        "specialized_in", "shift", "is_available",
+        "specialized_in", "shift_label_display", "is_available",
     )
-    list_filter  = ("specialized_in", "shift", "is_available")
+    list_filter  = ("specialized_in", "is_available")
     search_fields = ("doctor_id", "name", "email", "phone")
     ordering     = ("name",)
-    list_editable = ("is_available", "shift")
-    readonly_fields = ("doctor_id", "available_time", "working_hours_start", "working_hours_end")
+    list_editable = ("is_available",)
+    readonly_fields = ("doctor_id", "available_time", "working_hours_start", "working_hours_end", "shift_label_display")
     fieldsets = (
         ("Doctor Information", {
             "fields": ("doctor_id", "name", "email", "phone", "specialized_in"),
@@ -185,20 +185,24 @@ class DoctorAdmin(admin.ModelAdmin):
             "classes": ("collapse",),
             "description": "Upload a doctor profile photo (optional)",
         }),
-        ("Availability", {
-            "fields": ("shift", "available_days", "is_available"),
-            "description": (
-                "Select the fixed shift. Available days should be comma-separated "
-                "(e.g., 'Monday, Tuesday, Wednesday'). "
-                "The 'Available Time' field below is auto-filled from the shift."
+        ("Day-by-Day Schedule", {
+            "fields": (
+                "monday_shift", "tuesday_shift", "wednesday_shift",
+                "thursday_shift", "friday_shift", "saturday_shift", "sunday_shift",
+                "is_available"
             ),
+            "description": "Select the shift for each day. Leave blank if not working that day.",
         }),
         ("Auto-computed (read-only)", {
             "fields": ("available_time", "working_hours_start", "working_hours_end"),
             "classes": ("collapse",),
-            "description": "These fields are automatically derived from the Shift setting — do not edit manually.",
+            "description": "These fields are automatically derived from the schedule — do not edit manually.",
         }),
     )
+
+    def shift_label_display(self, obj):
+        return obj.shift_label
+    shift_label_display.short_description = 'Shift'
 
 
 @admin.register(Appointment)

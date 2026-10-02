@@ -2231,7 +2231,7 @@
                         <i class="bi bi-eye"></i>
                       </button>
                       <button class="btn btn-sm btn-outline-secondary"
-                        onclick="editDoctor({{ doctor.id }}, '{{ doctor.name }}', '{{ doctor.email }}', '{{ doctor.phone }}', '{{ doctor.specialized_in }}', '{{ doctor.available_days }}', '{{ doctor.shift }}', {{ doctor.is_available|lower }})">
+                        onclick="editDoctor({{ doctor.id }}, '{{ doctor.name|escapejs }}', '{{ doctor.email|escapejs }}', '{{ doctor.phone|escapejs }}', '{{ doctor.specialized_in|escapejs }}', '{{ doctor.available_days|escapejs }}', '{&quot;Monday&quot;:&quot;{{doctor.monday_shift}}&quot;,&quot;Tuesday&quot;:&quot;{{doctor.tuesday_shift}}&quot;,&quot;Wednesday&quot;:&quot;{{doctor.wednesday_shift}}&quot;,&quot;Thursday&quot;:&quot;{{doctor.thursday_shift}}&quot;,&quot;Friday&quot;:&quot;{{doctor.friday_shift}}&quot;,&quot;Saturday&quot;:&quot;{{doctor.saturday_shift}}&quot;,&quot;Sunday&quot;:&quot;{{doctor.sunday_shift}}&quot;}', {{ doctor.is_available|lower }})">
                         <i class="bi bi-pencil"></i>
                       </button>
                       <button class="btn btn-sm btn-outline-danger"
@@ -3527,19 +3527,33 @@
                 placeholder="e.g., Cardiology, Orthopedics">
             </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label"><strong>Available Days</strong></label>
-                <input type="text" id="doctorDays" name="available_days" class="form-control"
-                  placeholder="e.g., Monday, Tuesday, Wednesday">
-              </div>
-              <div class="col-md-6 mb-3">
-                <label class="form-label"><strong>Shift</strong></label>
-                <select id="doctorShift" name="shift" class="form-control" required>
-                  <option value="MORNING">&#9728;&#65039; Morning Shift &mdash; 8:00 AM to 2:00 PM</option>
-                  <option value="EVENING">&#127764;&#65039; Evening Shift &mdash; 2:00 PM to 8:00 PM</option>
-                  <option value="NIGHT">&#127769; Night Shift &mdash; 8:00 PM to 8:00 AM</option>
-                </select>
+            <div class="mb-3">
+              <label class="form-label"><strong>Available Days &amp; Shifts</strong></label>
+              <div class="border rounded p-3" style="background-color: #ffffff;">
+                <p class="text-muted small mb-3">Check the box for each day the doctor works, and select their shift for that day.</p>
+                
+                {% for day_name, day_val in "Monday|Monday,Tuesday|Tuesday,Wednesday|Wednesday,Thursday|Thursday,Friday|Friday,Saturday|Saturday,Sunday|Sunday"|split:","|slice:":7" %}
+                <!-- This loop is not actually Django template code because split/slice like this isn't standard, we will manually write the HTML for the 7 days -->
+                {% endfor %}
+                
+                <!-- Manual definition for the 7 days for the Edit Form -->
+                {% for day in "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split %}
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input edit-day-toggle" id="edit-day-{{ day|lower }}" name="available_days" value="{{ day }}">
+                      <label class="form-check-label fw-medium" for="edit-day-{{ day|lower }}">{{ day }}</label>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm edit-shift-select" name="{{ day|lower }}_shift" id="edit-shift-{{ day|lower }}" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
+                  </div>
+                </div>
+                {% endfor %}
               </div>
             </div>
 
@@ -3630,19 +3644,59 @@
       new bootstrap.Modal(document.getElementById('editStaffModal')).show();
     }
 
+    // Shift Toggle Logic for Add/Edit Modals
+    document.querySelectorAll('.edit-day-toggle').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const select = document.getElementById('edit-shift-' + this.value.toLowerCase());
+        if (select) {
+          select.disabled = !this.checked;
+        }
+      });
+    });
+    document.querySelectorAll('.add-day-toggle').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const select = document.getElementById('add-shift-' + this.value.toLowerCase());
+        if (select) {
+          select.disabled = !this.checked;
+        }
+      });
+    });
+
     // Edit Doctor Modal Function
-    function editDoctor(id, name, email, phone, spec, days, shift, is_available) {
+    function editDoctor(id, name, email, phone, spec, days, shifts_json, is_available) {
       document.getElementById('doctorPk').value = id;
       document.getElementById('doctorName').value = name;
       document.getElementById('doctorEmail').value = email;
       document.getElementById('doctorPhone').value = phone;
       document.getElementById('doctorSpec').value = spec;
-      document.getElementById('doctorDays').value = days;
       document.getElementById('doctorAvailable').checked = is_available;
 
-      // Set the shift dropdown
-      const shiftSel = document.getElementById('doctorShift');
-      if (shiftSel) shiftSel.value = shift || 'MORNING';
+      // Reset all checkboxes and selects
+      document.querySelectorAll('.edit-day-toggle').forEach(cb => { cb.checked = false; });
+      document.querySelectorAll('.edit-shift-select').forEach(sel => { sel.disabled = true; sel.value = "MORNING"; });
+
+      // Apply saved shifts based on JSON passed from template
+      try {
+        // shifts_json is expected to be a JSON string like '{"Monday": "MORNING", "Tuesday": "EVENING"}'
+        const shifts = JSON.parse(shifts_json.replace(/&quot;/g, '"'));
+        const active_days = days.split(',').map(d => d.trim());
+        
+        active_days.forEach(day => {
+          if (!day) return;
+          const dayLower = day.toLowerCase();
+          const checkbox = document.getElementById('edit-day-' + dayLower);
+          const select = document.getElementById('edit-shift-' + dayLower);
+          
+          if (checkbox && select) {
+            checkbox.checked = true;
+            select.disabled = false;
+            // Get the shift for this day, or default to MORNING
+            select.value = shifts[day] || 'MORNING';
+          }
+        });
+      } catch (e) {
+        console.error("Failed to parse shifts JSON:", e);
+      }
 
       // Show the modal
       new bootstrap.Modal(document.getElementById('editDoctorModal')).show();
@@ -5140,58 +5194,28 @@
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label">Available Days *</label>
-              <div class="border rounded p-2" style="background-color: #f9f9f9;">
-                <div class="row">
-                  <div class="col-md-6">
+              <label class="form-label"><strong>Available Days &amp; Shifts *</strong></label>
+              <div class="border rounded p-3" style="background-color: #f9f9f9;">
+                <p class="text-muted small mb-3">Check the box for each day the doctor works, and select their shift for that day.</p>
+                
+                {% for day in "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split %}
+                <div class="row align-items-center mb-2">
+                  <div class="col-4">
                     <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-monday" name="available_days"
-                        value="Monday">
-                      <label class="form-check-label" for="day-monday">Monday</label>
-                    </div>
-                    <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-tuesday" name="available_days"
-                        value="Tuesday">
-                      <label class="form-check-label" for="day-tuesday">Tuesday</label>
-                    </div>
-                    <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-wednesday" name="available_days"
-                        value="Wednesday">
-                      <label class="form-check-label" for="day-wednesday">Wednesday</label>
-                    </div>
-                    <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-thursday" name="available_days"
-                        value="Thursday">
-                      <label class="form-check-label" for="day-thursday">Thursday</label>
+                      <input type="checkbox" class="form-check-input add-day-toggle" id="add-day-{{ day|lower }}" name="available_days" value="{{ day }}">
+                      <label class="form-check-label fw-medium" for="add-day-{{ day|lower }}">{{ day }}</label>
                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-friday" name="available_days"
-                        value="Friday">
-                      <label class="form-check-label" for="day-friday">Friday</label>
-                    </div>
-                    <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-saturday" name="available_days"
-                        value="Saturday">
-                      <label class="form-check-label" for="day-saturday">Saturday</label>
-                    </div>
-                    <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="day-sunday" name="available_days"
-                        value="Sunday">
-                      <label class="form-check-label" for="day-sunday">Sunday</label>
-                    </div>
+                  <div class="col-8">
+                    <select class="form-select form-select-sm add-shift-select" name="{{ day|lower }}_shift" id="add-shift-{{ day|lower }}" disabled>
+                      <option value="MORNING">&#9728;&#65039; Morning Shift (8 AM &ndash; 2 PM)</option>
+                      <option value="EVENING">&#127764;&#65039; Evening Shift (2 PM &ndash; 8 PM)</option>
+                      <option value="NIGHT">&#127769; Night Shift (8 PM &ndash; 8 AM)</option>
+                    </select>
                   </div>
                 </div>
+                {% endfor %}
               </div>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Shift *</label>
-              <select class="form-control" name="shift" id="addDoctorShift" required>
-                <option value="MORNING">&#9728;&#65039; Morning Shift (8:00 AM &ndash; 2:00 PM)</option>
-                <option value="EVENING">&#127764;&#65039; Evening Shift (2:00 PM &ndash; 8:00 PM)</option>
-                <option value="NIGHT">&#127769; Night Shift (8:00 PM &ndash; 8:00 AM)</option>
-              </select>
             </div>
             <div class="mb-3">
               <label class="form-label">Profile Photo (Optional)</label>

@@ -54,10 +54,9 @@ def is_doctor_available_on_date(doctor_id: int, appointment_date) -> bool:
         return False
 
     day_name = appointment_date.strftime("%A")
-    if doctor.available_days:
-        available_days = [d.strip() for d in doctor.available_days.split(",")]
-        if day_name not in available_days:
-            return False
+    # If the doctor has a shift assigned on this day, they are available.
+    if not doctor.get_shift_for_day(day_name):
+        return False
 
     return True
 
@@ -77,7 +76,10 @@ def get_available_time_slots(doctor_id: int, appointment_date) -> list:
     if not is_doctor_available_on_date(doctor_id, appointment_date):
         return []
 
-    shift = getattr(doctor, "shift", "MORNING")
+    day_name = appointment_date.strftime("%A")
+    shift = doctor.get_shift_for_day(day_name)
+    if not shift:
+        return []
     available_slots = []
 
     for slot_value, slot_display in TIME_SLOT_CHOICES:

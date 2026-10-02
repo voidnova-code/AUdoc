@@ -2373,9 +2373,13 @@ def admin_doctor_save(request):
     email          = request.POST.get('email', '').strip()
     phone          = request.POST.get('phone', '').strip()
     specialized_in = request.POST.get('specialized_in', '').strip()
-    available_days = request.POST.get('available_days', '').strip()
-    shift          = request.POST.get('shift', 'MORNING').strip()
     is_available   = request.POST.get('is_available') == 'on'
+
+    # Get selected days (from checkboxes)
+    selected_days  = request.POST.getlist('available_days')
+    # If using string fallback from a comma-separated input (just in case)
+    if not selected_days and request.POST.get('available_days'):
+        selected_days = [d.strip() for d in request.POST.get('available_days', '').split(',') if d.strip()]
 
     if not name:
         messages.error(request, "Doctor name is required.")
@@ -2385,9 +2389,18 @@ def admin_doctor_save(request):
         doc = get_object_or_404(Doctor, pk=pk)
         doc.name = name; doc.email = email; doc.phone = phone
         doc.specialized_in = specialized_in
-        doc.available_days = available_days
-        doc.shift          = shift
         doc.is_available   = is_available
+        
+        # Reset all shifts first
+        for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
+            setattr(doc, f"{day}_shift", None)
+            
+        # Assign shifts for selected days
+        for day in selected_days:
+            day_lower = day.lower()
+            shift_val = request.POST.get(f"{day_lower}_shift", "MORNING").strip()
+            setattr(doc, f"{day_lower}_shift", shift_val)
+
         photo = request.FILES.get('photo')
         if photo:
             try:
@@ -2419,14 +2432,17 @@ def admin_doctor_save(request):
                 messages.error(request, str(e))
                 return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
 
-        Doctor.objects.create(
+        doc = Doctor(
             name=name, email=email, phone=phone,
             specialized_in=specialized_in,
-            available_days=available_days,
-            shift=shift,
             is_available=is_available,
             photo=photo_url,
         )
+        for day in selected_days:
+            day_lower = day.lower()
+            shift_val = request.POST.get(f"{day_lower}_shift", "MORNING").strip()
+            setattr(doc, f"{day_lower}_shift", shift_val)
+        doc.save()
         messages.success(request, f"Doctor '{name}' added.")
 
     return redirect(f"{reverse('admin_dashboard')}?tab=doctors")
@@ -4058,9 +4074,8 @@ def add_doctor(request):
         email = sanitize_string(request.POST.get('email', ''), max_length=254)
         phone = sanitize_string(request.POST.get('phone', ''), max_length=20)
         specialized_in = sanitize_string(request.POST.get('specialized_in', ''), max_length=20)
-        shift = sanitize_string(request.POST.get('shift', 'MORNING'), max_length=10)
 
-        if not all([name, email, phone, specialized_in, shift]):
+        if not all([name, email, phone, specialized_in]):
             return JsonResponse({'success': False, 'message': 'All fields are required'}, status=400)
 
         # Get selected days from checkboxes
@@ -4068,23 +4083,27 @@ def add_doctor(request):
         if not days:
             return JsonResponse({'success': False, 'message': 'Please select at least one available day'}, status=400)
 
-        available_days = ', '.join(days)
-
         if Doctor.objects.filter(email=email).exists():
             return JsonResponse({'success': False, 'message': 'Doctor with this email already exists'}, status=400)
 
         # is_available is True if checkbox is present in POST, False otherwise
         is_available = 'is_available' in request.POST
 
-        doctor = Doctor.objects.create(
+        doctor = Doctor(
             name=name,
             email=email,
             phone=phone,
             specialized_in=specialized_in,
-            available_days=available_days,
-            shift=shift,
             is_available=is_available,
         )
+        
+        # Set day-specific shifts
+        for day in days:
+            day_lower = day.lower()
+            shift_val = sanitize_string(request.POST.get(f"{day_lower}_shift", 'MORNING'), max_length=10)
+            setattr(doctor, f"{day_lower}_shift", shift_val)
+            
+        doctor.save()
 
         # Handle photo upload if provided
         if 'photo' in request.FILES:
