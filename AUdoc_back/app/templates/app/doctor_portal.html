@@ -764,7 +764,7 @@
       </div>
 
       <!-- Prescription image panels (one per tab, only active shown) -->
-      <div id="rxPanels" style="display:none; flex:1; overflow-y:auto; background:#f0f4f1; padding:16px;">
+      <div id="rxPanels" style="display:none; flex:1 1 auto; min-height:0; overflow-y:auto; background:#f0f4f1; padding:16px;">
         <!-- panels injected by JS -->
       </div>
 
@@ -828,10 +828,13 @@
         if (rxTabs.size === 0) {
           rxTabBar.style.display  = 'none';
           rxPanels.style.display  = 'none';
+          summaryBody.style.display = '';    // restore placeholder
           return;
         }
         rxTabBar.style.display = 'flex';
-        rxPanels.style.display = 'block';
+        rxPanels.style.display = 'flex';
+        rxPanels.style.flexDirection = 'column';
+        summaryBody.style.display = 'none';   // hide placeholder while tabs are open
 
         // Rebuild tab bar
         rxTabBar.innerHTML = '';
@@ -883,11 +886,12 @@
         rxTabs.forEach(function(info, id) {
           if (id !== rxActiveId) return;
           var panel = document.createElement('div');
-          panel.style.cssText = 'position:relative; background:#fff; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.08); overflow:hidden;';
+          // flex column, fills rxPanels; overflow hidden so rounded corners clip cleanly
+          panel.style.cssText = 'display:flex; flex-direction:column; flex:1 1 auto; min-height:0; background:#fff; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.08); overflow:hidden;';
 
-          // toolbar row
+          // toolbar row (fixed height)
           var toolbar = document.createElement('div');
-          toolbar.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:8px 14px; background:#f8fbf9; border-bottom:1px solid #e0ede5;';
+          toolbar.style.cssText = 'flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:8px 14px; background:#f8fbf9; border-bottom:1px solid #e0ede5;';
           toolbar.innerHTML = [
             '<span style="font-size:.75rem;color:#4a7c59;font-weight:600;">',
             '<i class="bi bi-file-earmark-medical me-1"></i>' + info.label,
@@ -897,9 +901,9 @@
           ].join('');
           panel.appendChild(toolbar);
 
-          // spinner + image wrapper
+          // scrollable image wrapper — fills remaining space
           var imgWrap = document.createElement('div');
-          imgWrap.style.cssText = 'position:relative; min-height:100px;';
+          imgWrap.style.cssText = 'flex:1 1 auto; min-height:0; overflow-y:auto; position:relative;';
 
           var spinner = document.createElement('div');
           spinner.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:2;';
@@ -908,7 +912,7 @@
           var img = document.createElement('img');
           img.src = info.url;
           img.alt = 'Prescription';
-          // Fit image fully: max-width 100%, height auto so nothing is cut off
+          // width:100% so it fills the panel; height:auto so full doc is visible
           img.style.cssText = 'width:100%; height:auto; display:block; opacity:0; transition:opacity .25s;';
           img.addEventListener('load', function() {
             img.style.opacity = '1';
