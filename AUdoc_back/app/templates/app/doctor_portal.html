@@ -912,8 +912,8 @@
           var img = document.createElement('img');
           img.src = info.url;
           img.alt = 'Prescription';
-          // width:100% so it fills the panel; height:auto so full doc is visible
-          img.style.cssText = 'width:100%; height:auto; display:block; opacity:0; transition:opacity .25s;';
+          // Scale to fit panel — no scroll needed
+          img.style.cssText = 'width:100%; height:100%; object-fit:contain; object-position:top; display:block; opacity:0; transition:opacity .25s;';
           img.addEventListener('load', function() {
             img.style.opacity = '1';
             spinner.style.display = 'none';
