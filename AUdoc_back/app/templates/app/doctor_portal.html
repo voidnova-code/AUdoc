@@ -748,6 +748,35 @@
         <h2><i class="bi bi-file-earmark-text"></i> AI Summary <span class="ai-badge">NVIDIA NIM</span></h2>
         <span id="summaryMeta"></span>
       </div>
+
+      <!-- Prescription image preview (shown on single-card select) -->
+      <div id="prescriptionPreview" style="display:none; padding:16px 20px 0; border-bottom:1px solid #e8f0eb;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <span style="font-size:.78rem; font-weight:600; color:#4a7c59; text-transform:uppercase; letter-spacing:.8px;">
+            <i class="bi bi-file-image me-1"></i>Prescription Preview
+          </span>
+          <div style="display:flex;gap:8px;">
+            <a id="prescriptionDownload" href="#" download style="font-size:.75rem; color:#4a7c59; text-decoration:none;">
+              <i class="bi bi-download me-1"></i>Download
+            </a>
+            <button id="prescriptionClose" style="background:none;border:none;font-size:.8rem;color:#888;cursor:pointer;padding:0 4px;">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+        </div>
+        <div style="position:relative; background:#f5f5f5; border-radius:10px; overflow:hidden; min-height:120px;">
+          <div id="prescriptionSpinner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:2;">
+            <div class="spinner"></div>
+          </div>
+          <img id="prescriptionImg"
+               src=""
+               alt="Prescription"
+               style="width:100%;border-radius:10px;display:block;opacity:0;transition:opacity .25s ease;"
+               onload="this.style.opacity='1'; document.getElementById('prescriptionSpinner').style.display='none';"
+               onerror="document.getElementById('prescriptionSpinner').innerHTML='<span style=color:#c00;font-size:.8rem>Failed to load</span>';">
+        </div>
+      </div>
+
       <div class="summary-body" id="summaryBody">
         <div class="state-block">
           <i class="bi bi-cursor"></i>
@@ -779,7 +808,7 @@
 
       cards.forEach(function (card) {
         card.addEventListener('click', function () {
-          const id = card.dataset.id;
+          var id = card.dataset.id;
           if (selected.has(id)) {
             selected.delete(id);
             card.classList.remove('selected');
@@ -788,7 +817,37 @@
             card.classList.add('selected');
           }
           updateSelectionUI();
+          updatePrescriptionPreview();
         });
+      });
+
+      // ── Prescription preview ──────────────────────────────────────────
+      var prescriptionPreview  = document.getElementById('prescriptionPreview');
+      var prescriptionImg      = document.getElementById('prescriptionImg');
+      var prescriptionDownload = document.getElementById('prescriptionDownload');
+      var prescriptionSpinner  = document.getElementById('prescriptionSpinner');
+
+      function updatePrescriptionPreview() {
+        if (selected.size === 1) {
+          var id = Array.from(selected)[0];
+          var url = '/doctor/prescription/' + id + '/';
+          prescriptionPreview.style.display = 'block';
+          // Reset state for new load
+          prescriptionImg.style.opacity = '0';
+          prescriptionSpinner.style.display = 'flex';
+          prescriptionSpinner.innerHTML = '<div class="spinner"></div>';
+          prescriptionImg.src = url;
+          prescriptionDownload.href = url;
+          prescriptionDownload.setAttribute('download', 'prescription-' + id + '.png');
+        } else {
+          prescriptionPreview.style.display = 'none';
+          prescriptionImg.src = '';
+        }
+      }
+
+      document.getElementById('prescriptionClose').addEventListener('click', function () {
+        prescriptionPreview.style.display = 'none';
+        prescriptionImg.src = '';
       });
 
       function getCSRFToken() {

@@ -4883,3 +4883,51 @@ def doctor_summarize_history(request):
         "summary": reply,
         "record_count": records.count(),
     })
+
+
+# ── Prescription image endpoint ──────────────────────────────────────────────
+@login_required
+def get_prescription_image(request, record_id: int):
+    """
+    Generate and stream a prescription PNG for a single MedicalHistory record.
+
+    Speed strategy
+    --------------
+    * Delegates to prescription_renderer.render_prescription() which uses
+      Pillow with a module-level font cache (fonts loaded once per process)
+      and compress_level=1 (fastest PNG encode).
+    * No disk I/O — everything in memory.
+    * Cache-Control: max-age=3600 so browsers don't re-fetch on repeated views.
+    """
+    from .models import MedicalHistory
+    from .prescription_renderer import render_prescription
+    from django.http import HttpResponse
+
+    # Only doctors / staff / admins may view prescription images
+    user = request.user
+    is_allowed = (
+        user.is_staff
+        or user.is_superuser
+        or getattr(user, "staffprofile", None) is not None
+    )
+    if not is_allowed:
+        return HttpResponse(status=403)
+
+    try:
+        record = (
+            MedicalHistory.objects
+            .prefetch_related("prescribedmedicine_set__medicine")
+            .get(pk=record_id)
+        )
+    except MedicalHistory.DoesNotExist:
+        return HttpResponse(status=404)
+
+    png_bytes = render_prescription(record)
+
+    response = HttpResponse(png_bytes, content_type="image/png")
+    response["Cache-Control"] = "private, max-age=3600"
+    response["Content-Disposition"] = (
+        f'inline; filename="prescription-{record_id}.png"'
+    )
+    return response
+

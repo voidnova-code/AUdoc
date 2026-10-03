@@ -21,6 +21,8 @@ urlpatterns = [
     path("terms-and-conditions/", views.terms_and_conditions, name="terms_and_conditions"),
     path("doctor/", views.doctor_portal, name="doctor_portal"),
     path("doctor/summarize/", views.doctor_summarize_history, name="doctor_summarize_history"),
+    path("doctor/prescription/<int:record_id>/", views.get_prescription_image, name="get_prescription_image"),
+
 
     # ── post-login redirect ──────────────────────────────────────
     path("post-login/", views.post_login_redirect, name="post_login"),
