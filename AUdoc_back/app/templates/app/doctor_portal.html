@@ -697,7 +697,7 @@
         {% if records %}
         <div class="records-grid" id="recordsGrid">
           {% for record in records %}
-          <div class="record-card" data-id="{{ record.id }}">
+          <div class="record-card" data-id="{{ record.id }}" data-student="{{ record.student_id|default:'N/A' }}" data-illness="{{ record.illness|truncatechars:22 }}">
             <span class="select-badge"><i class="bi bi-check-lg"></i></span>
             <div class="top-row">
               <span class="student-id">{{ record.student_id|default:"N/A" }}</span>
@@ -749,39 +749,29 @@
         <span id="summaryMeta"></span>
       </div>
 
-      <!-- Prescription image preview (shown on single-card select) -->
-      <div id="prescriptionPreview" style="display:none; padding:16px 20px 0; border-bottom:1px solid #e8f0eb;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-          <span style="font-size:.78rem; font-weight:600; color:#4a7c59; text-transform:uppercase; letter-spacing:.8px;">
-            <i class="bi bi-file-image me-1"></i>Prescription Preview
-          </span>
-          <div style="display:flex;gap:8px;">
-            <a id="prescriptionDownload" href="#" download style="font-size:.75rem; color:#4a7c59; text-decoration:none;">
-              <i class="bi bi-download me-1"></i>Download
-            </a>
-            <button id="prescriptionClose" style="background:none;border:none;font-size:.8rem;color:#888;cursor:pointer;padding:0 4px;">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-        </div>
-        <div style="position:relative; background:#f5f5f5; border-radius:10px; overflow:hidden; min-height:120px;">
-          <div id="prescriptionSpinner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:2;">
-            <div class="spinner"></div>
-          </div>
-          <img id="prescriptionImg"
-               src=""
-               alt="Prescription"
-               style="width:100%;border-radius:10px;display:block;opacity:0;transition:opacity .25s ease;"
-               onload="this.style.opacity='1'; document.getElementById('prescriptionSpinner').style.display='none';"
-               onerror="document.getElementById('prescriptionSpinner').innerHTML='<span style=color:#c00;font-size:.8rem>Failed to load</span>';">
-        </div>
+      <!-- VS Code-style prescription tab bar -->
+      <div id="rxTabBar" style="
+        display:none;
+        flex-shrink:0;
+        background:#1e3a28;
+        border-bottom:2px solid #2d5c3a;
+        overflow-x:auto;
+        white-space:nowrap;
+        scrollbar-width:thin;
+        scrollbar-color:#3a6b48 transparent;
+      ">
+        <!-- tabs injected by JS -->
+      </div>
+
+      <!-- Prescription image panels (one per tab, only active shown) -->
+      <div id="rxPanels" style="display:none; flex:1; overflow-y:auto; background:#f0f4f1; padding:16px;">
+        <!-- panels injected by JS -->
       </div>
 
       <div class="summary-body" id="summaryBody">
         <div class="state-block">
           <i class="bi bi-cursor"></i>
-          <p>Select one or more records above, then click <strong>Summarize with AI</strong> to generate a clinical
-            overview.</p>
+          <p>Select one or more records above, then click <strong>Summarize with AI</strong> to generate a clinical overview.</p>
         </div>
       </div>
     </section>
@@ -817,38 +807,164 @@
             card.classList.add('selected');
           }
           updateSelectionUI();
-          updatePrescriptionPreview();
+          updatePrescriptionTabs();
         });
       });
 
-      // ── Prescription preview ──────────────────────────────────────────
-      var prescriptionPreview  = document.getElementById('prescriptionPreview');
-      var prescriptionImg      = document.getElementById('prescriptionImg');
-      var prescriptionDownload = document.getElementById('prescriptionDownload');
-      var prescriptionSpinner  = document.getElementById('prescriptionSpinner');
+      // ── VS Code-style tabbed prescription viewer ──────────────────────
+      var rxTabBar   = document.getElementById('rxTabBar');
+      var rxPanels   = document.getElementById('rxPanels');
 
-      function updatePrescriptionPreview() {
-        if (selected.size === 1) {
-          var id = Array.from(selected)[0];
-          var url = '/doctor/prescription/' + id + '/';
-          prescriptionPreview.style.display = 'block';
-          // Reset state for new load
-          prescriptionImg.style.opacity = '0';
-          prescriptionSpinner.style.display = 'flex';
-          prescriptionSpinner.innerHTML = '<div class="spinner"></div>';
-          prescriptionImg.src = url;
-          prescriptionDownload.href = url;
-          prescriptionDownload.setAttribute('download', 'prescription-' + id + '.png');
-        } else {
-          prescriptionPreview.style.display = 'none';
-          prescriptionImg.src = '';
-        }
+      // tabs: Map<id, { label, url }>
+      var rxTabs     = new Map();  // id -> { label, url }
+      var rxActiveId = null;
+
+      function rxLabel(card) {
+        return (card.dataset.student || 'ID?') + '\u2002\u2014\u2002' + (card.dataset.illness || 'Record');
       }
 
-      document.getElementById('prescriptionClose').addEventListener('click', function () {
-        prescriptionPreview.style.display = 'none';
-        prescriptionImg.src = '';
-      });
+      function rxRender() {
+        // Show/hide the whole tab system
+        if (rxTabs.size === 0) {
+          rxTabBar.style.display  = 'none';
+          rxPanels.style.display  = 'none';
+          return;
+        }
+        rxTabBar.style.display = 'flex';
+        rxPanels.style.display = 'block';
+
+        // Rebuild tab bar
+        rxTabBar.innerHTML = '';
+        rxTabs.forEach(function(info, id) {
+          var active = (id === rxActiveId);
+          var tab = document.createElement('div');
+          tab.style.cssText = [
+            'display:inline-flex', 'align-items:center', 'gap:6px',
+            'padding:7px 14px 7px 12px', 'cursor:pointer', 'font-size:.78rem',
+            'font-family:inherit', 'border-right:1px solid #2d5c3a',
+            'transition:background .15s',
+            active
+              ? 'background:#2a5e38; color:#e8f5ec; border-bottom:2px solid #6fcf97;'
+              : 'background:transparent; color:#7dab8e; border-bottom:2px solid transparent;',
+          ].join(';');
+
+          var icon = document.createElement('i');
+          icon.className = 'bi bi-file-earmark-medical';
+          icon.style.cssText = 'font-size:.8rem; flex-shrink:0; color:' + (active ? '#6fcf97' : '#4a7c59');
+
+          var labelSpan = document.createElement('span');
+          labelSpan.textContent = info.label;
+          labelSpan.style.cssText = 'max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
+
+          var closeBtn = document.createElement('button');
+          closeBtn.innerHTML = '<i class="bi bi-x"></i>';
+          closeBtn.style.cssText = [
+            'background:none', 'border:none', 'padding:0 2px', 'margin-left:2px',
+            'font-size:.75rem', 'cursor:pointer', 'line-height:1', 'opacity:.6',
+            'color:inherit', 'border-radius:3px', 'flex-shrink:0',
+          ].join(';');
+          closeBtn.title = 'Close tab';
+          closeBtn.addEventListener('mouseenter', function() { this.style.opacity='1'; this.style.background='rgba(255,255,255,.12)'; });
+          closeBtn.addEventListener('mouseleave', function() { this.style.opacity='.6'; this.style.background='none'; });
+          closeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            rxCloseTab(id);
+          });
+
+          tab.appendChild(icon);
+          tab.appendChild(labelSpan);
+          tab.appendChild(closeBtn);
+          tab.addEventListener('click', function() { rxActivate(id); });
+          rxTabBar.appendChild(tab);
+        });
+
+        // Rebuild panels (only active visible)
+        rxPanels.innerHTML = '';
+        rxTabs.forEach(function(info, id) {
+          if (id !== rxActiveId) return;
+          var panel = document.createElement('div');
+          panel.style.cssText = 'position:relative; background:#fff; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.08); overflow:hidden;';
+
+          // toolbar row
+          var toolbar = document.createElement('div');
+          toolbar.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:8px 14px; background:#f8fbf9; border-bottom:1px solid #e0ede5;';
+          toolbar.innerHTML = [
+            '<span style="font-size:.75rem;color:#4a7c59;font-weight:600;">',
+            '<i class="bi bi-file-earmark-medical me-1"></i>' + info.label,
+            '</span>',
+            '<a href="' + info.url + '" download style="font-size:.75rem;color:#4a7c59;text-decoration:none;">',
+            '<i class="bi bi-download me-1"></i>Download PNG</a>',
+          ].join('');
+          panel.appendChild(toolbar);
+
+          // spinner + image wrapper
+          var imgWrap = document.createElement('div');
+          imgWrap.style.cssText = 'position:relative; min-height:100px;';
+
+          var spinner = document.createElement('div');
+          spinner.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:2;';
+          spinner.innerHTML = '<div class="spinner"></div>';
+
+          var img = document.createElement('img');
+          img.src = info.url;
+          img.alt = 'Prescription';
+          // Fit image fully: max-width 100%, height auto so nothing is cut off
+          img.style.cssText = 'width:100%; height:auto; display:block; opacity:0; transition:opacity .25s;';
+          img.addEventListener('load', function() {
+            img.style.opacity = '1';
+            spinner.style.display = 'none';
+          });
+          img.addEventListener('error', function() {
+            spinner.innerHTML = '<span style="color:#c00;font-size:.8rem">Failed to load prescription</span>';
+          });
+
+          imgWrap.appendChild(spinner);
+          imgWrap.appendChild(img);
+          panel.appendChild(imgWrap);
+          rxPanels.appendChild(panel);
+        });
+      }
+
+      function rxActivate(id) {
+        rxActiveId = id;
+        rxRender();
+      }
+
+      function rxCloseTab(id) {
+        rxTabs.delete(id);
+        // Also deselect the corresponding card
+        selected.delete(id);
+        document.querySelectorAll('.record-card').forEach(function(c) {
+          if (c.dataset.id === id) c.classList.remove('selected');
+        });
+        updateSelectionUI();
+        // Switch active to last remaining tab
+        if (rxActiveId === id) {
+          rxActiveId = rxTabs.size > 0 ? Array.from(rxTabs.keys()).pop() : null;
+        }
+        rxRender();
+      }
+
+      function updatePrescriptionTabs() {
+        // Add new selections as tabs
+        selected.forEach(function(id) {
+          if (!rxTabs.has(id)) {
+            var card = document.querySelector('.record-card[data-id="' + id + '"]');
+            var label = card ? rxLabel(card) : 'Record ' + id;
+            var url   = '/doctor/prescription/' + id + '/';
+            rxTabs.set(id, { label: label, url: url });
+            rxActiveId = id;  // newly opened tab becomes active
+          }
+        });
+        // Remove tabs for deselected cards
+        rxTabs.forEach(function(_, id) {
+          if (!selected.has(id)) rxTabs.delete(id);
+        });
+        if (!rxTabs.has(rxActiveId)) {
+          rxActiveId = rxTabs.size > 0 ? Array.from(rxTabs.keys()).pop() : null;
+        }
+        rxRender();
+      }
 
       function getCSRFToken() {
         const row = document.cookie.split('; ').find(function (r) {
