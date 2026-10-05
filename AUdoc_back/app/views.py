@@ -25,7 +25,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AppointmentForm, BloodDonationForm, BloodRequestForm, DonationForm, HelpDeskForm, StudentRegistrationForm, MedicalHistoryForm
-from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, Medicine, MedicineStock, MedicineStockTransaction, AIChatLog, TIME_SLOT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES, COMMON_ILLNESSES
+from .models import Appointment, BloodDonation, BloodRequest, Doctor, Donation, DonorResponse, HelpDesk, LoginLog, StaffProfile, StudentProfile, StudentRegistration, TodaysAppointment, DoctorLeave, Medicine, MedicineStock, MedicineStockTransaction, AIChatLog, SHIFT_CHOICES, BLOOD_GROUP_CHOICES, DAY_CHOICES, MEDICAL_DEPT_CHOICES, COMMON_ILLNESSES
 from .storage import upload_doctor_photo, delete_doctor_photo
 from .security import (
     generate_secure_otp,
@@ -829,12 +829,12 @@ def appointment(request):
         base_qs
         .filter(appointment_date__gte=today_date)
         .exclude(status__in=["REJECTED", "CANCELLED", "COMPLETED"])
-        .order_by("appointment_date", "appointment_time")
+        .order_by("appointment_date")
     )
     history_appointments = (
         base_qs
         .filter(Q(appointment_date__lt=today_date) | Q(status__in=["REJECTED", "CANCELLED", "COMPLETED"]))
-        .order_by("-appointment_date", "-appointment_time")
+        .order_by("-appointment_date")
     )
 
     form = AppointmentForm(post_data or None, initial=initial)
@@ -848,21 +848,8 @@ def appointment(request):
                 return redirect("appointment")
 
         cd = form.cleaned_data
-        booking_method = cd.get("booking_method")
         appointment_date = cd.get("appointment_date")
-        doctor = cd.get("doctor")
-
-        # If booking by doctor, find the next available date
-        if booking_method == "doctor" and doctor:
-            from app.doctor_availability import get_doctor_next_available_date
-            from datetime import timedelta
-            appointment_date = get_doctor_next_available_date(doctor.id, today_date + timedelta(days=1))
-            if not appointment_date:
-                messages.error(
-                    request,
-                    f"Doctor {doctor.name} has no available dates in the next 30 days. Please choose another doctor or select a date.",
-                )
-                return redirect("appointment")
+        appointment_shift = cd.get("appointment_shift")
 
         Appointment.objects.create(
             student_id=cd["student_id"],
@@ -871,19 +858,18 @@ def appointment(request):
             email=cd["email"],
             student_department=cd["student_department"],
             medical_department=cd["medical_department"],
-            doctor=doctor,
             appointment_date=appointment_date,
-            appointment_time=cd.get("appointment_time") or None,
+            shift=appointment_shift,
             problem_description=cd["problem_description"],
             status="PENDING",
         )
         request.session["last_appointment_student_id"] = cd["student_id"]
 
         date_str = appointment_date.strftime("%B %d, %Y")
-        doctor_str = f" with Dr. {doctor.name}" if doctor else ""
+        shift_str = appointment_shift.capitalize()
         messages.success(
             request,
-            f"Your appointment has been booked for {date_str}{doctor_str}. You will receive a confirmation email on the morning of your appointment.",
+            f"Your appointment has been booked for {date_str} during the {shift_str} shift. You will receive a confirmation email on the morning of your appointment.",
         )
         return redirect("appointment")
     elif request.method == "POST":
@@ -1727,7 +1713,7 @@ def _medicine_catalog_json():
 def admin_dashboard(request):
     # Query data for the dashboard
     todays_appointments = TodaysAppointment.objects.select_related(
-        'appointment', 'appointment__doctor'
+        'appointment'
     ).filter(
         status="CONFIRMED",
         appointment__appointment_date=date.today()
@@ -1737,7 +1723,7 @@ def admin_dashboard(request):
     blood_requests = BloodRequest.objects.prefetch_related(
         'donor_responses', 'donor_responses__donor'
     ).order_by('-created_at')
-    all_appointments = Appointment.objects.select_related('doctor').order_by('-created_at')
+    all_appointments = Appointment.objects.order_by('-created_at')
     doctors = Doctor.objects.all().order_by('name')
 
     # ── Generate real chart data for weekly activity ──
@@ -3516,7 +3502,7 @@ def api_appointments(request):
 
     if request.method == "GET":
         # Fetch all appointments for this student
-        appointments = Appointment.objects.filter(student_id__in=lookup_ids).select_related("doctor").order_by("-appointment_date", "-created_at") if lookup_ids else Appointment.objects.none()
+        appointments = Appointment.objects.filter(student_id__in=lookup_ids).order_by("-appointment_date", "-created_at") if lookup_ids else Appointment.objects.none()
         apt_list = []
         for apt in appointments:
             queue_position = None
@@ -3533,10 +3519,9 @@ def api_appointments(request):
                 "student_department": apt.student_department,
                 "medical_department": apt.medical_department,
                 "medical_department_display": apt.get_medical_department_display(),
-                "doctor_id": apt.doctor_id,
-                "doctor_name": apt.doctor.name if apt.doctor else None,
                 "appointment_date": apt.appointment_date.isoformat() if apt.appointment_date else None,
-                "appointment_time": apt.appointment_time,
+                "shift": apt.shift,
+                "shift_display": apt.get_shift_display() if apt.shift else None,
                 "problem_description": apt.problem_description,
                 "status": apt.status,
                 "created_at": apt.created_at.isoformat(),
@@ -3587,20 +3572,19 @@ def api_appointments(request):
         phone = sanitize_string(data.get("phone", ""), max_length=20)
         email = sanitize_string(data.get("email", ""), max_length=254) or request.user.email
 
-        # Check for existing appointment
-        requested_time = data.get("appointment_time") or None
+        # Check for existing appointment on same date+shift
+        requested_shift = data.get("shift") or None
         existing_filter = {
             "student_id": student_id,
-            "doctor": doctor,
             "appointment_date": apt_date,
         }
-        if requested_time:
-            existing_filter["appointment_time"] = requested_time
+        if requested_shift:
+            existing_filter["shift"] = requested_shift
 
         existing = Appointment.objects.filter(**existing_filter).exclude(status="CANCELLED").first()
 
         if existing:
-            return JsonResponse({"error": "You already have an appointment at this time"}, status=400)
+            return JsonResponse({"error": "You already have an appointment on this date"}, status=400)
 
         # Create appointment
         appointment = Appointment.objects.create(
@@ -3610,9 +3594,8 @@ def api_appointments(request):
             email=email,
             student_department=student_department,
             medical_department=data["medical_department"],
-            doctor=doctor,
             appointment_date=apt_date,
-            appointment_time=requested_time,
+            shift=requested_shift,
             problem_description=data["problem_description"],
             status="CONFIRMED",
         )
@@ -3623,9 +3606,9 @@ def api_appointments(request):
             "message": "Appointment booked and confirmed successfully",
             "appointment": {
                 "id": appointment.id,
-                "doctor_name": doctor.name if doctor else None,
                 "appointment_date": apt_date.isoformat(),
-                "appointment_time": appointment.appointment_time,
+                "shift": appointment.shift,
+                "shift_display": appointment.get_shift_display() if appointment.shift else None,
                 "status": appointment.status,
             }
         })
@@ -4581,12 +4564,19 @@ def save_medical_history(request):
             prescription_data_str = form.cleaned_data.get('prescription_data', '[]')
             
             appointment = Appointment.objects.get(id=appointment_id)
+            attending_doctor = form.cleaned_data.get('attending_doctor')
+            is_referred = form.cleaned_data.get('is_referred', False)
+            referred_to = form.cleaned_data.get('referred_to') or ''
+
             history = MedicalHistory.objects.create(
-                illness=illness, 
+                illness=illness,
                 symptoms=symptoms,
                 student_id=appointment.student_id,
-                doctor_name=appointment.doctor.name if appointment.doctor else "Not Assigned",
-                appointment_date=appointment.appointment_date
+                doctor_name=attending_doctor.name if attending_doctor else "Not Assigned",
+                appointment_date=appointment.appointment_date,
+                attending_doctor=attending_doctor,
+                is_referred=is_referred,
+                referred_to=referred_to if is_referred else '',
             )
             
             if prescription_data_str:

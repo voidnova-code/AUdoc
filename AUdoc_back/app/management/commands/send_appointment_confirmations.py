@@ -123,20 +123,12 @@ class Command(BaseCommand):
         accept_url = f"{domain}{reverse('appointment_confirm', args=[str(token), 'accept'])}"
         decline_url = f"{domain}{reverse('appointment_confirm', args=[str(token), 'decline'])}"
 
-        doctor_name = appt.doctor.name if appt.doctor else "Any Available Doctor"
-        doctor_str = f" with Dr. {appt.doctor.name}" if appt.doctor else ""
-        doctor_str_html = (
-            f' with <strong style="color:#1a5c96;">Dr. {appt.doctor.name}</strong>'
-            if appt.doctor else ""
-        )
         department_display = appt.get_medical_department_display()
         date_display = (
             appt.appointment_date.strftime("%A, %B %d, %Y")
             if appt.appointment_date else "Today"
         )
-        time_display = appt.appointment_time or "To be assigned"
-
-        # Use verified domain sender — never fall back to resend.dev
+        shift_display = appt.get_shift_display() if appt.shift else "Morning (8 AM - 2 PM)"
         from_email = settings.DEFAULT_FROM_EMAIL
         if not from_email or "resend.dev" in str(from_email):
             from_email = "AUdoc Campus Health <noreply@voiddoc.me>"
@@ -148,9 +140,9 @@ class Command(BaseCommand):
         # ── Plain-text fallback ──────────────────────────────────────────
         plain_text = (
             f"Dear {appt.student_name},\n\n"
-            f"You have an appointment booked for {date_display}{doctor_str}.\n"
+            f"You have an appointment booked for {date_display}.\n"
             f"Department: {department_display}\n"
-            f"Time Slot: {time_display}\n\n"
+            f"Shift: {shift_display}\n\n"
             f"Please confirm if you will be attending by 9:30 AM today.\n\n"
             f"To ACCEPT  : {accept_url}\n"
             f"To DECLINE : {decline_url}\n\n"

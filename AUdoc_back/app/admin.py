@@ -209,10 +209,10 @@ class DoctorAdmin(admin.ModelAdmin):
 class AppointmentAdmin(admin.ModelAdmin):
     list_display = (
         "student_id", "student_name", "phone", "email",
-        "medical_department", "doctor", "appointment_date", "appointment_time",
+        "medical_department", "appointment_date", "shift",
         "status", "was_no_show", "created_at",
     )
-    list_filter  = ("status", "was_no_show", "medical_department", "student_department", "created_at")
+    list_filter  = ("status", "was_no_show", "medical_department", "student_department", "shift", "created_at")
     search_fields = ("student_id", "student_name", "email", "phone")
     ordering     = ("-created_at",)
     readonly_fields = ("created_at", "reminder_24h_sent_at", "reminder_2h_sent_at", "actual_completion_date")
@@ -222,7 +222,7 @@ class AppointmentAdmin(admin.ModelAdmin):
             "fields": ("student_id", "student_name", "phone", "email", "student_department"),
         }),
         ("Appointment Details", {
-            "fields": ("medical_department", "doctor", "appointment_date", "appointment_time"),
+            "fields": ("medical_department", "appointment_date", "shift"),
         }),
         ("Problem & Status", {
             "fields": ("problem_description", "status", "was_no_show", "actual_completion_date", "created_at"),
@@ -410,9 +410,9 @@ class TodaysAppointmentAdmin(admin.ModelAdmin):
     def get_appointment_date(self, obj):
         return obj.appointment.appointment_date
 
-    @admin.display(description="Appointment Time", ordering="appointment__appointment_time")
+    @admin.display(description="Shift", ordering="appointment__shift")
     def get_appointment_time(self, obj):
-        return obj.appointment.appointment_time
+        return obj.appointment.get_shift_display() if obj.appointment.shift else "—"
 
     def has_add_permission(self, request):
         # Prevent manual creation - should be created automatically

@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from .models import (
     BLOOD_GROUP_CHOICES, MEDICAL_DEPT_CHOICES, STUDENT_DEPT_CHOICES,
-    TIME_SLOT_CHOICES, Appointment, Doctor, StudentRegistration,
+    SHIFT_CHOICES, Appointment, Doctor, StudentRegistration,
 )
 
 
@@ -93,11 +93,6 @@ class StudentRegistrationForm(forms.Form):
 
 
 class AppointmentForm(forms.Form):
-    BOOKING_METHOD_CHOICES = [
-        ("doctor", "Choose a Doctor (auto-assign closest date)"),
-        ("date", "Choose a Date (any available doctor)"),
-    ]
-
     student_id = forms.CharField(
         max_length=50,
         label="Student ID",
@@ -125,23 +120,15 @@ class AppointmentForm(forms.Form):
         choices=[("", "— Select medical department —")] + list(MEDICAL_DEPT_CHOICES),
         label="Medical Department",
     )
-    booking_method = forms.ChoiceField(
-        choices=BOOKING_METHOD_CHOICES,
-        label="Booking Method",
-        widget=forms.RadioSelect(),
-        initial="doctor",
-    )
-    doctor = forms.ModelChoiceField(
-        queryset=Doctor.objects.filter(is_available=True),
-        required=False,
-        empty_label="— Select a doctor —",
-        label="Doctor",
-        help_text="Select the doctor you prefer to see.",
-    )
     appointment_date = forms.DateField(
         label="Preferred Date",
         widget=forms.DateInput(attrs={"type": "date"}),
-        required=False,
+        required=True,
+    )
+    appointment_shift = forms.ChoiceField(
+        choices=[("", "— Select a shift —")] + list(SHIFT_CHOICES),
+        label="Preferred Shift",
+        required=True,
     )
     problem_description = forms.CharField(
         label="Description of Problem",
@@ -162,18 +149,11 @@ class AppointmentForm(forms.Form):
 
     def clean(self):
         cleaned = super().clean()
-        booking_method = cleaned.get("booking_method")
-        doctor = cleaned.get("doctor")
         appointment_date = cleaned.get("appointment_date")
         student_id = cleaned.get("student_id")
 
-        if booking_method == "doctor":
-            if not doctor:
-                self.add_error("doctor", "Please select a doctor.")
-        elif booking_method == "date":
-            if not appointment_date:
-                self.add_error("appointment_date", "Please select a date.")
-            elif appointment_date <= timezone.localdate():
+        if appointment_date:
+            if appointment_date <= timezone.localdate():
                 self.add_error("appointment_date", "Appointment date must be from tomorrow onwards (cannot book for today or in the past).")
 
         if student_id and appointment_date:
@@ -417,6 +397,27 @@ class MedicalHistoryForm(forms.Form):
         label="Symptoms",
         widget=forms.Textarea(attrs={"class": "form-control", "rows": 2, "required": "required"}),
     )
+    attending_doctor = forms.ModelChoiceField(
+        queryset=Doctor.objects.filter(is_available=True).order_by('name'),
+        required=False,
+        empty_label="— Select Attending Doctor —",
+        label="Attending Doctor",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+    is_referred = forms.BooleanField(
+        required=False,
+        label="Referred to another facility?",
+    )
+    referred_to = forms.CharField(
+        max_length=300,
+        required=False,
+        label="Referred To",
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "e.g. DMCH Cardiology, Specialist Clinic…",
+            "id": "id_referred_to",
+        }),
+    )
     prescription_data = forms.CharField(
         required=False,
         widget=forms.HiddenInput(attrs={"id": "history_prescription_data"})
@@ -424,3 +425,4 @@ class MedicalHistoryForm(forms.Form):
     appointment_id = forms.IntegerField(
         widget=forms.HiddenInput(attrs={"id": "history_appointment_id"})
     )
+

@@ -54,7 +54,8 @@ def render_prescription(record) -> bytes:
     meds = list(record.prescribedmedicine_set.select_related("medicine").all())
     # Each medicine card is 50 px tall; header+info+diag = ~230, footer = ~110
     med_block_h = max(len(meds), 1) * 56 + 14
-    H = 230 + med_block_h + 110
+    referred_block_h = 40 if getattr(record, 'is_referred', False) and getattr(record, 'referred_to', '') else 0
+    H = 230 + med_block_h + 110 + referred_block_h
 
     img  = Image.new("RGB", (W, H), C_BG)
     draw = ImageDraw.Draw(img)
@@ -80,7 +81,13 @@ def render_prescription(record) -> bytes:
     draw.text((col_r, y), "ATTENDING DOCTOR", font=_f(7), fill=C_TEXT_MUT)
     y += 12
     draw.text((PAD,   y), str(record.student_id or "N/A"),  font=_f(14, True), fill=C_TEXT_MAIN)
-    draw.text((col_r, y), str(record.doctor_name or "N/A"), font=_f(14, True), fill=C_TEXT_MAIN)
+    # Use attending_doctor FK name if available, otherwise fall back to doctor_name string
+    attending_name = (
+        record.attending_doctor.name
+        if getattr(record, 'attending_doctor_id', None) and record.attending_doctor
+        else str(record.doctor_name or "N/A")
+    )
+    draw.text((col_r, y), attending_name, font=_f(14, True), fill=C_TEXT_MAIN)
     y += 18
     draw.text((PAD,   y), "Assam University Student", font=_f(8), fill=C_TEXT_MUT)
     draw.text((col_r, y), "AUdoc Health Center",      font=_f(8), fill=C_TEXT_MUT)
@@ -154,7 +161,7 @@ def render_prescription(record) -> bytes:
     y += 10
 
     # ── Signature ─────────────────────────────────────────────────────────
-    doc_name = str(record.doctor_name or "Attending Doctor")
+    doc_name = attending_name
     draw.text((W - PAD, y), doc_name, font=_f(11, True),
               fill=C_TEXT_MAIN, anchor="rt")
     y += 14
@@ -162,6 +169,19 @@ def render_prescription(record) -> bytes:
               font=_f(8), fill=C_TEXT_MUT, anchor="rt")
     draw.line([W - PAD - 160, y + 14, W - PAD, y + 14], fill=C_LINE, width=1)
     y += 26
+
+    # ── Referral note (if referred) ───────────────────────────────────────
+    if getattr(record, 'is_referred', False) and getattr(record, 'referred_to', ''):
+        C_REF_BG  = (255, 243, 205)
+        C_REF_BDR = (255, 193,  7)
+        C_REF_TXT = (133,  77,  14)
+        draw.rounded_rectangle([PAD, y, W - PAD, y + 34], radius=6,
+                               fill=C_REF_BG, outline=C_REF_BDR)
+        draw.text((PAD + 10, y + 6),  "REFERRED TO:",
+                  font=_f(8, True), fill=C_REF_TXT)
+        ref_text = str(record.referred_to)[:80]
+        draw.text((PAD + 10, y + 18), ref_text, font=_f(9), fill=C_REF_TXT)
+        y += 42
 
     # ── Footer ────────────────────────────────────────────────────────────
     draw.rectangle([0, y, W, H], fill=C_FOOTER_BG)

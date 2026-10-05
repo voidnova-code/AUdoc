@@ -173,8 +173,8 @@
       </div>
 
       <div class="info-row">
-        <span class="info-label">Time</span>
-        <span class="info-value">{{ appointment.appointment_time|default:"Any time" }}</span>
+        <span class="info-label">Shift</span>
+        <span class="info-value">{{ appointment.get_shift_display|default:"Shift TBD" }}</span>
       </div>
 
       <div class="alert alert-success mt-4" style="border-radius:12px;font-size:0.9rem;">
@@ -194,7 +194,7 @@
     </div>
     <div class="card-body-custom">
       <p class="text-center mb-4" style="color:#666;font-size:0.95rem;">
-        You have declined the appointment for <strong>{{ appointment.appointment_date|date:"d M Y" }}</strong> at <strong>{{ appointment.appointment_time|default:"Any time" }}</strong>.
+        You have declined the appointment for <strong>{{ appointment.appointment_date|date:"d M Y" }}</strong> during the <strong>{{ appointment.get_shift_display|default:"scheduled" }}</strong> shift.
       </p>
 
       <div class="alert alert-info mt-3" style="border-radius:12px;font-size:0.9rem;">
