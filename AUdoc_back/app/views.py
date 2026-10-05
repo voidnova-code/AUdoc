@@ -851,6 +851,24 @@ def appointment(request):
         appointment_date = cd.get("appointment_date")
         appointment_shift = cd.get("appointment_shift")
 
+        # Capacity Limits
+        MAX_PER_DAY = 90
+        MAX_PER_SHIFT = 30
+
+        active_for_date = Appointment.objects.filter(
+            appointment_date=appointment_date
+        ).exclude(status__in=["CANCELLED", "REJECTED"])
+
+        if active_for_date.count() >= MAX_PER_DAY:
+            messages.error(request, f"Sorry, all {MAX_PER_DAY} appointment slots for this day are fully booked. Please choose another date.")
+            return redirect("appointment")
+
+        active_for_shift = active_for_date.filter(shift=appointment_shift)
+        if active_for_shift.count() >= MAX_PER_SHIFT:
+            shift_name = dict(Appointment.SHIFT_CHOICES).get(appointment_shift, appointment_shift)
+            messages.error(request, f"Sorry, the {shift_name} shift is fully booked ({MAX_PER_SHIFT} limit reached). Please choose another shift or date.")
+            return redirect("appointment")
+
         Appointment.objects.create(
             student_id=cd["student_id"],
             student_name=cd["student_name"],
@@ -3594,6 +3612,23 @@ def api_appointments(request):
 
         if existing:
             return JsonResponse({"error": "You already have an appointment on this date"}, status=400)
+
+        # Capacity Limits
+        MAX_PER_DAY = 90
+        MAX_PER_SHIFT = 30
+
+        active_for_date = Appointment.objects.filter(
+            appointment_date=apt_date
+        ).exclude(status__in=["CANCELLED", "REJECTED"])
+
+        if active_for_date.count() >= MAX_PER_DAY:
+            return JsonResponse({"error": f"Sorry, all {MAX_PER_DAY} appointment slots for this day are fully booked."}, status=400)
+
+        if requested_shift:
+            active_for_shift = active_for_date.filter(shift=requested_shift)
+            if active_for_shift.count() >= MAX_PER_SHIFT:
+                shift_name = dict(Appointment.SHIFT_CHOICES).get(requested_shift, requested_shift)
+                return JsonResponse({"error": f"Sorry, the {shift_name} shift is fully booked. Please choose another shift."}, status=400)
 
         # Create appointment
         appointment = Appointment.objects.create(
