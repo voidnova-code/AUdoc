@@ -1744,65 +1744,193 @@
       <!-- Today's Appointments Tab -->
       <div id="todays-appointments" class="tab-content">
         <div class="card">
-          <div class="card-header">
-            <h5 class="card-title">Today's Appointments (FCFS Queue)</h5>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Queue #</th>
-                    <th>Student ID</th>
-                    <th>Student Name</th>
-                    <th>Department</th>
-                    <th>Shift</th>
-                    <th>Status</th>
-                    <th>Deadline</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for today_appt in todays_appointments %}
-                  <tr id="row-todays-{{ today_appt.id }}" data-student-id="{{ today_appt.appointment.student_id }}" data-student-name="{{ today_appt.appointment.student_name }}" data-email="{{ today_appt.appointment.email }}" data-phone="{{ today_appt.appointment.phone }}" data-department="{{ today_appt.appointment.student_department }}" data-medical-department="{{ today_appt.appointment.medical_department }}" data-date="{{ today_appt.appointment.appointment_date|date:'Y-m-d' }}" data-shift="{{ today_appt.appointment.shift|default:'Any' }}" data-status="{{ today_appt.status }}" data-created-at="{{ today_appt.appointment.created_at|date:'M d, Y H:i' }}">
-                    <td><span class="badge bg-primary">#{{ forloop.counter }}</span></td>
-                    <td><strong>{{ today_appt.appointment.student_id }}</strong></td>
-                    <td>{{ today_appt.appointment.student_name }}</td>
-                    <td>{{ today_appt.appointment.student_department }}</td>
-                    <td>{{ today_appt.appointment.get_shift_display|default:"Any" }}</td>
-                    <td>
-                      {% if today_appt.status == "CONFIRMED" %}
-                      <span class="badge status-confirmed">Confirmed</span>
-                      {% elif today_appt.status == "PENDING" %}
-                      <span class="badge status-pending">Pending</span>
-                      {% elif today_appt.status == "COMPLETED" %}
-                      <span class="badge status-completed">Visited</span>
-                      {% else %}
-                      <span class="badge status-cancelled">{{ today_appt.get_status_display }}</span>
-                      {% endif %}
-                    </td>
-                    <td>{{ today_appt.response_deadline|date:"H:i" }}</td>
-                    <td>
-                      <button class="btn btn-sm btn-outline-primary"
-                        onclick="viewDetails('todays', '{{ today_appt.id }}')" title="View Details">
-                        <i class="bi bi-eye"></i>
-                      </button>
-                      <button class="btn btn-sm btn-danger ms-1" onclick="showMedicalHistory({{ today_appt.appointment.id }}, '{{ today_appt.appointment.student_id|escapejs }}', 'Not Assigned', '{{ today_appt.appointment.appointment_date|date:'M d, Y' }}')">
-                        Add History
-                      </button>
-                    </td>
-                  </tr>
-                  {% empty %}
-                  <tr>
-                    <td colspan="8" class="text-center text-muted">No appointments for today</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Today's Appointments (FCFS Queue by Shift)</h5>
+            <div class="d-flex gap-2">
+              <span class="badge rounded-pill" style="background:var(--primary); font-size:0.8rem;">
+                <i class="bi bi-sun me-1"></i>Morning: {{ morning_appointments|length }}
+              </span>
+              <span class="badge rounded-pill" style="background:#c77a00; font-size:0.8rem;">
+                <i class="bi bi-sunset me-1"></i>Evening: {{ evening_appointments|length }}
+              </span>
+              <span class="badge rounded-pill" style="background:#2c3e6e; font-size:0.8rem;">
+                <i class="bi bi-moon-stars me-1"></i>Night: {{ night_appointments|length }}
+              </span>
             </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="accordion" id="shiftAccordion">
+
+              <!-- ── Morning Shift ── -->
+              <div class="accordion-item border-0">
+                <h2 class="accordion-header" id="headingMorning">
+                  <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseMorning" aria-expanded="true" aria-controls="collapseMorning"
+                    style="background:linear-gradient(90deg,#e8f5ee,#fff); font-weight:600;">
+                    <i class="bi bi-sun-fill me-2" style="color:#1d7a3a;"></i>
+                    Morning Shift &nbsp;<span style="color:#555; font-size:0.8rem;">(8 AM – 2 PM)</span>
+                    <span class="ms-3 badge" style="background:var(--primary);">{{ morning_appointments|length }} Student{{ morning_appointments|length|pluralize }}</span>
+                  </button>
+                </h2>
+                <div id="collapseMorning" class="accordion-collapse collapse show" aria-labelledby="headingMorning">
+                  <div class="accordion-body p-0">
+                    <div class="table-responsive">
+                      <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Queue #</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Deadline</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for today_appt in morning_appointments %}
+                          <tr id="row-todays-{{ today_appt.id }}" data-student-id="{{ today_appt.appointment.student_id }}" data-student-name="{{ today_appt.appointment.student_name }}" data-email="{{ today_appt.appointment.email }}" data-phone="{{ today_appt.appointment.phone }}" data-department="{{ today_appt.appointment.student_department }}" data-medical-department="{{ today_appt.appointment.medical_department }}" data-date="{{ today_appt.appointment.appointment_date|date:'Y-m-d' }}" data-shift="{{ today_appt.appointment.shift|default:'MORNING' }}" data-status="{{ today_appt.status }}" data-created-at="{{ today_appt.appointment.created_at|date:'M d, Y H:i' }}">
+                            <td><span class="badge" style="background:var(--primary);">#{{ forloop.counter }}</span></td>
+                            <td><strong>{{ today_appt.appointment.student_id }}</strong></td>
+                            <td>{{ today_appt.appointment.student_name }}</td>
+                            <td>{{ today_appt.appointment.student_department }}</td>
+                            <td>
+                              {% if today_appt.status == "CONFIRMED" %}<span class="badge status-confirmed">Confirmed</span>
+                              {% elif today_appt.status == "PENDING" %}<span class="badge status-pending">Pending</span>
+                              {% elif today_appt.status == "COMPLETED" %}<span class="badge status-completed">Visited</span>
+                              {% else %}<span class="badge status-cancelled">{{ today_appt.get_status_display }}</span>{% endif %}
+                            </td>
+                            <td>{{ today_appt.response_deadline|date:"H:i" }}</td>
+                            <td>
+                              <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('todays', '{{ today_appt.id }}')" title="View Details"><i class="bi bi-eye"></i></button>
+                              <button class="btn btn-sm btn-danger ms-1" onclick="showMedicalHistory({{ today_appt.appointment.id }}, '{{ today_appt.appointment.student_id|escapejs }}', 'Not Assigned', '{{ today_appt.appointment.appointment_date|date:'M d, Y' }}')">Add History</button>
+                            </td>
+                          </tr>
+                          {% empty %}
+                          <tr><td colspan="7" class="text-center text-muted py-3"><i class="bi bi-inbox me-2"></i>No morning shift appointments today</td></tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Evening Shift ── -->
+              <div class="accordion-item border-0 border-top">
+                <h2 class="accordion-header" id="headingEvening">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseEvening" aria-expanded="false" aria-controls="collapseEvening"
+                    style="background:linear-gradient(90deg,#fff8e7,#fff); font-weight:600;">
+                    <i class="bi bi-sunset-fill me-2" style="color:#c77a00;"></i>
+                    Evening Shift &nbsp;<span style="color:#555; font-size:0.8rem;">(2 PM – 8 PM)</span>
+                    <span class="ms-3 badge" style="background:#c77a00;">{{ evening_appointments|length }} Student{{ evening_appointments|length|pluralize }}</span>
+                  </button>
+                </h2>
+                <div id="collapseEvening" class="accordion-collapse collapse" aria-labelledby="headingEvening">
+                  <div class="accordion-body p-0">
+                    <div class="table-responsive">
+                      <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Queue #</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Deadline</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for today_appt in evening_appointments %}
+                          <tr id="row-todays-{{ today_appt.id }}" data-student-id="{{ today_appt.appointment.student_id }}" data-student-name="{{ today_appt.appointment.student_name }}" data-email="{{ today_appt.appointment.email }}" data-phone="{{ today_appt.appointment.phone }}" data-department="{{ today_appt.appointment.student_department }}" data-medical-department="{{ today_appt.appointment.medical_department }}" data-date="{{ today_appt.appointment.appointment_date|date:'Y-m-d' }}" data-shift="{{ today_appt.appointment.shift|default:'EVENING' }}" data-status="{{ today_appt.status }}" data-created-at="{{ today_appt.appointment.created_at|date:'M d, Y H:i' }}">
+                            <td><span class="badge" style="background:#c77a00;">#{{ forloop.counter }}</span></td>
+                            <td><strong>{{ today_appt.appointment.student_id }}</strong></td>
+                            <td>{{ today_appt.appointment.student_name }}</td>
+                            <td>{{ today_appt.appointment.student_department }}</td>
+                            <td>
+                              {% if today_appt.status == "CONFIRMED" %}<span class="badge status-confirmed">Confirmed</span>
+                              {% elif today_appt.status == "PENDING" %}<span class="badge status-pending">Pending</span>
+                              {% elif today_appt.status == "COMPLETED" %}<span class="badge status-completed">Visited</span>
+                              {% else %}<span class="badge status-cancelled">{{ today_appt.get_status_display }}</span>{% endif %}
+                            </td>
+                            <td>{{ today_appt.response_deadline|date:"H:i" }}</td>
+                            <td>
+                              <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('todays', '{{ today_appt.id }}')" title="View Details"><i class="bi bi-eye"></i></button>
+                              <button class="btn btn-sm btn-danger ms-1" onclick="showMedicalHistory({{ today_appt.appointment.id }}, '{{ today_appt.appointment.student_id|escapejs }}', 'Not Assigned', '{{ today_appt.appointment.appointment_date|date:'M d, Y' }}')">Add History</button>
+                            </td>
+                          </tr>
+                          {% empty %}
+                          <tr><td colspan="7" class="text-center text-muted py-3"><i class="bi bi-inbox me-2"></i>No evening shift appointments today</td></tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Night Shift ── -->
+              <div class="accordion-item border-0 border-top">
+                <h2 class="accordion-header" id="headingNight">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseNight" aria-expanded="false" aria-controls="collapseNight"
+                    style="background:linear-gradient(90deg,#edf0f8,#fff); font-weight:600;">
+                    <i class="bi bi-moon-stars-fill me-2" style="color:#2c3e6e;"></i>
+                    Night Shift &nbsp;<span style="color:#555; font-size:0.8rem;">(8 PM – 8 AM)</span>
+                    <span class="ms-3 badge" style="background:#2c3e6e;">{{ night_appointments|length }} Student{{ night_appointments|length|pluralize }}</span>
+                  </button>
+                </h2>
+                <div id="collapseNight" class="accordion-collapse collapse" aria-labelledby="headingNight">
+                  <div class="accordion-body p-0">
+                    <div class="table-responsive">
+                      <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Queue #</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Deadline</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for today_appt in night_appointments %}
+                          <tr id="row-todays-{{ today_appt.id }}" data-student-id="{{ today_appt.appointment.student_id }}" data-student-name="{{ today_appt.appointment.student_name }}" data-email="{{ today_appt.appointment.email }}" data-phone="{{ today_appt.appointment.phone }}" data-department="{{ today_appt.appointment.student_department }}" data-medical-department="{{ today_appt.appointment.medical_department }}" data-date="{{ today_appt.appointment.appointment_date|date:'Y-m-d' }}" data-shift="{{ today_appt.appointment.shift|default:'NIGHT' }}" data-status="{{ today_appt.status }}" data-created-at="{{ today_appt.appointment.created_at|date:'M d, Y H:i' }}">
+                            <td><span class="badge" style="background:#2c3e6e;">#{{ forloop.counter }}</span></td>
+                            <td><strong>{{ today_appt.appointment.student_id }}</strong></td>
+                            <td>{{ today_appt.appointment.student_name }}</td>
+                            <td>{{ today_appt.appointment.student_department }}</td>
+                            <td>
+                              {% if today_appt.status == "CONFIRMED" %}<span class="badge status-confirmed">Confirmed</span>
+                              {% elif today_appt.status == "PENDING" %}<span class="badge status-pending">Pending</span>
+                              {% elif today_appt.status == "COMPLETED" %}<span class="badge status-completed">Visited</span>
+                              {% else %}<span class="badge status-cancelled">{{ today_appt.get_status_display }}</span>{% endif %}
+                            </td>
+                            <td>{{ today_appt.response_deadline|date:"H:i" }}</td>
+                            <td>
+                              <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('todays', '{{ today_appt.id }}')" title="View Details"><i class="bi bi-eye"></i></button>
+                              <button class="btn btn-sm btn-danger ms-1" onclick="showMedicalHistory({{ today_appt.appointment.id }}, '{{ today_appt.appointment.student_id|escapejs }}', 'Not Assigned', '{{ today_appt.appointment.appointment_date|date:'M d, Y' }}')">Add History</button>
+                            </td>
+                          </tr>
+                          {% empty %}
+                          <tr><td colspan="7" class="text-center text-muted py-3"><i class="bi bi-inbox me-2"></i>No night shift appointments today</td></tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /accordion -->
           </div>
         </div>
       </div>
+
 
       <!-- Registrations Tab -->
       <div id="registrations" class="tab-content">

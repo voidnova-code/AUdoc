@@ -1711,13 +1711,19 @@ def _medicine_catalog_json():
 
 @_admin_required
 def admin_dashboard(request):
-    # Query data for the dashboard
-    todays_appointments = TodaysAppointment.objects.select_related(
+    # ── Today's confirmed appointments, split by shift (FCFS order within each) ──
+    _todays_base = TodaysAppointment.objects.select_related(
         'appointment'
     ).filter(
         status="CONFIRMED",
         appointment__appointment_date=date.today()
-    ).order_by('queue_position', 'responded_at')  # FCFS order by queue position
+    ).order_by('queue_position', 'responded_at')
+
+    # Keep the combined queryset for backward compatibility
+    todays_appointments   = _todays_base
+    morning_appointments  = _todays_base.filter(appointment__shift='MORNING')
+    evening_appointments  = _todays_base.filter(appointment__shift='EVENING')
+    night_appointments    = _todays_base.filter(appointment__shift='NIGHT')
 
     blood_donations = BloodDonation.objects.order_by('-created_at')
     blood_requests = BloodRequest.objects.prefetch_related(
@@ -1755,6 +1761,9 @@ def admin_dashboard(request):
     context = {
         # ── Main dashboard data for new template ──────────
         'todays_appointments': todays_appointments,
+        'morning_appointments': morning_appointments,
+        'evening_appointments': evening_appointments,
+        'night_appointments':   night_appointments,
         'blood_donations': blood_donations,
         'blood_requests': blood_requests,
         'appointments': all_appointments,
