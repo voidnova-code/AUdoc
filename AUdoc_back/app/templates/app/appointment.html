@@ -123,6 +123,54 @@
       white-space: nowrap;
     }
 
+    /* ── Shift availability cards ─────────────────────────── */
+    .shift-card {
+      border: 2px solid #d5e8d9;
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, transform .2s, background .2s;
+      background: #fff;
+      user-select: none;
+      min-height: 108px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2px;
+    }
+    .shift-card:hover:not(.shift-full) {
+      border-color: var(--primary);
+      box-shadow: 0 4px 16px rgba(74,124,89,.18);
+      transform: translateY(-3px);
+    }
+    .shift-card.selected {
+      border-color: var(--primary);
+      background: var(--accent);
+      box-shadow: 0 4px 16px rgba(74,124,89,.22);
+    }
+    .shift-card.shift-full {
+      opacity: .55;
+      cursor: not-allowed;
+      border-color: #ddd;
+      background: #f8f8f8;
+      transform: none !important;
+    }
+    .shift-card .shift-emoji  { font-size: 1.6rem; line-height: 1; }
+    .shift-card .shift-name   { font-weight: 700; font-size: .9rem; color: #0d2a1a; }
+    .shift-card .shift-time   { font-size: .72rem; color: #777; }
+    .shift-card .shift-slots  { font-weight: 700; font-size: .82rem; margin-top: 4px; }
+    /* colour tiers applied by JS */
+    .slots-high .shift-slots  { color: #1d8348; }
+    .slots-mid  .shift-slots  { color: #c77a00; }
+    .slots-low  .shift-slots  { color: #c0392b; }
+    .slots-zero .shift-slots  { color: #888;    }
+    /* tiny progress bar under slot text */
+    .shift-bar-wrap { width: 100%; background: #eee; border-radius: 6px; height: 5px; overflow: hidden; margin-top: 5px; }
+    .shift-bar-fill { height: 100%; border-radius: 6px; transition: width .4s ease, background .4s ease; }
+    .slots-high .shift-bar-fill { background: #1d8348; }
+    .slots-mid  .shift-bar-fill { background: #c77a00; }
+    .slots-low  .shift-bar-fill { background: #c0392b; }
+    .slots-zero .shift-bar-fill { background: #bbb;    }
+
     /* Error */
     .invalid-feedback { font-size: .82rem; }
 
@@ -611,26 +659,54 @@
                 <div class="text-danger" style="font-size:.82rem;">{{ err }}</div>
               {% endfor %}
             </div>
-            <div class="col-sm-6">
-              <label class="form-label" for="id_appointment_shift">
-                Preferred Shift <span class="text-danger">*</span>
-              </label>
-              <select
-                name="appointment_shift"
-                id="id_appointment_shift"
-                class="form-select{% if form.appointment_shift.errors %} is-invalid{% endif %}"
-                required
-              >
-                {% for val, label in form.fields.appointment_shift.choices %}
-                  <option value="{{ val }}"
-                    {% if form.appointment_shift.value == val %}selected{% endif %}>
-                    {{ label }}
-                  </option>
-                {% endfor %}
-              </select>
-              {% for err in form.appointment_shift.errors %}
-                <div class="invalid-feedback">{{ err }}</div>
-              {% endfor %}
+            <div class="col-12" id="shiftPickerWrapper">
+              <label class="form-label">Preferred Shift <span class="text-danger">*</span></label>
+              <!-- Shown while AJAX loads -->
+              <div id="shiftLoadingMsg" style="display:none;" class="text-muted small mb-2">
+                <span class="spinner-border spinner-border-sm me-1"></span> Checking shift availability…
+              </div>
+              <!-- Placeholder hint before date selected -->
+              <div id="shiftHint" class="text-muted small mb-2">
+                <i class="bi bi-arrow-up me-1"></i>Select a date above to see shift availability.
+              </div>
+              <!-- Three shift cards -->
+              <div class="row g-2" id="shiftCardsContainer" style="display:none !important;">
+                <div class="col-4">
+                  <div class="shift-card" id="shiftCard-MORNING" data-shift="MORNING">
+                    <div class="shift-emoji">🌅</div>
+                    <div class="shift-name">Morning</div>
+                    <div class="shift-time">8 AM – 2 PM</div>
+                    <div class="shift-slots" id="slots-MORNING">— slots</div>
+                    <div class="shift-bar-wrap"><div class="shift-bar-fill" id="bar-MORNING" style="width:0%"></div></div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="shift-card" id="shiftCard-EVENING" data-shift="EVENING">
+                    <div class="shift-emoji">🌆</div>
+                    <div class="shift-name">Evening</div>
+                    <div class="shift-time">2 PM – 8 PM</div>
+                    <div class="shift-slots" id="slots-EVENING">— slots</div>
+                    <div class="shift-bar-wrap"><div class="shift-bar-fill" id="bar-EVENING" style="width:0%"></div></div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="shift-card" id="shiftCard-NIGHT" data-shift="NIGHT">
+                    <div class="shift-emoji">🌙</div>
+                    <div class="shift-name">Night</div>
+                    <div class="shift-time">8 PM – 8 AM</div>
+                    <div class="shift-slots" id="slots-NIGHT">— slots</div>
+                    <div class="shift-bar-wrap"><div class="shift-bar-fill" id="bar-NIGHT" style="width:0%"></div></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Day-full warning -->
+              <div id="dayFullWarning" class="alert alert-danger rounded-3 mt-2 small py-2" style="display:none;">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                All 90 appointment slots for this day are fully booked. Please pick another date.
+              </div>
+              <!-- Hidden input submitted with the form -->
+              <input type="hidden" name="appointment_shift" id="id_appointment_shift">
+              <div id="shiftValidationError" class="text-danger small mt-1" style="display:none;">Please select a shift to continue.</div>
             </div>
           </div>
 
@@ -832,6 +908,119 @@
     "name": "AUdoc Health Center"
   }
 }
+</script>
+
+<script>
+(function () {
+  'use strict';
+  const MAX_SHIFT = 30;
+  const dateInput     = document.getElementById('id_appointment_date');
+  const hiddenShift   = document.getElementById('id_appointment_shift');
+  const shiftCards    = document.querySelectorAll('.shift-card');
+  const cardsContainer = document.getElementById('shiftCardsContainer');
+  const loadingMsg    = document.getElementById('shiftLoadingMsg');
+  const hintMsg       = document.getElementById('shiftHint');
+  const dayFullWarn   = document.getElementById('dayFullWarning');
+  const shiftError    = document.getElementById('shiftValidationError');
+  const SHIFTS        = ['MORNING', 'EVENING', 'NIGHT'];
+
+  function resetCards() {
+    shiftCards.forEach(c => {
+      c.classList.remove('selected','shift-full','slots-high','slots-mid','slots-low','slots-zero');
+    });
+    hiddenShift.value = '';
+    SHIFTS.forEach(s => {
+      document.getElementById(`slots-${s}`).textContent = '— slots';
+      document.getElementById(`bar-${s}`).style.width   = '0%';
+    });
+  }
+
+  function applyTier(card, remaining) {
+    card.classList.remove('slots-high','slots-mid','slots-low','slots-zero');
+    if      (remaining > 20) card.classList.add('slots-high');
+    else if (remaining > 9)  card.classList.add('slots-mid');
+    else if (remaining > 0)  card.classList.add('slots-low');
+    else                     card.classList.add('slots-zero');
+  }
+
+  function fetchAvailability(dateVal) {
+    resetCards();
+    loadingMsg.style.display = 'block';
+    hintMsg.style.display    = 'none';
+    cardsContainer.style.removeProperty('display');
+    dayFullWarn.style.display = 'none';
+
+    fetch(`/api/shift-availability/?date=${dateVal}`)
+      .then(r => r.json())
+      .then(data => {
+        loadingMsg.style.display = 'none';
+
+        if (data.day_full) {
+          cardsContainer.style.display = 'none';
+          dayFullWarn.style.display = 'block';
+          return;
+        }
+
+        SHIFTS.forEach(shift => {
+          const info  = data[shift];
+          const card  = document.getElementById(`shiftCard-${shift}`);
+          const label = document.getElementById(`slots-${shift}`);
+          const bar   = document.getElementById(`bar-${shift}`);
+          const rem   = info.remaining;
+          const pct   = Math.round((rem / MAX_SHIFT) * 100);
+
+          label.textContent = info.full ? 'FULL' : `${rem} slot${rem !== 1 ? 's' : ''} left`;
+          bar.style.width   = pct + '%';
+
+          applyTier(card, rem);
+          if (info.full) card.classList.add('shift-full');
+        });
+      })
+      .catch(() => {
+        loadingMsg.style.display = 'none';
+        hintMsg.style.display    = 'block';
+        hintMsg.innerHTML        = '<i class="bi bi-exclamation-circle me-1"></i>Could not load shift availability. Please refresh and try again.';
+      });
+  }
+
+  // Trigger fetch when date changes
+  if (dateInput) {
+    dateInput.addEventListener('change', function () {
+      if (this.value) fetchAvailability(this.value);
+    });
+    // If date pre-filled (e.g., form re-render after error)
+    if (dateInput.value) fetchAvailability(dateInput.value);
+  }
+
+  // Card click → select shift
+  shiftCards.forEach(card => {
+    card.addEventListener('click', function () {
+      if (this.classList.contains('shift-full')) return;
+      if (!dateInput || !dateInput.value) {
+        hintMsg.innerHTML = '<i class="bi bi-arrow-up me-1"></i>Please select a date first.';
+        return;
+      }
+      shiftCards.forEach(c => c.classList.remove('selected'));
+      this.classList.add('selected');
+      hiddenShift.value = this.dataset.shift;
+      if (shiftError) shiftError.style.display = 'none';
+    });
+  });
+
+  // Prevent submit without a shift selected
+  const form = document.querySelector('form[method="post"]');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      if (!hiddenShift.value) {
+        e.preventDefault();
+        if (shiftError) {
+          shiftError.style.display = 'block';
+          shiftError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    });
+  }
+})();
 </script>
 </body>
 </html>

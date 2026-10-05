@@ -3918,6 +3918,61 @@ def api_logout(request):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+#  SHIFT AVAILABILITY API — per-date / per-shift slot counts
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@require_http_methods(["GET"])
+def api_shift_availability(request):
+    """
+    Returns remaining slot counts for Morning / Evening / Night on a given date.
+
+    Query param: ?date=YYYY-MM-DD
+
+    Response JSON:
+    {
+      "MORNING": {"booked": 12, "remaining": 18, "full": false},
+      "EVENING": {"booked": 30, "remaining": 0,  "full": true},
+      "NIGHT":   {"booked": 5,  "remaining": 25, "full": false},
+      "day_booked": 47,
+      "day_remaining": 43,
+      "day_full": false
+    }
+    """
+    MAX_PER_DAY   = 90
+    MAX_PER_SHIFT = 30
+
+    date_str = request.GET.get('date')
+    if not date_str:
+        return JsonResponse({'error': 'date is required'}, status=400)
+    try:
+        target_date = date.fromisoformat(date_str)
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD'}, status=400)
+
+    base_qs = Appointment.objects.filter(
+        appointment_date=target_date
+    ).exclude(status__in=['CANCELLED', 'REJECTED'])
+
+    day_booked = base_qs.count()
+    result = {
+        'day_booked':    day_booked,
+        'day_remaining': MAX_PER_DAY - day_booked,
+        'day_full':      day_booked >= MAX_PER_DAY,
+    }
+
+    for shift in ['MORNING', 'EVENING', 'NIGHT']:
+        booked    = base_qs.filter(shift=shift).count()
+        remaining = MAX_PER_SHIFT - booked
+        result[shift] = {
+            'booked':    booked,
+            'remaining': max(remaining, 0),
+            'full':      booked >= MAX_PER_SHIFT,
+        }
+
+    return JsonResponse(result)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 #  APPOINTMENT SLOT FILTERING (AJAX) - Dynamic slot availability
 # ═══════════════════════════════════════════════════════════════════════════════
 

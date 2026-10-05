@@ -85,6 +85,7 @@ urlpatterns = [
     # ── Appointment Slot Filtering (AJAX) ────────────────────────
     path("api/appointment-slots/", views.api_appointment_slots, name="api_appointment_slots"),
     path("api/doctor-availability/", views.api_doctor_availability, name="api_doctor_availability"),
+    path("api/shift-availability/", views.api_shift_availability, name="api_shift_availability"),
 
     # ── SEO ──────────────────────────────────────────────────────
     path("robots.txt", views.robots_txt, name="robots_txt"),
