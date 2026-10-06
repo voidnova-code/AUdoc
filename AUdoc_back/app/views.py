@@ -1545,6 +1545,189 @@ def donor_respond(request, token, action):
     })
 
 
+
+# ── Estimated-time helper ────────────────────────────────────────────────────
+def _compute_estimated_time(shift, shift_position):
+    """
+    Return an 'HH:MM AM/PM' string for the estimated visit time given a shift
+    and 1-based position within that shift (each slot = 10 minutes).
+
+    Shift windows:
+        MORNING  →  8:00 AM start
+        EVENING  →  2:00 PM start
+        NIGHT    →  8:00 PM start
+    """
+    from datetime import datetime as _dt, timedelta as _td
+    SHIFT_STARTS = {
+        'MORNING': (8,  0),
+        'EVENING': (14, 0),
+        'NIGHT':   (20, 0),
+    }
+    start_h, start_m = SHIFT_STARTS.get(shift, (8, 0))
+    offset_minutes   = (shift_position - 1) * 10
+    base             = _dt(2000, 1, 1, start_h, start_m)
+    estimated        = base + _td(minutes=offset_minutes)
+    # strftime %-I doesn't work on Windows — use manual strip
+    hour_str = estimated.strftime("%I:%M %p").lstrip("0") or "12:00 AM"
+    return hour_str
+
+
+# ── Post-confirmation thank-you mailer ───────────────────────────────────────
+def send_confirmation_thanks_email(today_appt, shift_pos):
+    """
+    Send a warm, funny post-confirmation email to the student with their
+    estimated visit time after they accept their appointment.
+    """
+    import random
+    from django.core.mail import EmailMultiAlternatives
+    from django.conf import settings as _s
+
+    appt  = today_appt.appointment
+    shift = appt.shift or 'MORNING'
+    est   = _compute_estimated_time(shift, shift_pos)
+
+    SHIFT_INFO = {
+        'MORNING': ('Morning', '8:00 AM – 2:00 PM'),
+        'EVENING': ('Evening', '2:00 PM – 8:00 PM'),
+        'NIGHT':   ('Night',   '8:00 PM – 8:00 AM'),
+    }
+    shift_name, shift_range = SHIFT_INFO.get(shift, ('Morning', '8:00 AM – 2:00 PM'))
+    date_display = appt.appointment_date.strftime("%A, %B %d, %Y") if appt.appointment_date else "Today"
+    dept_display = appt.get_medical_department_display()
+
+    funny_messages = [
+        "You confirmed faster than most students find their student ID card. Impressive! 🏃",
+        "The stethoscope is warming up just for you. The AUdoc team is officially expecting a legend. 🩺",
+        "Your appointment is locked in! We promise the doctor's coffee is fresh and the waiting area has surprisingly good vibes. ☕",
+        "You're officially on the queue! The health center is ready — try not to trip on the way in. 🚶",
+        "Boom! Confirmed! You just out-smarted about 29 other students who might still be hitting snooze. 🎯",
+        "Great job confirming! Rumour has it the doctor gives a bonus high-five to every punctual patient. 🖐️",
+    ]
+    funny_line = random.choice(funny_messages)
+
+    from_email = getattr(_s, 'DEFAULT_FROM_EMAIL', 'AUdoc Campus Health <noreply@voiddoc.me>')
+    if not from_email or 'resend.dev' in str(from_email):
+        from_email = 'AUdoc Campus Health <noreply@voiddoc.me>'
+
+    subject = f"[AUdoc] 🎉 You're Confirmed! Arrive around {est}"
+
+    plain = (
+        f"Hi {appt.student_name}!\n\n"
+        f"{funny_line}\n\n"
+        f"Your appointment has been confirmed. Here are your details:\n\n"
+        f"  Date        : {date_display}\n"
+        f"  Shift       : {shift_name} ({shift_range})\n"
+        f"  Queue #     : #{shift_pos} in your shift\n"
+        f"  Est. Time   : ~{est}\n"
+        f"  Department  : {dept_display}\n\n"
+        f"Please arrive at the campus health center (Academic Block C, Room 101)\n"
+        f"about 5 minutes before your estimated time.\n\n"
+        f"Each appointment slot is approx. 10 minutes, so slight delays may happen.\n\n"
+        f"Thank you for using AUdoc — stay healthy! 💚\n\n"
+        f"-- AUdoc Campus Health\n"
+        f"Assam University Silchar | health@au.edu"
+    )
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background:#e8f5ec;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#e8f5ec;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(74,124,89,.18);">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#4a7c59 0%,#2e5c3a 100%);padding:36px 40px;text-align:center;">
+            <div style="font-size:2.6rem;margin-bottom:10px;">🎉</div>
+            <h1 style="margin:0;color:#ffffff;font-size:1.6rem;font-weight:700;">You're Confirmed!</h1>
+            <p style="margin:6px 0 0;color:#c8e6d0;font-size:.9rem;">AUdoc Campus Health &mdash; Assam University</p>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:36px 40px 28px;">
+            <p style="margin:0 0 6px;font-size:1.4rem;">👋 Hi {appt.student_name}!</p>
+            <p style="margin:0 0 24px;color:#555;font-size:.95rem;line-height:1.65;font-style:italic;">
+              {funny_line}
+            </p>
+
+            <!-- Estimated time hero -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;background:linear-gradient(135deg,#e8f5ec,#f4faf6);border-radius:14px;border:2px solid #4a7c59;">
+              <tr><td style="padding:22px 24px;text-align:center;">
+                <p style="margin:0 0 4px;font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#4a7c59;font-weight:700;">⏰ Your Estimated Arrival Time</p>
+                <p style="margin:0;font-size:2.6rem;font-weight:700;color:#1d7a3a;">{est}</p>
+                <p style="margin:6px 0 0;font-size:.82rem;color:#666;">Based on your position <strong>#{shift_pos}</strong> in the {shift_name} shift queue</p>
+              </td></tr>
+            </table>
+
+            <!-- Details card -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;background:#f8f9fa;border-radius:12px;overflow:hidden;">
+              <tr><td style="padding:18px 22px;">
+                <p style="margin:0 0 12px;font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#4a7c59;font-weight:700;">Appointment Details</p>
+                <table width="100%" cellpadding="6" cellspacing="0">
+                  <tr>
+                    <td style="font-size:.83rem;color:#888;width:40%;">📅 Date</td>
+                    <td style="font-size:.9rem;color:#333;font-weight:600;">{date_display}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.83rem;color:#888;">🕐 Shift</td>
+                    <td style="font-size:.9rem;color:#333;font-weight:600;">{shift_name} ({shift_range})</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.83rem;color:#888;">🔢 Queue Position</td>
+                    <td style="font-size:.9rem;color:#4a7c59;font-weight:700;">#{shift_pos} in {shift_name} shift</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:.83rem;color:#888;">🏥 Department</td>
+                    <td><span style="background:#4a7c59;color:#fff;padding:3px 10px;border-radius:20px;font-size:.82rem;font-weight:700;">{dept_display}</span></td>
+                  </tr>
+                </table>
+              </td></tr>
+            </table>
+
+            <!-- Tip -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
+              <tr>
+                <td style="background:#fff8e1;border-left:4px solid #f9a825;border-radius:0 10px 10px 0;padding:12px 16px;">
+                  <p style="margin:0;font-size:.85rem;color:#7a5800;line-height:1.5;">
+                    💡 <strong>Pro tip:</strong> Please arrive at <strong>Academic Block C, Room 101</strong>
+                    about 5 minutes before your estimated time. Each slot is ~10 minutes, so slight
+                    delays can happen. Come prepared!
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="text-align:center;color:#888;font-size:.82rem;margin-top:20px;">
+              Thank you for using <strong style="color:#4a7c59;">AUdoc</strong> — stay healthy! 💚
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#f4f8f4;padding:18px 40px;text-align:center;border-top:1px solid #d5e8d9;">
+            <p style="margin:0;font-size:.78rem;color:#999;">
+              &copy; 2026 <strong style="color:#4a7c59;">AUdoc</strong> &mdash;
+              Assam University Silchar Campus Health<br/>
+              Academic Block C, Room 101 &nbsp;|&nbsp; health@au.edu
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+    msg = EmailMultiAlternatives(subject=subject, body=plain, from_email=from_email, to=[appt.email])
+    msg.attach_alternative(html, "text/html")
+    msg.send()
+
+
 def appointment_confirm(request, token, action):
     """Handle appointment confirmation from email link."""
     from .models import TodaysAppointment
@@ -1624,6 +1807,23 @@ def appointment_confirm(request, token, action):
             # Save specifically updated fields to avoid constraint violations
             today_appt.save(update_fields=["status", "responded_at", "queue_position"])
 
+            # ── Compute per-shift position for estimated arrival time ─────
+            shift_pos = TodaysAppointment.objects.filter(
+                status="CONFIRMED",
+                appointment__appointment_date=today_appt.appointment.appointment_date,
+                appointment__shift=today_appt.appointment.shift,
+                responded_at__lte=today_appt.responded_at,
+            ).count()  # count includes self → gives 1-based position
+
+            # ── Send thank-you email with estimated time (best-effort) ────
+            try:
+                send_confirmation_thanks_email(today_appt, shift_pos)
+            except Exception as _mail_err:
+                import logging as _log
+                _log.getLogger(__name__).warning(
+                    f"Thank-you email failed for appt {today_appt.id}: {_mail_err}"
+                )
+
         elif action == "decline":
             today_appt.status = "DECLINED"
             today_appt.responded_at = timezone.now()
@@ -1645,10 +1845,23 @@ def appointment_confirm(request, token, action):
         # Show error page rather than throwing 500
         return render(request, "app/appointment_confirm.html", {"error": True})
 
+    # Build context — include estimated time for the accept confirmation page
+    estimated_time = None
+    if action == "accept":
+        _sp = TodaysAppointment.objects.filter(
+            status="CONFIRMED",
+            appointment__appointment_date=today_appt.appointment.appointment_date,
+            appointment__shift=today_appt.appointment.shift,
+            responded_at__lte=today_appt.responded_at,
+        ).count()
+        estimated_time = _compute_estimated_time(today_appt.appointment.shift or 'MORNING', _sp)
+
     return render(request, "app/appointment_confirm.html", {
         "action": action,
         "appointment": today_appt.appointment,
         "queue_position": today_appt.queue_position if action == "accept" else None,
+        "estimated_time": estimated_time,
+        "shift_pos": _sp if action == "accept" else None,
     })
 
 

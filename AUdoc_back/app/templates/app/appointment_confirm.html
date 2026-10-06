@@ -143,6 +143,18 @@
         <p style="font-size:0.85rem;color:#666;margin-top:12px;">First Come, First Serve (FCFS)</p>
       </div>
 
+      {% if estimated_time %}
+      <!-- Estimated arrival time hero -->
+      <div style="background:linear-gradient(135deg,#e8f5ec,#f4faf6);border:2px solid #4a7c59;border-radius:14px;padding:20px;text-align:center;margin-bottom:20px;">
+        <p style="margin:0 0 4px;font-size:0.72rem;text-transform:uppercase;letter-spacing:2px;color:#4a7c59;font-weight:700;">⏰ Your Estimated Arrival Time</p>
+        <p style="margin:0;font-size:2.2rem;font-weight:700;color:#1d7a3a;">{{ estimated_time }}</p>
+        <p style="margin:6px 0 0;font-size:0.82rem;color:#666;">
+          Position <strong>#{{ shift_pos }}</strong> in the {{ appointment.get_shift_display }} queue<br>
+          <span style="font-size:0.77rem;color:#888;">(Each slot is approx. 10 minutes — please arrive 5 min early)</span>
+        </p>
+      </div>
+      {% endif %}
+
       <h6 style="font-weight:700;color:#1a3a25;margin-bottom:16px;">Appointment Details</h6>
 
       <div class="info-row">
@@ -179,7 +191,7 @@
 
       <div class="alert alert-success mt-4" style="border-radius:12px;font-size:0.9rem;">
         <i class="bi bi-check-circle-fill me-2"></i>
-        <strong>What's Next:</strong> Please arrive at the campus health center on your appointment date. You will be seen in queue order.
+        <strong>What's Next:</strong> A confirmation email with your estimated visit time has been sent to your inbox. Please arrive at the campus health centre on your appointment date. You will be seen in queue order.
       </div>
 
       <div class="text-center mt-4">
