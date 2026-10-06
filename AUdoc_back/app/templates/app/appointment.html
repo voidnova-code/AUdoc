@@ -649,7 +649,7 @@
                   min="{{ tomorrow_str }}"
                 />
                 <button type="button" class="btn btn-outline-primary" id="btn-tomorrow"
-                  onclick="document.getElementById('id_appointment_date').value='{{ tomorrow_str }}';"
+                  onclick="var d=document.getElementById('id_appointment_date'); d.value='{{ tomorrow_str }}'; d.dispatchEvent(new Event('change'));"
                   title="Set to tomorrow">
                   Tomorrow
                 </button>
