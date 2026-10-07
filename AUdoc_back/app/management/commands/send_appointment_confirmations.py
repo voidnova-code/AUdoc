@@ -137,6 +137,14 @@ class Command(BaseCommand):
             f"  -> Sending to {appt.email} | from: {from_email} | domain: {domain}"
         )
 
+        # ── Derived display values ───────────────────────────────────────────
+        doctor_name     = appt.doctor.name if appt.doctor else "Campus Doctor"
+        time_display    = shift_display  # e.g. "Morning (8 AM - 2 PM)"
+        doctor_str_html = (
+            f" with <strong style='color:#1a5c96;'>Dr. {doctor_name}</strong>"
+            if appt.doctor else ""
+        )
+
         # ── Plain-text fallback ──────────────────────────────────────────
         plain_text = (
             f"Dear {appt.student_name},\n\n"
