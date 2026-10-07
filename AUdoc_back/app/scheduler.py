@@ -2,15 +2,15 @@
 Scheduler for appointment confirmation system.
 
 Jobs (all times in IST = UTC+5:30):
-  - 1:00 AM  → send_appointment_confirmations  (emails go out)
+  - Every 30 min from 1:00 AM to 9:00 AM → send_appointment_confirmations
+    (The command is idempotent: uses get_or_create, never double-sends.)
   - 10:00 AM → cancel_unconfirmed_appointments (auto-cancel PENDING)
 
-APScheduler runs inside the Django process via AppConfig.ready(), so no
-external cron or paid Render tier is required.
-
-NOTE: Render free tier spins down after inactivity. When the app wakes up,
-APScheduler will re-register jobs and run any that were missed within the
-misfire_grace_time window (set to 2 hours below).
+WHY every 30 minutes instead of once at 1:00 AM?
+  A student who books at 1:30 AM (after the 1 AM run) would never receive
+  a confirmation email under the old single-shot design. Running every
+  30 minutes guarantees no student waits more than 30 min for their email,
+  regardless of when they booked.
 """
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -32,18 +32,24 @@ def start_scheduler():
 
     scheduler = BackgroundScheduler(timezone=IST)
 
-    # ── Job 1: Send confirmation emails at 1:00 AM IST ──────────────
+    # ── Job 1: Send confirmation emails every 30 min, 1:00 AM–9:00 AM IST ────
+    # Safe to run multiple times — management command never re-sends to a
+    # student who already received a confirmation email (get_or_create guard).
     scheduler.add_job(
         func=run_send_confirmations,
-        trigger=CronTrigger(hour=1, minute=0, timezone=IST),
+        trigger=CronTrigger(
+            hour='1-9',      # 1:00 AM through 9:00 AM IST
+            minute='0,30',   # on the hour and half-hour
+            timezone=IST,
+        ),
         id='send_appointment_confirmations',
-        name='Send Appointment Confirmation Emails (1:00 AM IST)',
+        name='Send Appointment Confirmation Emails (every 30 min, 1-9 AM IST)',
         replace_existing=True,
         max_instances=1,
-        misfire_grace_time=2 * 60 * 60,  # 2-hour grace — handles Render wakeup delay
+        misfire_grace_time=30 * 60,  # 30-min grace for missed fires
     )
 
-    # ── Job 2: Auto-cancel unconfirmed at 10:00 AM IST ───────────────
+    # ── Job 2: Auto-cancel unconfirmed at 10:00 AM IST ───────────────────────
     scheduler.add_job(
         func=run_cancel_unconfirmed,
         trigger=CronTrigger(hour=10, minute=0, timezone=IST),
@@ -57,7 +63,8 @@ def start_scheduler():
     scheduler.start()
     logger.info(
         "Scheduler started — "
-        "emails at 1:00 AM IST, auto-cancel at 10:00 AM IST"
+        "confirmation emails every 30 min (1:00–9:00 AM IST), "
+        "auto-cancel at 10:00 AM IST"
     )
 
 
