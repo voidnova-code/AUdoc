@@ -132,18 +132,15 @@ class Command(BaseCommand):
         from_email = settings.DEFAULT_FROM_EMAIL
         if not from_email or "resend.dev" in str(from_email):
             from_email = "AUdoc Campus Health <noreply@voiddoc.me>"
+        from_email = str(from_email).strip('"').strip("'")
 
         self.stdout.write(
             f"  -> Sending to {appt.email} | from: {from_email} | domain: {domain}"
         )
 
         # ── Derived display values ───────────────────────────────────────────
-        doctor_name     = appt.doctor.name if appt.doctor else "Campus Doctor"
         time_display    = shift_display  # e.g. "Morning (8 AM - 2 PM)"
-        doctor_str_html = (
-            f" with <strong style='color:#1a5c96;'>Dr. {doctor_name}</strong>"
-            if appt.doctor else ""
-        )
+        doctor_str_html = ""
 
         # ── Plain-text fallback ──────────────────────────────────────────
         plain_text = (
@@ -211,10 +208,6 @@ class Command(BaseCommand):
                   <tr>
                     <td style="font-size:.85rem;color:#888;">&#128336; Time Slot</td>
                     <td style="font-size:.92rem;color:#333;font-weight:600;">{time_display}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-size:.85rem;color:#888;">&#129658; Doctor</td>
-                    <td style="font-size:.92rem;color:#333;font-weight:600;">{doctor_name}</td>
                   </tr>
                   <tr>
                     <td style="font-size:.85rem;color:#888;">&#127973; Department</td>

@@ -1608,6 +1608,7 @@ def send_confirmation_thanks_email(today_appt, shift_pos):
     from_email = getattr(_s, 'DEFAULT_FROM_EMAIL', 'AUdoc Campus Health <noreply@voiddoc.me>')
     if not from_email or 'resend.dev' in str(from_email):
         from_email = 'AUdoc Campus Health <noreply@voiddoc.me>'
+    from_email = str(from_email).strip('"').strip("'")
 
     subject = f"[AUdoc] 🎉 You're Confirmed! Arrive around {est}"
 
