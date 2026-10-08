@@ -58,6 +58,7 @@ urlpatterns = [
     path("manage/staff/<int:pk>/delete/", views.admin_staff_delete, name="admin_staff_delete"),
     path("manage/staff/add/", views.add_staff_member, name="add_staff_member"),
     path("manage/send-confirmations-test/", views.admin_send_confirmations_test, name="admin_send_confirmations_test"),
+    path("manage/clear-shift/<str:shift>/", views.clear_shift_queue, name="clear_shift_queue"),
 
     # ── Advanced Medicine Management ─────────────────────────────
     path("manage/medicine/", views.admin_medicine_dashboard, name="admin_medicine_dashboard"),

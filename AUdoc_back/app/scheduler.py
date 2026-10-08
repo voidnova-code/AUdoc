@@ -60,6 +60,20 @@ def start_scheduler():
         misfire_grace_time=2 * 60 * 60,  # 2-hour grace
     )
 
+    # ── Job 3: Nightly full cleanup at 8:00 AM IST ───────────────────────────
+    # The Night shift ends at 8:00 AM. At this point, mark ALL remaining
+    # CONFIRMED (unvisited) appointments from the previous day as NO_SHOW.
+    # This ensures the Today's Appointments panel starts fresh every morning.
+    scheduler.add_job(
+        func=run_nightly_cleanup,
+        trigger=CronTrigger(hour=8, minute=5, timezone=IST),  # 8:05 AM — after confirmation emails start
+        id='nightly_shift_cleanup',
+        name='Nightly Shift Cleanup — Mark Unvisited as No-Show (8:05 AM IST)',
+        replace_existing=True,
+        max_instances=1,
+        misfire_grace_time=2 * 60 * 60,
+    )
+
     scheduler.start()
     logger.info(
         "Scheduler started — "
@@ -94,3 +108,17 @@ def run_cancel_unconfirmed():
         logger.info("Scheduler: cancel_unconfirmed_appointments completed.")
     except Exception as e:
         logger.error(f"Scheduler: cancel_unconfirmed_appointments failed: {e}", exc_info=True)
+
+
+def run_nightly_cleanup():
+    """
+    Mark ALL remaining CONFIRMED (unvisited) appointments from yesterday as NO_SHOW.
+    Runs at 8:05 AM IST — just after the Night shift ends — to clear the
+    full previous day's queue so the admin panel starts fresh every morning.
+    """
+    try:
+        logger.info("Scheduler: running nightly shift cleanup (mark_shift_no_shows --shift ALL)...")
+        call_command('mark_shift_no_shows', '--shift', 'ALL')
+        logger.info("Scheduler: nightly shift cleanup completed.")
+    except Exception as e:
+        logger.error(f"Scheduler: nightly shift cleanup failed: {e}", exc_info=True)

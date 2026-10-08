@@ -1942,6 +1942,38 @@ def _medicine_catalog_json():
     ]
 
 @_admin_required
+def clear_shift_queue(request, shift):
+    """
+    POST-only admin action.
+    Marks all CONFIRMED (unvisited) TodaysAppointment records for a given shift
+    as NO_SHOW and updates the parent Appointment accordingly.
+    Redirects back to the admin panel after completing.
+    """
+    from datetime import date as _date, timedelta as _td
+    from django.core.management import call_command
+    import logging as _log
+
+    VALID_SHIFTS = {"MORNING", "EVENING", "NIGHT"}
+    shift = shift.upper()
+
+    if request.method == "POST" and shift in VALID_SHIFTS:
+        try:
+            call_command("mark_shift_no_shows", "--shift", shift)
+            _log.getLogger(__name__).info(
+                "Admin manually cleared %s shift queue.", shift
+            )
+        except Exception as exc:
+            _log.getLogger(__name__).error(
+                "clear_shift_queue failed for %s: %s", shift, exc, exc_info=True
+            )
+
+    from django.contrib import messages
+    from django.http import HttpResponseRedirect
+    from django.urls import reverse as _rev
+    return HttpResponseRedirect(_rev("admin_dashboard") + "#today")
+
+
+@_admin_required
 def admin_dashboard(request):
     # ── Today's confirmed appointments, split by shift (FCFS order within each) ──
     _todays_base = TodaysAppointment.objects.select_related(

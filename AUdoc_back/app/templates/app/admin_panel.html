@@ -1764,13 +1764,21 @@
               <!-- ── Morning Shift ── -->
               <div class="accordion-item border-0">
                 <h2 class="accordion-header" id="headingMorning">
-                  <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseMorning" aria-expanded="true" aria-controls="collapseMorning"
-                    style="background:linear-gradient(90deg,#e8f5ee,#fff); font-weight:600;">
-                    <i class="bi bi-sun-fill me-2" style="color:#1d7a3a;"></i>
-                    Morning Shift &nbsp;<span style="color:#555; font-size:0.8rem;">(8 AM – 2 PM)</span>
-                    <span class="ms-3 badge" style="background:var(--primary);">{{ morning_appointments|length }} Student{{ morning_appointments|length|pluralize }}</span>
-                  </button>
+                  <div style="display:flex;align-items:center;background:linear-gradient(90deg,#e8f5ee,#fff);">
+                    <button class="accordion-button flex-grow-1" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#collapseMorning" aria-expanded="true" aria-controls="collapseMorning"
+                      style="background:transparent; font-weight:600; box-shadow:none;">
+                      <i class="bi bi-sun-fill me-2" style="color:#1d7a3a;"></i>
+                      Morning Shift &nbsp;<span style="color:#555; font-size:0.8rem;">(8 AM – 2 PM)</span>
+                      <span class="ms-3 badge" style="background:var(--primary);">{{ morning_appointments|length }} Student{{ morning_appointments|length|pluralize }}</span>
+                    </button>
+                    {% if morning_appointments %}
+                    <form method="post" action="{% url 'clear_shift_queue' 'MORNING' %}" style="margin:0 12px;" onsubmit="return confirm('Clear Morning Shift queue? All unvisited students will be marked as Not Visited.');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm" style="background:#dc3545;color:#fff;border-radius:8px;font-size:0.78rem;white-space:nowrap;">Clear Shift</button>
+                    </form>
+                    {% endif %}
+                  </div>
                 </h2>
                 <div id="collapseMorning" class="accordion-collapse collapse show" aria-labelledby="headingMorning">
                   <div class="accordion-body p-0">
@@ -1819,13 +1827,21 @@
               <!-- ── Evening Shift ── -->
               <div class="accordion-item border-0 border-top">
                 <h2 class="accordion-header" id="headingEvening">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseEvening" aria-expanded="false" aria-controls="collapseEvening"
-                    style="background:linear-gradient(90deg,#fff8e7,#fff); font-weight:600;">
-                    <i class="bi bi-sunset-fill me-2" style="color:#c77a00;"></i>
-                    Evening Shift &nbsp;<span style="color:#555; font-size:0.8rem;">(2 PM – 8 PM)</span>
-                    <span class="ms-3 badge" style="background:#c77a00;">{{ evening_appointments|length }} Student{{ evening_appointments|length|pluralize }}</span>
-                  </button>
+                  <div style="display:flex;align-items:center;background:linear-gradient(90deg,#fff8e7,#fff);">
+                    <button class="accordion-button collapsed flex-grow-1" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#collapseEvening" aria-expanded="false" aria-controls="collapseEvening"
+                      style="background:transparent; font-weight:600; box-shadow:none;">
+                      <i class="bi bi-sunset-fill me-2" style="color:#c77a00;"></i>
+                      Evening Shift &nbsp;<span style="color:#555; font-size:0.8rem;">(2 PM – 8 PM)</span>
+                      <span class="ms-3 badge" style="background:#c77a00;">{{ evening_appointments|length }} Student{{ evening_appointments|length|pluralize }}</span>
+                    </button>
+                    {% if evening_appointments %}
+                    <form method="post" action="{% url 'clear_shift_queue' 'EVENING' %}" style="margin:0 12px;" onsubmit="return confirm('Clear Evening Shift queue? All unvisited students will be marked as Not Visited.');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm" style="background:#dc3545;color:#fff;border-radius:8px;font-size:0.78rem;white-space:nowrap;">Clear Shift</button>
+                    </form>
+                    {% endif %}
+                  </div>
                 </h2>
                 <div id="collapseEvening" class="accordion-collapse collapse" aria-labelledby="headingEvening">
                   <div class="accordion-body p-0">
@@ -1874,13 +1890,21 @@
               <!-- ── Night Shift ── -->
               <div class="accordion-item border-0 border-top">
                 <h2 class="accordion-header" id="headingNight">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseNight" aria-expanded="false" aria-controls="collapseNight"
-                    style="background:linear-gradient(90deg,#edf0f8,#fff); font-weight:600;">
-                    <i class="bi bi-moon-stars-fill me-2" style="color:#2c3e6e;"></i>
-                    Night Shift &nbsp;<span style="color:#555; font-size:0.8rem;">(8 PM – 8 AM)</span>
-                    <span class="ms-3 badge" style="background:#2c3e6e;">{{ night_appointments|length }} Student{{ night_appointments|length|pluralize }}</span>
-                  </button>
+                  <div style="display:flex;align-items:center;background:linear-gradient(90deg,#edf0f8,#fff);">
+                    <button class="accordion-button collapsed flex-grow-1" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#collapseNight" aria-expanded="false" aria-controls="collapseNight"
+                      style="background:transparent; font-weight:600; box-shadow:none;">
+                      <i class="bi bi-moon-stars-fill me-2" style="color:#2c3e6e;"></i>
+                      Night Shift &nbsp;<span style="color:#555; font-size:0.8rem;">(8 PM – 8 AM)</span>
+                      <span class="ms-3 badge" style="background:#2c3e6e;">{{ night_appointments|length }} Student{{ night_appointments|length|pluralize }}</span>
+                    </button>
+                    {% if night_appointments %}
+                    <form method="post" action="{% url 'clear_shift_queue' 'NIGHT' %}" style="margin:0 12px;" onsubmit="return confirm('Clear Night Shift queue? All unvisited students will be marked as Not Visited.');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm" style="background:#dc3545;color:#fff;border-radius:8px;font-size:0.78rem;white-space:nowrap;">Clear Shift</button>
+                    </form>
+                    {% endif %}
+                  </div>
                 </h2>
                 <div id="collapseNight" class="accordion-collapse collapse" aria-labelledby="headingNight">
                   <div class="accordion-body p-0">
